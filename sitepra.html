@@ -1647,23 +1647,18 @@ function unlockSite() {
 function showGateError(message) {
   if (gateError) gateError.textContent = message;
 }
-if (sessionStorage.getItem('mindstudy_public_unlocked') === '1') {
-  unlockSite();
-} else {
-  document.body.classList.add('locked');
-  accessInput?.focus();
-  accessForm?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const value = String(accessInput?.value || '').trim();
-    if (value === ACCESS_PASSWORD) {
-      sessionStorage.setItem('mindstudy_public_unlocked', '1');
-      unlockSite();
-    } else {
-      showGateError('Senha incorreta. Tente novamente.');
-      accessInput?.select();
-    }
-  });
-}
+document.body.classList.add('locked');
+accessInput?.focus();
+accessForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const value = String(accessInput?.value || '').trim();
+  if (value === ACCESS_PASSWORD) {
+    unlockSite();
+  } else {
+    showGateError('Senha incorreta. Tente novamente.');
+    accessInput?.select();
+  }
+});
 </script>
 <script>window.parent.postMessage({ action: "ready" }, "*"); 
  
