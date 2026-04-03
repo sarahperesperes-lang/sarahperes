@@ -489,20 +489,29 @@ def detect_default_pdf() -> Optional[Path]:
     return None
 
 
+def collect_pdf_inputs(pdf_arg: Optional[str]) -> list[Path]:
+    if not pdf_arg:
+        default_pdf = detect_default_pdf()
+        return [default_pdf] if default_pdf else []
+
+    input_path = Path(pdf_arg).expanduser().resolve()
+    if input_path.is_dir():
+        return sorted(input_path.glob("*.pdf"), key=lambda p: p.name.lower())
+    return [input_path]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Converte PDF em mapa mental denso.")
-    parser.add_argument("pdf", nargs="?", help="Caminho do PDF de entrada.")
+    parser.add_argument("pdf", nargs="?", help="Caminho do PDF de entrada ou pasta com PDFs.")
     parser.add_argument("--output-dir", default=None, help="Diretorio de saida. Padrao: pasta do PDF.")
     parser.add_argument("--title", default=None, help="Titulo base opcional para o mapa.")
     parser.add_argument("--dry-run", action="store_true", help="Nao chama a OpenAI; apenas extrai e divide.")
     return parser.parse_args()
 
 
-def main() -> int:
-    args = parse_args()
-    pdf_path = Path(args.pdf).expanduser().resolve() if args.pdf else detect_default_pdf()
-    if pdf_path is None:
-        print("Nenhum PDF informado e nenhum PDF padrao (*.pdf) encontrado no diretório atual.", file=sys.stderr)
+def process_single_pdf(pdf_path: Path, client: Optional[OpenAI], output_dir_override: Optional[str], dry_run: bool, title_override: Optional[str]) -> int:
+    if not pdf_path.exists():
+        print(f"Erro: arquivo nao encontrado -> {pdf_path}", file=sys.stderr)
         return 1
 
     print(f"[1/6] Lendo PDF: {pdf_path}")
@@ -519,16 +528,17 @@ def main() -> int:
         return 3
     print(f"[3/6] Chunks gerados: {len(chunks)}")
 
-    source_title = args.title or pdf_path.stem
-    if args.dry_run:
+    source_title = title_override or pdf_path.stem
+    if dry_run:
         print("[modo dry-run] Nenhuma chamada OpenAI sera feita.")
         return 0
 
-    try:
-        client = openai_client()
-    except Exception as exc:
-        print(f"Erro de configuracao OpenAI: {exc}", file=sys.stderr)
-        return 4
+    if client is None:
+        try:
+            client = openai_client()
+        except Exception as exc:
+            print(f"Erro de configuracao OpenAI: {exc}", file=sys.stderr)
+            return 4
 
     partial_maps: list[dict[str, Any]] = []
     for index, chunk in enumerate(chunks, start=1):
@@ -553,14 +563,49 @@ def main() -> int:
         final_map = merge_partial_trees(partial_maps, source_title)
 
     final_map = normalize_topic_tree(final_map, source_title)
-    output_dir = Path(args.output_dir).expanduser().resolve() if args.output_dir else pdf_path.parent
-    txt_path, json_path = export_outputs(final_map, output_dir)
+    output_dir = Path(output_dir_override).expanduser().resolve() if output_dir_override else pdf_path.parent
+    base = pdf_path.stem
+    txt_path = output_dir / f"{base}_mapa_mental.txt"
+    json_path = output_dir / f"{base}_mapa_mental.json"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    txt_path.write_text(tree_to_text(final_map), encoding="utf-8")
+    json_path.write_text(json.dumps(final_map, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print("[6/6] Salvando arquivos...")
     print(f"TXT: {txt_path}")
     print(f"JSON: {json_path}")
     print("Mapa mental concluido com sucesso.")
     return 0
+
+
+def main() -> int:
+    args = parse_args()
+    pdf_inputs = collect_pdf_inputs(args.pdf)
+    if not pdf_inputs:
+        print("Nenhum PDF informado e nenhum PDF padrao (*.pdf) encontrado no diretório atual.", file=sys.stderr)
+        return 1
+
+    if args.dry_run:
+        for index, pdf_path in enumerate(pdf_inputs, start=1):
+            print(f"\n=== [Lote] {index}/{len(pdf_inputs)} ===")
+            status = process_single_pdf(pdf_path, None, args.output_dir, True, args.title)
+            if status != 0:
+                return status
+        return 0
+
+    try:
+        client = openai_client()
+    except Exception as exc:
+        print(f"Erro de configuracao OpenAI: {exc}", file=sys.stderr)
+        return 4
+
+    exit_code = 0
+    for index, pdf_path in enumerate(pdf_inputs, start=1):
+        print(f"\n=== [Lote] {index}/{len(pdf_inputs)}: {pdf_path.name} ===")
+        status = process_single_pdf(pdf_path, client, args.output_dir, False, args.title)
+        if status != 0 and exit_code == 0:
+            exit_code = status
+    return exit_code
 
 
 if __name__ == "__main__":
