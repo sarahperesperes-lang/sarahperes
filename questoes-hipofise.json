@@ -1,0 +1,117 @@
+﻿{
+  "materia": "Hipofise e suas disfuncoes",
+  "questoes": [
+    {
+      "id": 1,
+      "pergunta": "Qual e a causa funcional mais comum de hiperprolactinemia persistente de origem hipofisaria?",
+      "opcoes": ["Adenoma produtor de ACTH", "Prolactinoma", "Deficiencia isolada de GH", "Adenoma nao funcionante"],
+      "correta": 1,
+      "explicacao": "O prolactinoma e o adenoma funcionante mais frequente da hipofise e a causa classica de hiperprolactinemia de origem tumoral."
+    },
+    {
+      "id": 2,
+      "pergunta": "Qual achado clinico sugere Sindrome de Sheehan no pos-parto?",
+      "opcoes": ["Hipercalcemia tardia", "Falha na lactacao apos hemorragia obstetrica", "Polidipsia isolada", "Aumento rapido de estatura"],
+      "correta": 1,
+      "explicacao": "A falha de lactacao apos hemorragia obstetrica importante e uma pista classica de necrose hipofisaria pos-parto."
+    },
+    {
+      "id": 3,
+      "pergunta": "Na acromegalia, qual exame e o melhor marcador inicial de triagem?",
+      "opcoes": ["GH basal isolado", "TSH", "IGF-1", "Prolactina"],
+      "correta": 2,
+      "explicacao": "O IGF-1 e mais estavel que o GH ao longo do dia e por isso e o melhor exame inicial para triagem de acromegalia."
+    },
+    {
+      "id": 4,
+      "pergunta": "Qual eixo deve ser corrigido primeiro no hipopituitarismo antes de iniciar levotiroxina?",
+      "opcoes": ["Eixo gonadal", "Eixo prolactina", "Eixo adrenal", "Eixo GH"],
+      "correta": 2,
+      "explicacao": "Deve-se repor corticoide antes de iniciar levotiroxina para evitar precipitar insuficiencia adrenal em paciente com ACTH deficiente."
+    },
+    {
+      "id": 5,
+      "pergunta": "O que diferencia doenca de Cushing de sindrome de Cushing?",
+      "opcoes": ["A doenca e sempre iatrogenica", "A doenca e o subtipo hipofisario ACTH dependente", "A sindrome e exclusiva da infancia", "Nao existe diferenca"],
+      "correta": 1,
+      "explicacao": "Sindrome de Cushing e qualquer estado de excesso de cortisol; doenca de Cushing e o subtipo causado por adenoma hipofisario produtor de ACTH."
+    },
+    {
+      "id": 6,
+      "pergunta": "Qual sintoma visual tipico pode surgir por macroadenoma hipofisario?",
+      "opcoes": ["Escotoma central unilateral", "Hemianopsia bitemporal", "Nistagmo vertical", "Cegueira noturna"],
+      "correta": 1,
+      "explicacao": "Macroadenomas podem comprimir o quiasma optico e causar hemianopsia bitemporal."
+    },
+    {
+      "id": 7,
+      "pergunta": "Antes da fusao epifisaria, excesso de GH tende a causar:",
+      "opcoes": ["Acromegalia", "Gigantismo", "Hipopituitarismo", "Doenca de Cushing"],
+      "correta": 1,
+      "explicacao": "Se o excesso de GH ocorre antes do fechamento das epifises, o resultado clinico predominante e gigantismo."
+    },
+    {
+      "id": 8,
+      "pergunta": "Qual hormonio da neuro-hipofise participa diretamente da regulacao de agua livre?",
+      "opcoes": ["TSH", "ACTH", "ADH", "GH"],
+      "correta": 2,
+      "explicacao": "O ADH regula reabsorcao de agua e osmolaridade; ele e armazenado e liberado pela neuro-hipofise."
+    },
+    {
+      "id": 9,
+      "pergunta": "Qual conduta costuma ser primeira linha no prolactinoma?",
+      "opcoes": ["Radioterapia isolada", "Cirurgia imediata para todos", "Agonista dopaminergico", "Reposicao de GH"],
+      "correta": 2,
+      "explicacao": "Agonistas dopaminergicos como cabergolina costumam ser primeira linha por reduzirem prolactina e volume tumoral."
+    },
+    {
+      "id": 10,
+      "pergunta": "Qual conjunto de sinais e mais sugestivo de hipercortisolismo cronico?",
+      "opcoes": ["Face em lua, obesidade central e estrias violaceas", "Perda de peso, exoftalmia e tremor", "Poliuria, polidipsia e hipernatremia", "Baixa estatura e atraso puberal isolado"],
+      "correta": 0,
+      "explicacao": "Face em lua, obesidade central e estrias violaceas formam um trio clinico bastante sugestivo de sindrome de Cushing."
+    },
+    {
+      "id": 11,
+      "pergunta": "Em hiperprolactinemia, qual causa secundaria deve ser lembrada antes de concluir prolactinoma?",
+      "opcoes": ["Hipotireoidismo primario", "Hipercalemia", "Deficiencia de vitamina B12", "Pancreatite"],
+      "correta": 0,
+      "explicacao": "Hipotireoidismo primario pode elevar TRH e secundariamente prolactina, devendo ser excluido na investigacao."
+    },
+    {
+      "id": 12,
+      "pergunta": "Qual exame de imagem e padrao para investigar adenoma hipofisario?",
+      "opcoes": ["TC de cranio sem contraste", "RM de sela turca", "USG cervical", "PET-CT de rotina"],
+      "correta": 1,
+      "explicacao": "A ressonancia de sela turca e o exame de escolha para definir tamanho, extensao e relacao do adenoma com estruturas vizinhas."
+    },
+    {
+      "id": 13,
+      "pergunta": "Qual situacao deve acender alerta para apoplexia hipofisaria?",
+      "opcoes": ["Cefaleia abrupta com queda visual", "Galactorreia isolada cronica", "Aumento lento de sapato", "Amenorreia sem outros sintomas"],
+      "correta": 0,
+      "explicacao": "Apoplexia hipofisaria costuma surgir com cefaleia intensa abrupta, alteracao visual e possivel oftalmoplegia, sendo urgencia clinica."
+    },
+    {
+      "id": 14,
+      "pergunta": "Qual alteracao laboratorial ajuda a confirmar acromegalia apos triagem positiva?",
+      "opcoes": ["TSH baixo apos dexametasona", "GH sem supressao no TOTG", "Prolactina normal em jejum", "ACTH alto apos TRH"],
+      "correta": 1,
+      "explicacao": "Na acromegalia, o GH nao suprime adequadamente apos sobrecarga oral de glicose, ao contrario do esperado em individuos sem a doenca."
+    },
+    {
+      "id": 15,
+      "pergunta": "No hipopituitarismo, qual combinacao e mais compativel com hipotireoidismo central?",
+      "opcoes": ["TSH alto e T4L alto", "TSH inadequadamente normal ou baixo com T4L baixo", "T3 alto isolado", "Calcitonina alta"],
+      "correta": 1,
+      "explicacao": "No hipotireoidismo central, o T4 livre esta baixo e o TSH nao responde como deveria, ficando baixo ou inapropriadamente normal."
+    },
+    {
+      "id": 16,
+      "pergunta": "Qual estrutura principal da fisiologia hipofisaria armazena ADH e ocitocina?",
+      "opcoes": ["Adeno-hipofise", "Neuro-hipofise", "Quiasma optico", "Capsula adrenal"],
+      "correta": 1,
+      "explicacao": "ADH e ocitocina sao sintetizados no hipotalamo e armazenados/liberados pela neuro-hipofise."
+    }
+  ]
+}

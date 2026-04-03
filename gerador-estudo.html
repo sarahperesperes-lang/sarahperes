@@ -3,7 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gerador de Estudo</title>
+<title>Gerador de Estudo Legacy</title>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  if (params.get('advanced') !== '1') {
+    const forward = new URLSearchParams();
+    forward.set('from', 'legacy-generator');
+    const target = `hipofise-workspace.html?${forward.toString()}`;
+    location.replace(target);
+  }
+})();
+</script>
 <style>
 *{box-sizing:border-box}
 :root{
@@ -104,6 +115,9 @@ textarea{min-height:200px;resize:vertical;line-height:1.6}
 .hidden{display:none!important}
 .inline-note{display:flex;gap:10px;align-items:flex-start;padding:12px 13px;border-radius:16px;background:rgba(15,20,28,.9);border:1px solid #263441;color:#c7d6d0;font-size:12px;line-height:1.55}
 .inline-note strong{color:#fff}
+.legacy-banner{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;padding:14px 16px;border-radius:20px;background:rgba(18,26,37,.92);border:1px solid #324454}
+.legacy-banner p{margin:0;color:#c7d6d0;line-height:1.55;font-size:13px}
+.legacy-banner a{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:999px;background:var(--accent);color:#062116;font-weight:800;text-decoration:none;white-space:nowrap}
 @media (max-width:980px){
   .grid{grid-template-columns:1fr}
   .panel-grid,.choice-grid{grid-template-columns:1fr}
@@ -116,8 +130,12 @@ textarea{min-height:200px;resize:vertical;line-height:1.6}
 </head>
 <body>
 <main>
+  <div class="legacy-banner">
+    <p><strong>Modo tecnico legado.</strong> O fluxo principal agora mora no workspace unificado, com geracao, mapa e estudo na mesma tela. Esta pagina continua viva como fallback para configuracoes mais detalhadas.</p>
+    <a href="hipofise-workspace.html">Abrir workspace</a>
+  </div>
   <h1>Gerador de estudo com modelos de mapa</h1>
-  <p class="lead">Carregue um PDF, cole texto bruto ou importe JSON e escolha como o mapa deve nascer: arvore, fluxo, bubble, circle, comparativo e outros formatos. O resultado abre no editor publico com o layout escolhido.</p>
+  <p class="lead">Carregue um PDF, cole texto bruto ou importe JSON e escolha como o mapa deve nascer: arvore, fluxo, bubble, circle, comparativo e outros formatos. Se voce abrir esta pagina pelo servidor local seguro, a chave da OpenAI fica escondida no backend do seu PC.</p>
   <div class="grid">
     <section class="card">
       <label for="topic">Tema ou foco do mapa</label>
@@ -222,7 +240,7 @@ textarea{min-height:200px;resize:vertical;line-height:1.6}
       </div>
       <div class="status" id="status">Cole um conteudo base ou selecione um PDF para comecar.</div>
       <div class="meta" id="meta">Sem conteudo carregado.</div>
-      <div class="hint">JSON no formato <code>root + children</code> abre direto no editor. Se o arquivo trouxer <code>{ tree, options }</code>, o modelo selecionado tambem e reaplicado.</div>
+      <div class="hint">JSON no formato <code>root + children</code> abre direto no editor. Se o arquivo trouxer <code>{ tree, options }</code>, o modelo selecionado tambem e reaplicado. Em <code>localhost</code>, o app usa o proxy local e nao pede chave no navegador.</div>
     </section>
 
     <section class="card">
@@ -250,6 +268,9 @@ textarea{min-height:200px;resize:vertical;line-height:1.6}
 <script>
 const OPENAI_API_KEY='';
 const DRAFT_TREE_KEY='mapaEstudoDraftTree';
+const LOCAL_PROXY_PATH='/api/openai/responses';
+const SAVED_PROMPT_ID='pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
+const SAVED_PROMPT_VERSION='1';
 const MODEL_META={
   tree:{label:'Tree',prompt:'Organize em arvore de estudo hierarquica, com grupos logicos e subgrupos claros.'},
   flow:{label:'Flow',prompt:'Organize como fluxo principal de etapas. O primeiro nivel deve representar uma sequencia de passos ou fases.'},
@@ -270,6 +291,11 @@ const depthButtons=[...document.querySelectorAll('.depth')];
 const modelCards=[...document.querySelectorAll('.model-card')];
 function setStatus(msg,type=''){const el=$('#status');el.textContent=msg;el.style.color=type==='error'?'#ff9fb5':type==='success'?'#8df0bc':'#9ab1a8';}
 function getOpenAIApiKey(){if(OPENAI_API_KEY&&OPENAI_API_KEY.startsWith('sk-'))return OPENAI_API_KEY;const saved=localStorage.getItem('openai_api_key')||'';if(saved.startsWith('sk-'))return saved;const provided=prompt('Informe sua OpenAI API key para usar o gerador:','')||'';if(provided.startsWith('sk-')){localStorage.setItem('openai_api_key',provided);return provided}return ''}
+function isLocalSecureMode(){return location.protocol.startsWith('http')&&/^(127\.0\.0\.1|localhost)$/i.test(location.hostname)}
+async function requestResponses(body){if(isLocalSecureMode()){const res=await fetch(LOCAL_PROXY_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||err?.message||`HTTP ${res.status}`)}return res.json()}const apiKey=getOpenAIApiKey();if(!apiKey)throw new Error('API key ausente.');const res=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`)}return res.json()}
+function buildSavedPromptInput(topic, source, options){return[`Tema: ${topic}.`,`Modelo visual: ${options.model}.`,`Profundidade: ${options.depth}.`,`Foco didatico: ${options.focus}.`,`Estilo do texto: ${options.nodeStyle}.`,`Ramos principais: ${options.mainBranches}.`,`Leitura do PDF/base: ${options.pdfLens}.`,'Base obrigatoria:',source.slice(0,18000)].join('\\n\\n')}
+function buildInlineBody(topic, source, options){const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe por progressao de aprendizagem e evite ramos soltos.',options.depth==='LOW'?'Modo LOW: palavras-chave e poucos ramos principais.':options.depth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla e explicacoes concisas.',buildPromptOptionsText(options)].join(' ');return{model:'gpt-4o',input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,18000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2600}}
+async function requestStudyMap(topic, source, options){const promptBody={prompt:{id:SAVED_PROMPT_ID,version:SAVED_PROMPT_VERSION},input:[{role:'user',content:[{type:'input_text',text:buildSavedPromptInput(topic,source,options)}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},max_output_tokens:2600};try{return await requestResponses(promptBody)}catch(error){console.warn('Falha no prompt salvo, usando fallback inline.',error);return requestResponses(buildInlineBody(topic,source,options))}}
 function normalizeNode(node){if(!node||typeof node!=='object')return null;const text=String(node.text||'').trim();if(!text)return null;return{text,children:(Array.isArray(node.children)?node.children:[]).map(normalizeNode).filter(Boolean)}}
 function normalizeTree(data){if(!data||typeof data!=='object')throw new Error('Formato invalido.');const root=String(data.root||'').trim();if(!root)throw new Error('Campo root vazio.');return{root,children:(Array.isArray(data.children)?data.children:[]).map(normalizeNode).filter(Boolean)}}
 function normalizeDraftPayload(data){if(data&&typeof data==='object'&&data.tree){const tree=normalizeTree(data.tree);const options=normalizeOptions(data.options||{});return{tree,options}}return{tree:normalizeTree(data),options:normalizeOptions({})}}
@@ -285,7 +311,7 @@ async function extractPdfText(file){const lib=await loadPdfJs();const pdf=await 
 function buildPromptOptionsText(options){const focusMap={progressivo:'Organize a explicacao em progressao de aprendizagem, do basico ao avancado.',comparativo:'Destaque contrastes, semelhancas e pontos de decisao quando fizer sentido.',processual:'Mostre sequencia, etapas e dependencias de execucao.',revisao:'Priorize memorizacao, resumao e revisao rapida com alto poder de scan.'};const nodeMap={headline:'Use titulo + explicacao curta nos nos quando precisar detalhar.',keywords:'Prefira palavras-chave e frases bem curtas.', 'study-notes':'Pode usar mini anotacoes de estudo, mas sem textos longos.'};const branchMap=options.mainBranches==='auto'?'Deixe a quantidade de ramos principais livre, mas equilibrada.':`Tente limitar o primeiro nivel a cerca de ${options.mainBranches} ramos principais.`;const lensMap={auto:'Leia o material como um todo.',titulos:'Priorize a espinha dorsal formada por titulos, secoes e subtitulos.',conceitos:'Priorize definicoes, conceitos centrais e classificacoes.',comparacoes:'Procure comparacoes, diferencias e semelhancas.',etapas:'Procure fluxos, sequencias, protocolos e etapas.'};return[MODEL_META[options.model].prompt,focusMap[options.focus],nodeMap[options.nodeStyle],branchMap,lensMap[options.pdfLens]].join(' ')}
 async function handleFile(file){if(!file)return;const lower=file.name.toLowerCase();try{if(lower.endsWith('.json')){const parsed=normalizeDraftPayload(JSON.parse(await file.text()));sourceMeta={type:'json',name:file.name,pages:0};syncModelUi(parsed.options.model);currentDepth=parsed.options.depth;depthButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.depth===currentDepth));$('#focusSelect').value=parsed.options.focus;$('#nodeStyleSelect').value=parsed.options.nodeStyle;$('#branchCountSelect').value=parsed.options.mainBranches;$('#pdfLensSelect').value=parsed.options.pdfLens;showTree(parsed.tree,{options:parsed.options});setStatus('JSON importado com sucesso.','success');updateMeta('JSON pronto para abrir no editor.')}else if(lower.endsWith('.pdf')||file.type==='application/pdf'){setStatus('Lendo PDF local...');const result=await extractPdfText(file);$('#source').value=result.text;sourceMeta={type:'pdf',name:file.name,pages:result.pages};updateMeta('PDF convertido em texto e pronto para organizacao.');setStatus('PDF lido. Agora gere o mapa com suas escolhas.','success')}else{$('#source').value=await file.text();sourceMeta={type:'text-file',name:file.name,pages:0};updateMeta('Arquivo textual pronto para gerar.');setStatus('Conteudo base carregado.','success')}}catch(error){console.error(error);setStatus(`Erro no arquivo: ${error.message}`,'error')}}
 function extractLooseJson(raw){const direct=String(raw||'').trim();const attempts=[direct,direct.replace(/```json/gi,'```').replace(/```/g,'').trim()];const start=direct.indexOf('{');const end=direct.lastIndexOf('}');if(start>=0&&end>start)attempts.push(direct.slice(start,end+1));for(const candidate of attempts){if(!candidate)continue;try{return JSON.parse(candidate)}catch(_){}}throw new Error('Nao foi possivel interpretar o JSON retornado pela IA.')}
-async function generate(){const topic=$('#topic').value.trim()||'Organize o conteudo base em um mapa de estudo';const source=$('#source').value.trim();if(!source){setStatus('Cole um conteudo base ou carregue um arquivo antes de gerar.','error');return}const apiKey=getOpenAIApiKey();if(!apiKey){setStatus('API key ausente.','error');return}const options=getGenerationOptions();const btn=$('#generateBtn');btn.disabled=true;setStatus('Gerando mapa de estudo...');try{const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe por progressao de aprendizagem e evite ramos soltos.',options.depth==='LOW'?'Modo LOW: palavras-chave e poucos ramos principais.':options.depth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla e explicacoes concisas.',buildPromptOptionsText(options)].join(' ');const body={model:'gpt-4o',input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,18000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2600};const res=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`)}const data=await res.json();const raw=(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'').trim();const tree=normalizeTree(extractLooseJson(raw));showTree(tree,{options});setStatus('Mapa gerado com sucesso.','success')}catch(error){console.error(error);setStatus(`Erro: ${error.message}`,'error')}finally{btn.disabled=false}}
+async function generate(){const topic=$('#topic').value.trim()||'Organize o conteudo base em um mapa de estudo';const source=$('#source').value.trim();if(!source){setStatus('Cole um conteudo base ou carregue um arquivo antes de gerar.','error');return}const options=getGenerationOptions();const btn=$('#generateBtn');btn.disabled=true;setStatus(isLocalSecureMode()?'Gerando mapa de estudo pelo modo seguro local...':'Gerando mapa de estudo...');try{const data=await requestStudyMap(topic,source,options);const raw=(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'').trim();const tree=normalizeTree(extractLooseJson(raw));showTree(tree,{options});setStatus(isLocalSecureMode()?'Mapa gerado com sucesso no modo seguro local.':'Mapa gerado com sucesso.','success')}catch(error){console.error(error);setStatus(`Erro: ${error.message}`,'error')}finally{btn.disabled=false}}
 depthButtons.forEach(btn=>{btn.addEventListener('click',()=>{currentDepth=btn.dataset.depth;depthButtons.forEach(item=>item.classList.toggle('active',item===btn));renderChoiceSummary()})});
 modelCards.forEach(card=>card.addEventListener('click',()=>syncModelUi(card.dataset.model)));
 ['#focusSelect','#nodeStyleSelect','#branchCountSelect','#pdfLensSelect'].forEach(selector=>$(selector).addEventListener('change',renderChoiceSummary));
@@ -299,6 +325,9 @@ $('#copyJsonBtn').addEventListener('click',async()=>{if(!generatedPayload)return
 $('#openEditorBtn').addEventListener('click',()=>{if(!generatedPayload)return;localStorage.setItem(DRAFT_TREE_KEY,JSON.stringify(generatedPayload));location.href='mapa-estudo-editor.html?draft=1'});
 renderChoiceSummary();
 updateMeta();
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(err=>console.warn('SW:',err)); });
+}
 </script>
 </body>
 </html>

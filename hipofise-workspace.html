@@ -1,0 +1,648 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind Study Workspace</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="theme-color" content="#8ec8f6">
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Segoe UI",system-ui,sans-serif;background:#f3efe9;color:#241e1b}body{background:radial-gradient(circle at 12% 14%,rgba(142,200,246,.22),transparent 18%),radial-gradient(circle at 88% 12%,rgba(235,176,208,.16),transparent 16%),radial-gradient(circle at 72% 80%,rgba(155,217,173,.14),transparent 18%),linear-gradient(180deg,#f7f3ee,#eee8e1)}button,input,textarea,select{font:inherit}button{border:none}.shell{min-height:100vh;display:grid;grid-template-columns:320px minmax(0,1fr) 340px;gap:16px;padding:16px}.panel{background:rgba(255,255,255,.78);border:1px solid rgba(168,146,134,.24);box-shadow:0 18px 42px rgba(103,79,70,.10);backdrop-filter:blur(18px)}.rail,.inspector{border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:16px}.workspace{border-radius:34px;display:flex;flex-direction:column;overflow:hidden;min-height:calc(100vh - 32px)}.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand-mark{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:15px;background:linear-gradient(135deg,#9bd9ad,#8ec8f6 52%,#ebb0d0);display:grid;place-items:center;color:#fff;font-size:20px;font-weight:800;box-shadow:0 10px 24px rgba(110,140,160,.22)}.brand-copy strong{display:block;font-size:16px}.brand-copy span{display:block;font-size:12px;color:#7a6b64;margin-top:2px}.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.82);border:1px solid rgba(168,146,134,.22);font-size:12px;font-weight:700;color:#5e514b}.pill.ok{color:#2f7d57;background:rgba(155,217,173,.20)}.pill.warn{color:#9b5f2e;background:rgba(245,190,160,.20)}.section{display:flex;flex-direction:column;gap:10px}.label{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8a7a73}.subtle{color:#7a6b64;line-height:1.55;font-size:14px}.composer{padding:16px;border-radius:24px;background:rgba(255,252,248,.78);border:1px solid rgba(168,146,134,.18);display:flex;flex-direction:column;gap:12px}.field{display:flex;flex-direction:column;gap:7px}.field input,.field textarea,.field select{width:100%;border:1px solid rgba(168,146,134,.28);background:rgba(255,255,255,.92);border-radius:16px;padding:12px 14px;color:#241e1b;outline:none;transition:border-color .16s ease,box-shadow .16s ease}.field input:focus,.field textarea:focus,.field select:focus{border-color:#8ec8f6;box-shadow:0 0 0 3px rgba(142,200,246,.14)}.field textarea{min-height:180px;resize:vertical;line-height:1.6}.segmented{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.segmented.model{grid-template-columns:repeat(4,minmax(0,1fr))}.seg-btn{padding:11px 10px;border-radius:16px;background:rgba(255,255,255,.72);border:1px solid rgba(168,146,134,.18);font-weight:800;color:#6b5e58;cursor:pointer;transition:all .16s ease;text-align:center}.seg-btn.active{background:#241e1b;color:#fff;border-color:#241e1b;box-shadow:0 12px 24px rgba(36,30,27,.18)}.seg-btn span{display:block;font-size:11px;font-weight:600;opacity:.82;margin-top:3px}.row{display:flex;flex-wrap:wrap;gap:10px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:16px;cursor:pointer;font-weight:800;transition:transform .16s ease,box-shadow .16s ease,background .16s ease;text-decoration:none}.btn:hover{transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,#241e1b,#59463d);color:#fff;box-shadow:0 14px 30px rgba(36,30,27,.16)}.btn.secondary{background:rgba(255,255,255,.84);color:#241e1b;border:1px solid rgba(168,146,134,.24)}.btn.ghost{background:transparent;color:#7a6b64;border:1px dashed rgba(168,146,134,.36)}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}.mini-note{padding:12px 14px;border-radius:18px;background:rgba(142,200,246,.12);border:1px solid rgba(142,200,246,.24);color:#5f5854;font-size:13px;line-height:1.55}.status-box{padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.76);border:1px solid rgba(168,146,134,.18);font-size:13px;line-height:1.55;color:#665852}.status-box.error{color:#a34f62;background:rgba(235,176,208,.16)}.status-box.success{color:#2f7d57;background:rgba(155,217,173,.16)}.quick-list{display:grid;gap:8px}.quick-item{padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(168,146,134,.16)}.quick-item strong{display:block;font-size:14px;margin-bottom:4px}.quick-actions{display:flex;flex-wrap:wrap;gap:10px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 22px;border-bottom:1px solid rgba(168,146,134,.18);background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,255,255,.64))}.hero-copy{display:flex;flex-direction:column;gap:8px}.hero-copy h1{margin:0;font-size:34px;letter-spacing:-.03em}.hero-copy p{margin:0;max-width:720px;color:#7a6b64;line-height:1.6}.hero-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.metrics{display:flex;gap:10px;flex-wrap:wrap}.metric{min-width:110px;padding:10px 12px;border-radius:18px;background:rgba(255,255,255,.78);border:1px solid rgba(168,146,134,.18)}.metric strong{display:block;font-size:24px}.metric span{font-size:12px;color:#7a6b64}.tabbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 22px;border-bottom:1px solid rgba(168,146,134,.16)}.tabs{display:flex;gap:8px;flex-wrap:wrap}.tab{padding:10px 14px;border-radius:999px;background:transparent;color:#7a6b64;font-weight:800;cursor:pointer}.tab.active{background:#241e1b;color:#fff;box-shadow:0 10px 22px rgba(36,30,27,.12)}.tab.disabled{opacity:.35;cursor:not-allowed}.stage{flex:1;padding:18px;display:grid}.view{display:none;min-height:0}.view.active{display:grid}.map-view{grid-template-columns:minmax(0,1fr) 300px;gap:16px}.frame-shell{position:relative;border-radius:28px;overflow:hidden;background:linear-gradient(180deg,#f8f4ee,#f1ebe3);border:1px solid rgba(168,146,134,.16);min-height:720px;box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}.frame-shell::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent calc(50% - 1px),rgba(142,200,246,.14) calc(50% - 1px),rgba(142,200,246,.14) calc(50% + 1px),transparent calc(50% + 1px))}.frame-shell::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 14%, rgba(142,200,246,.12), transparent 22%),radial-gradient(circle at 50% 82%, rgba(235,176,208,.10), transparent 20%)}.frame{width:100%;height:100%;min-height:720px;border:none;background:transparent}.frame-overlay{position:absolute;left:18px;bottom:18px;display:flex;gap:10px;flex-wrap:wrap;pointer-events:none}.hint-pill{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.86);border:1px solid rgba(168,146,134,.18);font-size:12px;color:#6a5c55}.context{display:flex;flex-direction:column;gap:14px}.context-box{padding:16px;border-radius:24px;background:rgba(255,255,255,.70);border:1px solid rgba(168,146,134,.18);display:flex;flex-direction:column;gap:12px}.context-box h3,.quiz-card h2,.review-card h2{margin:0;font-size:20px}.context-box p,.quiz-card p,.review-card p{margin:0}.branch-list{display:grid;gap:8px;max-height:220px;overflow:auto}.branch{display:flex;gap:10px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.68);border:1px solid rgba(168,146,134,.14)}.dot{width:11px;height:11px;border-radius:50%;margin-top:5px;flex:0 0 auto}.ai-output,.explanation,.review-face{padding:15px 16px;border-radius:20px;background:rgba(255,255,255,.76);border:1px solid rgba(168,146,134,.16);white-space:pre-wrap;line-height:1.6}.quiz-view,.review-view{grid-template-columns:minmax(0,1fr) 320px;gap:16px}.quiz-card,.review-card,.side-col{padding:18px;border-radius:28px;background:rgba(255,255,255,.70);border:1px solid rgba(168,146,134,.18);display:flex;flex-direction:column;gap:14px}.progress{width:100%;height:12px;border-radius:999px;background:rgba(168,146,134,.18);overflow:hidden}.progress>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8ec8f6,#9bd9ad)}.option-list{display:grid;gap:10px}.option{width:100%;text-align:left;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.82);border:1px solid rgba(168,146,134,.18);cursor:pointer}.option.correct{background:rgba(155,217,173,.20);border-color:rgba(88,145,107,.28)}.option.wrong{background:rgba(235,176,208,.18);border-color:rgba(163,79,98,.26)}.stats{display:grid;gap:10px}.stats .metric{min-width:unset}.review-face{min-height:250px}.answer{display:none}.answer.visible{display:block}.empty-state{display:grid;place-items:center;text-align:center;padding:34px;border-radius:28px;background:rgba(255,255,255,.66);border:1px dashed rgba(168,146,134,.26);color:#7a6b64}.footer-note{padding:0 4px 8px;text-align:center;font-size:12px;color:#8a7a73}.fade{animation:fade .2s ease}@keyframes fade{from{opacity:.35;transform:translateY(6px)}to{opacity:1;transform:none}}@media (max-width:1380px){.shell{grid-template-columns:290px minmax(0,1fr)}.inspector{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}.inspector>.section,.inspector>.quick-list,.inspector>.composer,.inspector>.status-box,.inspector>.mini-note{width:100%}.map-view,.quiz-view,.review-view{grid-template-columns:1fr}.frame,.frame-shell{min-height:620px}}@media (max-width:1080px){.shell{grid-template-columns:1fr}.rail,.inspector,.workspace{min-height:auto}.workspace{min-height:unset}.topbar,.tabbar{padding:16px}.hero-copy h1{font-size:28px}}@media (max-width:720px){.shell{padding:10px}.rail,.inspector{border-radius:22px;padding:14px}.workspace{border-radius:24px}.segmented.model{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar{flex-direction:column;align-items:flex-start}.hero-tools{width:100%}.metrics{width:100%}.metric{flex:1}}
+</style>
+<style>
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 8% 10%, rgba(157,211,255,.26), transparent 18%),
+    radial-gradient(circle at 92% 12%, rgba(171,238,201,.22), transparent 17%),
+    linear-gradient(180deg,#f7fbff 0%,#f4f8fb 38%,#eef4f7 100%);
+}
+.marketing-header{
+  position:sticky;top:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  max-width:1440px;margin:0 auto;padding:18px 24px;
+  background:rgba(247,251,255,.78);
+  backdrop-filter:blur(20px);
+}
+.marketing-brand{
+  display:flex;align-items:center;gap:14px;font-weight:800;color:#20313d;
+}
+.marketing-brand .mark{
+  width:42px;height:42px;border-radius:14px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#40b5ff,#63df92 58%,#f4b7cb);
+  color:#fff;font-size:18px;box-shadow:0 14px 28px rgba(64,181,255,.18);
+}
+.marketing-nav{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.marketing-nav a{
+  color:#5d7281;text-decoration:none;font-size:14px;font-weight:700;
+}
+.marketing-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mm-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border-radius:999px;text-decoration:none;border:1px solid transparent;
+  font-weight:800;font-size:14px;transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.mm-btn:hover{transform:translateY(-1px)}
+.mm-btn-primary{
+  background:linear-gradient(135deg,#28a7ff,#2ed07b);
+  color:#fff;box-shadow:0 16px 34px rgba(49,149,216,.24);
+}
+.mm-btn-secondary{
+  background:rgba(255,255,255,.84);border-color:rgba(146,172,189,.34);color:#21313c;
+}
+.marketing-hero{
+  max-width:1440px;margin:0 auto;padding:18px 24px 28px;
+  display:grid;grid-template-columns:minmax(0,1.02fr) minmax(380px,.98fr);gap:28px;align-items:center;
+}
+.hero-copy-stack{display:flex;flex-direction:column;gap:18px}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:10px;width:max-content;
+  padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.8);
+  border:1px solid rgba(146,172,189,.28);font-size:12px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:#5b7385;
+}
+.hero-title{
+  margin:0;max-width:720px;
+  font-size:clamp(42px,6vw,72px);line-height:.98;letter-spacing:-.05em;color:#13212a;
+}
+.hero-subtitle{
+  max-width:640px;margin:0;font-size:18px;line-height:1.65;color:#5f7483;
+}
+.hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hero-proof{
+  display:flex;gap:12px;flex-wrap:wrap
+}
+.proof-chip{
+  display:flex;flex-direction:column;gap:2px;padding:12px 14px;border-radius:18px;
+  background:rgba(255,255,255,.82);border:1px solid rgba(146,172,189,.22);min-width:146px;
+}
+.proof-chip strong{font-size:20px;color:#13212a}
+.proof-chip span{font-size:12px;color:#6a8090}
+.hero-visual{
+  position:relative;border-radius:36px;padding:20px;
+  background:
+    radial-gradient(circle at top right, rgba(64,181,255,.18), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(99,223,146,.16), transparent 26%),
+    rgba(255,255,255,.84);
+  border:1px solid rgba(146,172,189,.24);
+  box-shadow:0 30px 70px rgba(87,118,138,.14);
+}
+.hero-preview{
+  display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:stretch;
+}
+.preview-surface,.preview-side{
+  border-radius:28px;background:linear-gradient(180deg,#ffffff,#f5f9fc);
+  border:1px solid rgba(146,172,189,.22);
+}
+.preview-surface{padding:18px;min-height:420px;display:flex;flex-direction:column;justify-content:space-between}
+.preview-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.preview-head strong{font-size:18px;color:#13212a}
+.preview-head span{font-size:13px;color:#5d7381}
+.preview-canvas{
+  position:relative;flex:1;border-radius:24px;
+  background:
+    linear-gradient(90deg,transparent calc(50% - 1px), rgba(111,177,228,.18) calc(50% - 1px), rgba(111,177,228,.18) calc(50% + 1px), transparent calc(50% + 1px)),
+    radial-gradient(circle at 50% 12%, rgba(64,181,255,.12), transparent 22%),
+    linear-gradient(180deg,#fbfdff,#f2f7fb);
+  margin-top:16px;border:1px solid rgba(146,172,189,.16);overflow:hidden;
+}
+.branch-line{
+  position:absolute;border-radius:999px;height:3px;transform-origin:left center;
+  opacity:.96;filter:drop-shadow(0 0 8px rgba(95,145,199,.12));
+}
+.branch-line.b1{left:50%;top:20%;width:132px;background:#4baeff;transform:rotate(-16deg)}
+.branch-line.b2{left:50%;top:45%;width:150px;background:#45c977;transform:rotate(14deg)}
+.branch-line.b3{left:calc(50% - 124px);top:68%;width:138px;background:#f0a36f;transform:rotate(-11deg)}
+.branch-line.b4{left:50%;top:73%;width:120px;background:#d78eb2;transform:rotate(18deg)}
+.branch-node{
+  position:absolute;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.88);
+  border:1px solid currentColor;box-shadow:0 10px 18px rgba(104,132,150,.08);font-size:11px;font-weight:700;
+}
+.branch-node.root{left:calc(50% - 88px);top:41%;padding:12px 16px;border-radius:18px;min-width:176px;text-align:center;color:#2a8cde;background:rgba(75,174,255,.18)}
+.branch-node.n1{left:74%;top:13%;color:#4baeff}
+.branch-node.n2{left:72%;top:49%;color:#45c977}
+.branch-node.n3{left:8%;top:63%;color:#f0a36f}
+.branch-node.n4{left:71%;top:77%;color:#d78eb2}
+.preview-side{padding:16px;display:flex;flex-direction:column;gap:14px}
+.preview-panel{
+  padding:14px;border-radius:20px;background:rgba(248,251,254,.94);border:1px solid rgba(146,172,189,.18);
+}
+.preview-panel strong{display:block;margin-bottom:6px;color:#16303b}
+.preview-panel p{margin:0;color:#5f7483;font-size:13px;line-height:1.55}
+.marketing-section{
+  max-width:1440px;margin:0 auto;padding:0 24px 24px;
+}
+.value-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;
+}
+.value-card{
+  padding:22px;border-radius:28px;background:rgba(255,255,255,.8);
+  border:1px solid rgba(146,172,189,.22);box-shadow:0 18px 40px rgba(87,118,138,.08);
+}
+.value-card .eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#6e8797}
+.value-card h3{margin:10px 0 8px;font-size:24px;color:#13212a}
+.value-card p{margin:0;color:#627988;line-height:1.65}
+.shell{
+  min-height:auto;
+  max-width:1440px;
+  margin:0 auto;
+  padding:12px 24px 28px;
+  gap:18px;
+}
+.panel{
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(146,172,189,.22);
+  box-shadow:0 20px 52px rgba(87,118,138,.12);
+}
+.rail,.inspector{padding:20px}
+.workspace{min-height:920px}
+.brand,.topbar,.tabbar,.context-box,.quiz-card,.review-card,.side-col,.quick-item,.status-box,.composer,.mini-note,.metric,.branch,.ai-output,.explanation,.review-face{
+  border-color:rgba(146,172,189,.2);
+}
+.logo{
+  background:linear-gradient(135deg,#3cb0ff,#61df95 58%,#f1b6cb);
+  box-shadow:0 14px 32px rgba(64,181,255,.18);
+}
+.brand-copy strong,.hero-copy h1,.context-box h3,.quiz-card h2,.review-card h2{color:#13212a}
+.brand-copy span,.subtle,.metric span,.hint-pill,.footer-note,.label{color:#6b8291}
+.pill{
+  background:rgba(245,250,255,.92);
+  border-color:rgba(146,172,189,.22);
+}
+.btn.primary{
+  background:linear-gradient(135deg,#28a7ff,#2ed07b);
+  box-shadow:0 18px 36px rgba(49,149,216,.22);
+}
+.btn.secondary{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(146,172,189,.28);
+  color:#18313b;
+}
+.btn.ghost{
+  border-color:rgba(146,172,189,.26);
+  color:#567080;
+}
+.seg-btn{
+  background:rgba(248,251,255,.88);
+  border-color:rgba(146,172,189,.22);
+  color:#59707e;
+}
+.seg-btn.active{
+  background:#153142;
+  border-color:#153142;
+  box-shadow:0 16px 30px rgba(21,49,66,.18);
+}
+.topbar{
+  padding:24px 24px 18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(249,252,255,.72));
+}
+.hero-copy h1{font-size:40px}
+.tabbar{
+  background:rgba(248,251,254,.72);
+}
+.tab{
+  color:#68808e;
+}
+.tab.active{
+  background:#153142;
+  box-shadow:0 14px 30px rgba(21,49,66,.18);
+}
+.frame-shell{
+  background:
+    linear-gradient(90deg,transparent calc(50% - 1px), rgba(111,177,228,.14) calc(50% - 1px), rgba(111,177,228,.14) calc(50% + 1px), transparent calc(50% + 1px)),
+    radial-gradient(circle at 50% 10%, rgba(64,181,255,.12), transparent 22%),
+    linear-gradient(180deg,#fbfdff,#f2f7fb);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+}
+.hint-pill{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(146,172,189,.22);
+  color:#607785;
+}
+.context-box,.quiz-card,.review-card,.side-col,.composer,.status-box,.quick-item,.mini-note,.metric,.branch,.ai-output,.explanation,.review-face{
+  background:rgba(255,255,255,.82);
+}
+.progress{
+  background:rgba(146,172,189,.18);
+}
+.progress>span{
+  background:linear-gradient(90deg,#3cb0ff,#61df95);
+}
+.option{
+  background:rgba(255,255,255,.94);
+  border-color:rgba(146,172,189,.22);
+}
+.option.correct{
+  background:rgba(97,223,149,.16);
+  border-color:rgba(57,182,112,.26);
+}
+.option.wrong{
+  background:rgba(241,182,203,.18);
+  border-color:rgba(190,114,146,.28);
+}
+@media (max-width:1180px){
+  .marketing-hero,.value-grid{grid-template-columns:1fr}
+  .hero-visual{order:2}
+}
+@media (max-width:900px){
+  .marketing-header{padding:14px 16px}
+  .marketing-nav{display:none}
+  .marketing-hero,.marketing-section,.shell{padding-left:16px;padding-right:16px}
+  .hero-title{font-size:44px}
+  .hero-preview{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="marketing-header">
+  <div class="marketing-brand">
+    <div class="mark">M</div>
+    <div>
+      <strong>Mind Study</strong>
+      <div style="font-size:12px;color:#6b8291;font-weight:600">mapas mentais, quiz e estudo no mesmo fluxo</div>
+    </div>
+  </div>
+  <nav class="marketing-nav">
+    <a href="#workspaceApp">Workspace</a>
+    <a href="#whyBlock">Por que usar</a>
+    <a href="#editorFlow">Editor</a>
+  </nav>
+  <div class="marketing-actions">
+    <a class="mm-btn mm-btn-secondary" href="gerador-estudo.html?advanced=1">Modo técnico</a>
+    <a class="mm-btn mm-btn-primary" href="#workspaceApp">Começar agora</a>
+  </div>
+</header>
+
+<section class="marketing-hero">
+  <div class="hero-copy-stack">
+    <span class="hero-kicker">Visual. Simples. Colaborativo.</span>
+    <h1 class="hero-title">Crie, estude e refine mapas mentais em uma experiência mais próxima dos produtos que já funcionam bem.</h1>
+    <p class="hero-subtitle">A superfície principal agora fala linguagem de produto: entrada clara, geração a partir de texto ou PDF, canvas central forte e estudo guiado no mesmo ambiente.</p>
+    <div class="hero-actions">
+      <a class="mm-btn mm-btn-primary" href="#workspaceApp">Abrir workspace</a>
+      <a class="mm-btn mm-btn-secondary" href="mapa-estudo-editor.html?data=hipofise-estudo.json&poster=1&theme=hipofise&model=tree">Ver editor completo</a>
+    </div>
+    <div class="hero-proof">
+      <div class="proof-chip"><strong>PDF → mapa</strong><span>Geração a partir do seu material</span></div>
+      <div class="proof-chip"><strong>Mapa + quiz</strong><span>Estudo integrado sem trocar de tela</span></div>
+      <div class="proof-chip"><strong>Modo seguro local</strong><span>IA via backend local no seu PC</span></div>
+    </div>
+  </div>
+  <div class="hero-visual" id="editorFlow">
+    <div class="hero-preview">
+      <div class="preview-surface">
+        <div class="preview-head">
+          <strong>Canvas principal</strong>
+          <span>tronco central, ramos suaves, leitura acadêmica</span>
+        </div>
+        <div class="preview-canvas">
+          <div class="branch-line b1"></div>
+          <div class="branch-line b2"></div>
+          <div class="branch-line b3"></div>
+          <div class="branch-line b4"></div>
+          <div class="branch-node root">Hipófise e Disfunções</div>
+          <div class="branch-node n1">Prolactinoma</div>
+          <div class="branch-node n2">Doença de Cushing</div>
+          <div class="branch-node n3">Avaliação diagnóstica</div>
+          <div class="branch-node n4">Hipopituitarismo</div>
+        </div>
+      </div>
+      <div class="preview-side">
+        <div class="preview-panel">
+          <strong>Geração orientada</strong>
+          <p>Escolha profundidade e layout sem cair em um painel técnico cheio de ruído.</p>
+        </div>
+        <div class="preview-panel">
+          <strong>Estudo guiado</strong>
+          <p>Mapa, questões e revisão usam a mesma matéria-base e mantêm continuidade visual.</p>
+        </div>
+        <div class="preview-panel">
+          <strong>Editor avançado</strong>
+          <p>Quando precisar de controle fino, o canvas completo continua disponível sem quebrar o fluxo principal.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="marketing-section" id="whyBlock">
+  <div class="value-grid">
+    <article class="value-card">
+      <span class="eyebrow">Visualizar</span>
+      <h3>Ideias viram estrutura rápido</h3>
+      <p>O workspace prioriza clareza visual, hierarquia e leitura. A entrada principal é curta, objetiva e menos intimidante.</p>
+    </article>
+    <article class="value-card">
+      <span class="eyebrow">Estudar</span>
+      <h3>Menos troca de contexto</h3>
+      <p>Você gera o mapa, entra no canvas e revisa na mesma superfície. O pacote pronto da hipófise continua disponível como referência base.</p>
+    </article>
+    <article class="value-card">
+      <span class="eyebrow">Refinar</span>
+      <h3>Editor preservado</h3>
+      <p>O editor completo continua vivo para reorganizar, exportar e ajustar o mapa manualmente, agora com uma linguagem visual mais premium.</p>
+    </article>
+  </div>
+</section>
+
+<div class="shell" id="workspaceApp">
+  <aside class="panel rail">
+    <div class="brand">
+      <div class="brand-mark">
+        <div class="logo">M</div>
+        <div class="brand-copy"><strong>Mind Study</strong><span>um workspace mais simples e mais claro</span></div>
+      </div>
+      <div class="pill" id="modePill">Pacote pronto</div>
+    </div>
+
+    <div class="composer">
+      <div class="field">
+        <label class="label" for="topicInput">Tema do mapa</label>
+        <input id="topicInput" type="text" placeholder="Ex.: Hipofise e suas disfuncoes">
+      </div>
+      <div class="field">
+        <label class="label" for="sourceInput">Texto base ou material do PDF</label>
+        <textarea id="sourceInput" placeholder="Cole aqui seu resumo, aula, apostila ou carregue um PDF. Se quiser so estudar o pacote pronto, deixe como esta."></textarea>
+      </div>
+      <div class="field">
+        <label class="label">Profundidade</label>
+        <div class="segmented" id="depthGroup">
+          <button class="seg-btn" type="button" data-depth="LOW">Low<span>so o essencial</span></button>
+          <button class="seg-btn active" type="button" data-depth="MEDIUM">Medium<span>equilibrado</span></button>
+          <button class="seg-btn" type="button" data-depth="HIGH">High<span>mais completo</span></button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Layout do mapa</label>
+        <div class="segmented model" id="modelGroup">
+          <button class="seg-btn active" type="button" data-model="tree">Tree</button>
+          <button class="seg-btn" type="button" data-model="flow">Flow</button>
+          <button class="seg-btn" type="button" data-model="bubble">Bubble</button>
+          <button class="seg-btn" type="button" data-model="brace">Brace</button>
+        </div>
+      </div>
+      <div class="row">
+        <label class="btn secondary" style="cursor:pointer">Carregar PDF ou JSON<input id="fileInput" type="file" accept=".txt,.md,.json,.pdf,application/pdf,application/json,text/plain" hidden></label>
+        <button class="btn ghost" type="button" id="usePackBtn">Usar pacote da hipofise</button>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="button" id="generateBtn">Gerar mapa</button>
+        <button class="btn secondary" type="button" id="openEditorBtn">Editor avancado</button>
+      </div>
+      <div class="quick-actions">
+        <a class="btn ghost" href="gerador-estudo.html?advanced=1">Abrir modo tecnico legado</a>
+      </div>
+      <div class="status-box" id="generationStatus">Pacote da hipofise carregado. Voce pode estudar direto ou trocar o material e gerar outro mapa.</div>
+    </div>
+
+    <div class="mini-note">A ideia aqui e esconder a complexidade. O modo simples usa poucas escolhas visuais e joga o restante da potencia para o backend local e para o editor avancado.</div>
+
+    <div class="section">
+      <span class="label">Atalhos do fluxo</span>
+      <div class="quick-list">
+        <div class="quick-item"><strong>1. Carregue</strong><span class="subtle">Cole texto ou suba um PDF.</span></div>
+        <div class="quick-item"><strong>2. Gere</strong><span class="subtle">Escolha profundidade e layout.</span></div>
+        <div class="quick-item"><strong>3. Estude</strong><span class="subtle">Mapa, quiz e revisao ficam no mesmo lugar.</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="panel workspace">
+    <div class="topbar">
+      <div class="hero-copy">
+        <span class="label">Workspace principal</span>
+        <h1 id="workspaceTitle">Hipofise e suas disfuncoes</h1>
+        <p id="workspaceSubtitle">Visual mais calmo, menos friccao e um fluxo unico para gerar, estudar e revisar.</p>
+      </div>
+      <div class="hero-tools">
+        <div class="metrics">
+          <div class="metric"><strong id="metricNodes">0</strong><span>nos</span></div>
+          <div class="metric"><strong id="metricBranches">0</strong><span>ramos</span></div>
+          <div class="metric"><strong id="metricQuestions">0</strong><span>questoes</span></div>
+          <div class="metric"><strong id="metricAccuracy">0%</strong><span>acerto</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tabs">
+        <button class="tab active" type="button" data-view="map">Mapa</button>
+        <button class="tab" type="button" data-view="quiz">Questoes</button>
+        <button class="tab" type="button" data-view="review">Revisao</button>
+      </div>
+      <div class="row">
+        <div class="pill" id="backendPill">Verificando IA local...</div>
+        <button class="btn secondary" type="button" id="checkBackendBtn">Checar IA</button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <section class="view map-view active fade" data-view="map">
+        <div class="frame-shell">
+          <iframe id="mapFrame" class="frame" title="Mapa mental"></iframe>
+          <div class="frame-overlay">
+            <div class="hint-pill">Scroll para zoom • arraste para mover</div>
+            <div class="hint-pill" id="frameMeta">Carregando mapa...</div>
+          </div>
+        </div>
+        <div class="context">
+          <div class="context-box">
+            <span class="label">Selecao atual</span>
+            <h3 id="selectedNodeTitle">Selecione um no no mapa</h3>
+            <p class="subtle" id="selectedNodeDesc">Ao clicar em um no, o resumo dele aparece aqui.</p>
+            <div class="row">
+              <button class="btn secondary" type="button" id="explainNodeBtn">Explicar com IA</button>
+              <button class="btn secondary" type="button" id="summarizeNodeBtn">Resumir</button>
+            </div>
+          </div>
+          <div class="context-box">
+            <span class="label">Ramos principais</span>
+            <div class="branch-list" id="branchList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view quiz-view" data-view="quiz">
+        <div class="quiz-card">
+          <span class="label">Treino guiado</span>
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <h2 id="quizTitle">Questoes do pacote</h2>
+            <div class="row">
+              <button class="btn secondary" type="button" id="shuffleQuizBtn">Embaralhar</button>
+              <button class="btn secondary" type="button" id="askQuestionAiBtn">Explicar questao</button>
+            </div>
+          </div>
+          <div class="progress"><span id="quizProgressFill" style="width:0%"></span></div>
+          <div class="subtle" id="quizMeta">Carregando questoes...</div>
+          <div id="quizContent">
+            <h2 id="questionPrompt"></h2>
+            <div class="option-list" id="optionList"></div>
+            <div class="explanation" id="questionExplanation"></div>
+            <div class="row">
+              <button class="btn secondary" type="button" id="prevQuestionBtn">Anterior</button>
+              <button class="btn secondary" type="button" id="nextQuestionBtn">Proxima</button>
+            </div>
+          </div>
+          <div class="empty-state hidden" id="quizUnavailable">O quiz fica disponivel para pacotes prontos. Se quiser quiz para um mapa gerado agora, eu posso montar isso na proxima rodada.</div>
+        </div>
+        <div class="side-col">
+          <div class="stats">
+            <div class="metric"><strong id="answeredCount">0</strong><span>respondidas</span></div>
+            <div class="metric"><strong id="correctCount">0</strong><span>corretas</span></div>
+            <div class="metric"><strong id="pendingCount">0</strong><span>pendentes</span></div>
+          </div>
+          <div class="context-box">
+            <span class="label">IA da questao</span>
+            <div class="ai-output" id="questionAiOutput">A explicacao complementar da questao aparece aqui.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view review-view" data-view="review">
+        <div class="review-card">
+          <span class="label">Modo revisao</span>
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <h2>Flashcards</h2>
+            <button class="btn secondary" type="button" id="askReviewAiBtn">Detalhar com IA</button>
+          </div>
+          <div class="progress"><span id="reviewProgressFill" style="width:0%"></span></div>
+          <div class="review-face">
+            <span class="label" id="reviewCounter">Card 0 de 0</span>
+            <h2 id="reviewPrompt">Carregando revisao...</h2>
+            <p class="subtle" id="reviewHint">Revele a resposta, marque se acertou ou se quer rever depois.</p>
+            <div class="answer" id="reviewAnswer"></div>
+          </div>
+          <div class="row">
+            <button class="btn secondary" type="button" id="toggleAnswerBtn">Mostrar resposta</button>
+            <button class="btn secondary" type="button" id="markAgainBtn">Rever depois</button>
+            <button class="btn primary" type="button" id="markKnownBtn">Acertei</button>
+          </div>
+          <div class="empty-state hidden" id="reviewUnavailable">A revisao rapida tambem fica ligada aos pacotes prontos. O mapa customizado continua disponivel normalmente na aba principal.</div>
+        </div>
+        <div class="side-col">
+          <div class="stats">
+            <div class="metric"><strong id="reviewSeen">0</strong><span>cards vistos</span></div>
+            <div class="metric"><strong id="reviewKnown">0</strong><span>acertos</span></div>
+            <div class="metric"><strong id="reviewAgain">0</strong><span>rever depois</span></div>
+          </div>
+          <div class="context-box">
+            <span class="label">Painel da IA</span>
+            <div class="ai-output" id="reviewAiOutput">Peca um resumo, analogia ou dica de prova a partir do card atual.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note">Offline first para mapa e pacote local. IA depende do servidor local seguro e de internet.</div>
+  </main>
+
+  <aside class="panel inspector">
+    <div class="section">
+      <span class="label">Estado do workspace</span>
+      <div class="quick-list">
+        <div class="quick-item"><strong id="packName">Pacote ativo: hipofise</strong><span class="subtle" id="packSummary">Mapa, quiz e revisao no mesmo fluxo.</span></div>
+        <div class="quick-item"><strong>Fluxo atual</strong><span class="subtle">Use a coluna esquerda para trocar o material. O centro vira o palco principal do mapa.</span></div>
+      </div>
+    </div>
+    <div class="context-box">
+      <span class="label">Assistente</span>
+      <div class="ai-output" id="assistantOutput">O assistente local comenta ramos do mapa, questoes e revisao sem expor a chave no navegador.</div>
+      <div class="row">
+        <button class="btn secondary" type="button" id="clearAssistantBtn">Limpar</button>
+      </div>
+    </div>
+    <div class="status-box" id="uploadStatus">Nenhum arquivo carregado ainda.</div>
+  </aside>
+</div>
+
+<script>
+const DEFAULT_MAP_PATH='hipofise-estudo.json';
+const DEFAULT_QUIZ_PATH='questoes-hipofise.json';
+const DRAFT_TREE_KEY='mapaEstudoDraftTree';
+const QUIZ_PROGRESS_KEY='hipofiseQuizProgress:v2';
+const REVIEW_PROGRESS_KEY='hipofiseReviewProgress:v2';
+const LOCAL_PROXY_PATH='/api/openai/responses';
+const OPENAI_API_KEY='';
+const SAVED_PROMPT_ID='pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
+const SAVED_PROMPT_VERSION='1';
+const MINDMAP_JSON_SCHEMA={type:'object',additionalProperties:false,required:['root','children'],properties:{root:{type:'string',minLength:1},children:{type:'array',items:{$ref:'#/$defs/node'}}},$defs:{node:{type:'object',additionalProperties:false,required:['text','children'],properties:{text:{type:'string',minLength:1},children:{type:'array',items:{$ref:'#/$defs/node'}}}}}};
+const MODEL_META={tree:{label:'Tree',prompt:'Organize em arvore editorial clara, com grupos principais e subgrupos bem encadeados.'},flow:{label:'Flow',prompt:'Organize como fluxo de etapas ou raciocinio sequencial.'},bubble:{label:'Bubble',prompt:'Organize em bolhas ao redor do conceito central, com boa memorizacao visual.'},brace:{label:'Brace',prompt:'Organize como quebra analitica em grupos compactos e proximos.'}};
+const urlParams=new URLSearchParams(location.search);
+const SMOKE_MODE=urlParams.get('smoke')==='1';
+const branchPalette=['#8ec8f6','#f5bea0','#9bd9ad','#ebb0d0','#c6bcf6','#a8d3cf'];
+const state={packMode:'default',mapTree:null,quiz:null,quizOrder:[],currentQuestionIndex:0,reviewOrder:[],reviewIndex:0,reviewRevealed:false,selectedNode:null,backend:{checked:false,ok:false,message:'Verificando IA local...'},answered:loadJson(QUIZ_PROGRESS_KEY,{}),reviewStats:loadJson(REVIEW_PROGRESS_KEY,{seen:0,known:0,again:0}),frameUrl:'',currentDepth:'MEDIUM',currentModel:'tree',pdfJsPromise:null,sourceMeta:{type:'preset',name:'Pacote da hipofise',pages:0},assistantTarget:'assistantOutput',smokeRan:false};
+const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(s)];
+function loadJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback}catch(_){return fallback}}
+function saveJson(key,value){localStorage.setItem(key,JSON.stringify(value))}
+function cleanText(value){return String(value||'').replace(/\s+/g,' ').trim()}
+function splitNodeContent(text){const value=cleanText(text);const parts=value.split(/\s*[|:-]\s+/);return parts.length>1?{title:parts[0],description:parts.slice(1).join(' - ')}:{title:value,description:''}}
+function normalizeNode(node){if(!node||typeof node!=='object')return null;const text=cleanText(node.text);if(!text)return null;return{text,children:(Array.isArray(node.children)?node.children:[]).map(normalizeNode).filter(Boolean)}}
+function normalizeTree(data){if(!data||typeof data!=='object')throw new Error('Formato de mapa invalido.');const root=cleanText(data.root);if(!root)throw new Error('Campo root vazio.');return{root,children:(Array.isArray(data.children)?data.children:[]).map(normalizeNode).filter(Boolean)}}
+function normalizePayload(data){if(data&&typeof data==='object'&&data.tree)return{tree:normalizeTree(data.tree),options:data.options||{}};return{tree:normalizeTree(data),options:{}}}
+function countTree(tree){let total=0;function walk(node){total+=1;(node.children||[]).forEach(walk)}walk({text:tree.root,children:tree.children||[]});return total}
+function getBranchCount(tree){return Array.isArray(tree?.children)?tree.children.length:0}
+function isLocalSecureMode(){return location.protocol.startsWith('http')&&/^(127\.0\.0\.1|localhost)$/i.test(location.hostname)}
+function getOpenAIApiKey(){if(OPENAI_API_KEY&&OPENAI_API_KEY.startsWith('sk-'))return OPENAI_API_KEY;const saved=localStorage.getItem('openai_api_key')||'';return saved.startsWith('sk-')?saved:''}
+async function requestResponses(body){if(!navigator.onLine)throw new Error('Sem internet no momento. O estudo offline continua, mas a IA fica indisponivel.');if(isLocalSecureMode()){const res=await fetch(LOCAL_PROXY_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||err?.message||`HTTP ${res.status}`)}return res.json()}const apiKey=getOpenAIApiKey();if(!apiKey)throw new Error('Nenhuma chave local disponivel neste navegador.');const res=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`)}return res.json()}
+function extractLooseJson(raw){const direct=String(raw||'').trim();const attempts=[direct,direct.replace(/```json/gi,'```').replace(/```/g,'').trim()];const start=direct.indexOf('{');const end=direct.lastIndexOf('}');if(start>=0&&end>start)attempts.push(direct.slice(start,end+1));for(const candidate of attempts){if(!candidate)continue;try{return JSON.parse(candidate)}catch(_){}}throw new Error('Nao foi possivel interpretar o JSON retornado pela IA.')}
+function buildSavedPromptInput(topic,source,options){return[`Tema: ${topic}.`,`Modelo visual: ${options.model}.`,`Profundidade: ${options.depth}.`,`Foco didatico: progressivo.`,`Estilo do texto: headline.`,`Ramos principais: auto.`,`Leitura do material: auto.`,'Base obrigatoria:',source.slice(0,18000)].join('\n\n')}
+function buildInlineBody(topic,source,options){const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe em progressao de aprendizagem e evite ramos soltos.',options.depth==='LOW'?'Modo LOW: poucas palavras-chave e poucos ramos principais.':options.depth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla e explicacoes curtas.',MODEL_META[options.model].prompt].join(' ');return{model:'gpt-4o',input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,18000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2400}}
+async function requestStudyMap(topic,source,options){const body={prompt:{id:SAVED_PROMPT_ID,version:SAVED_PROMPT_VERSION},input:[{role:'user',content:[{type:'input_text',text:buildSavedPromptInput(topic,source,options)}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},max_output_tokens:2400};try{return await requestResponses(body)}catch(error){console.warn('Falha no prompt salvo, usando fallback inline.',error);return requestResponses(buildInlineBody(topic,source,options))}}
+async function loadPdfJs(){if(!state.pdfJsPromise){state.pdfJsPromise=import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs').then(module=>{const lib=module.default||module;lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';return lib})}return state.pdfJsPromise}
+async function extractPdfText(file){const lib=await loadPdfJs();const pdf=await lib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];for(let i=1;i<=pdf.numPages;i+=1){const page=await pdf.getPage(i);const textContent=await page.getTextContent();const text=textContent.items.map(item=>item.str||'').join(' ').replace(/\s+/g,' ').trim();if(text)pages.push(text)}return{text:pages.join('\n\n'),pages:pdf.numPages}}
+function currentOptions(){return{model:state.currentModel,depth:state.currentDepth}}
+function setGenerationStatus(message,type=''){const box=$('#generationStatus');box.textContent=message;box.className=`status-box${type?` ${type}`:''}`}
+function setUploadStatus(message,type=''){const box=$('#uploadStatus');box.textContent=message;box.className=`status-box${type?` ${type}`:''}`}
+function setSmokeStatus(status,detail=''){if(!SMOKE_MODE)return;document.body.dataset.smokeStatus=status;document.body.dataset.smokeDetail=cleanText(detail).slice(0,140)}
+function updateModePill(){const pill=$('#modePill');pill.textContent=state.packMode==='default'?'Pacote pronto':'Mapa customizado';pill.className=`pill ${state.packMode==='default'?'ok':'warn'}`;$('#packName').textContent=state.packMode==='default'?'Pacote ativo: hipofise':'Pacote ativo: customizado';$('#packSummary').textContent=state.packMode==='default'?'Mapa, quiz e revisao no mesmo fluxo.':'Mapa gerado a partir do seu material. Quiz e revisao continuam reservados aos pacotes prontos.'}
+function updateTabsAvailability(){const custom=state.packMode!=='default';$$('.tab').forEach(tab=>{const blocked=custom&&tab.dataset.view!=='map';tab.classList.toggle('disabled',blocked)})}
+function activateView(view){if((state.packMode!=='default')&&view!=='map')return;$$('.tab').forEach(tab=>tab.classList.toggle('active',tab.dataset.view===view));$$('.view').forEach(panel=>panel.classList.toggle('active',panel.dataset.view===view));const active=$(`.view[data-view="${view}"]`);if(active){active.classList.remove('fade');void active.offsetWidth;active.classList.add('fade')}}
+function refreshWorkspaceHead(){const rootTitle=state.mapTree?splitNodeContent(state.mapTree.root).title:'Mapa mental';const subtitle=state.packMode==='default'?'Pacote pronto de estudo com mapa, questoes e revisao integrados.':'Mapa gerado a partir do seu material, com foco em uma superficie mais limpa e menos fragmentada.';$('#workspaceTitle').textContent=rootTitle;$('#workspaceSubtitle').textContent=subtitle;updateModePill();updateTabsAvailability()}
+function renderMetrics(){const totalNodes=state.mapTree?countTree(state.mapTree):0;const branches=state.mapTree?getBranchCount(state.mapTree):0;const totalQuestions=state.packMode==='default'?(state.quiz?.questoes?.length||0):0;const answeredEntries=Object.values(state.answered||{});const answeredCount=state.packMode==='default'?answeredEntries.length:0;const correctCount=state.packMode==='default'?answeredEntries.filter(item=>item.correct).length:0;const accuracy=answeredCount?Math.round((correctCount/answeredCount)*100):0;$('#metricNodes').textContent=String(totalNodes);$('#metricBranches').textContent=String(branches);$('#metricQuestions').textContent=String(totalQuestions);$('#metricAccuracy').textContent=`${accuracy}%`;$('#answeredCount').textContent=String(answeredCount);$('#correctCount').textContent=String(correctCount);$('#pendingCount').textContent=String(Math.max(totalQuestions-answeredCount,0))}
+function renderBranchList(){const list=$('#branchList');if(!state.mapTree){list.innerHTML='<div class="subtle">Mapa ainda nao carregado.</div>';return}list.innerHTML=state.mapTree.children.map((branch,index)=>{const content=splitNodeContent(branch.text);return `<div class="branch"><span class="dot" style="background:${branchPalette[index%branchPalette.length]}"></span><div><strong>${content.title}</strong><div class="subtle">${content.description||'Ramo principal do estudo.'}</div></div></div>`}).join('')}
+function renderSelectedNode(){const titleEl=$('#selectedNodeTitle');const descEl=$('#selectedNodeDesc');if(!state.selectedNode){titleEl.textContent='Selecione um no no mapa';descEl.textContent='Ao clicar em um no, o resumo dele aparece aqui.';return}titleEl.textContent=state.selectedNode.title||'No selecionado';descEl.textContent=state.selectedNode.description||state.selectedNode.text||'Sem descricao complementar.'}
+function refreshFrameMeta(detail=null){const nodeCount=detail?.nodeCount||(state.mapTree?countTree(state.mapTree):0);const root=detail?.root||state.mapTree?.root||'Mapa';const content=splitNodeContent(root);$('#frameMeta').textContent=`${content.title} • ${nodeCount} nos`}
+function refreshMapFrame(){const params=new URLSearchParams({embed:'1',study:'1',minimal:'1',poster:'1',theme:'hipofise',model:state.currentModel});if(state.packMode==='default')params.set('data',DEFAULT_MAP_PATH);else params.set('draft','1');$('#mapFrame').src=`mapa-estudo-editor.html?${params.toString()}&ts=${Date.now()}`;refreshFrameMeta()}
+function applyCustomTree(tree,options={}){state.mapTree=normalizeTree(tree);state.packMode='custom';state.currentModel=MODEL_META[options.model]?options.model:state.currentModel;state.currentDepth=['LOW','MEDIUM','HIGH'].includes(options.depth)?options.depth:state.currentDepth;localStorage.setItem(DRAFT_TREE_KEY,JSON.stringify({version:2,tree:state.mapTree,options:{model:state.currentModel,depth:state.currentDepth}}));refreshWorkspaceHead();renderMetrics();renderBranchList();renderSelectedNode();refreshMapFrame();activateView('map');$('#quizUnavailable').classList.remove('hidden');$('#reviewUnavailable').classList.remove('hidden');$('#quizContent').classList.add('hidden');setGenerationStatus('Mapa customizado gerado e aberto no palco principal.','success');setUploadStatus(`Fonte atual: ${state.sourceMeta.type==='pdf'?'PDF':'material manual'}${state.sourceMeta.name?` - ${state.sourceMeta.name}`:''}.`);setSmokeStatus('success',`customNodes=${countTree(state.mapTree)} model=${state.currentModel}`)}
+function restoreDefaultPack(){state.packMode='default';state.selectedNode=null;state.mapTree=state.defaultMapTree;state.currentModel='tree';state.currentDepth='MEDIUM';$('#topicInput').value=splitNodeContent(state.defaultMapTree.root).title;$('#sourceInput').value='';state.sourceMeta={type:'preset',name:'Pacote da hipofise',pages:0};localStorage.removeItem(DRAFT_TREE_KEY);refreshWorkspaceHead();renderMetrics();renderBranchList();renderSelectedNode();refreshMapFrame();renderQuiz();renderReview();$('#quizUnavailable').classList.add('hidden');$('#reviewUnavailable').classList.add('hidden');$('#quizContent').classList.remove('hidden');setGenerationStatus('Pacote da hipofise restaurado.','success');setUploadStatus('Nenhum arquivo carregado ainda.')}
+function answerQuestion(questionId,optionIndex){const question=state.quiz.questoes.find(item=>item.id===questionId);if(!question)return;state.answered[String(questionId)]={selected:optionIndex,correct:optionIndex===question.correta,updatedAt:new Date().toISOString()};saveJson(QUIZ_PROGRESS_KEY,state.answered);renderMetrics();renderQuiz()}
+function setQuestion(index){if(!state.quizOrder.length)return;const safe=(index+state.quizOrder.length)%state.quizOrder.length;state.currentQuestionIndex=safe;renderQuiz()}
+function shuffleQuiz(){const items=[...state.quiz.questoes];for(let i=items.length-1;i>0;i-=1){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}state.quizOrder=items;state.currentQuestionIndex=0;renderQuiz()}
+function renderQuiz(){if(!state.quiz||state.packMode!=='default')return;const question=state.quizOrder[state.currentQuestionIndex];const answerState=state.answered[String(question.id)]||null;$('#quizTitle').textContent=state.quiz.materia;$('#quizMeta').textContent=`Questao ${state.currentQuestionIndex+1} de ${state.quizOrder.length}`;$('#questionPrompt').textContent=question.pergunta;$('#quizProgressFill').style.width=`${((state.currentQuestionIndex+1)/state.quizOrder.length)*100}%`;$('#optionList').innerHTML=question.opcoes.map((option,index)=>{let stateClass='';if(answerState){if(index===question.correta)stateClass='correct';else if(index===answerState.selected)stateClass='wrong'}const label=String.fromCharCode(65+index);return `<button class="option ${stateClass}" type="button" data-option="${index}"><strong>${label}.</strong> ${option}</button>`}).join('');$$('#optionList .option').forEach(button=>button.addEventListener('click',()=>answerQuestion(question.id,Number(button.dataset.option))));const explanation=$('#questionExplanation');if(answerState){explanation.innerHTML=`<strong>${answerState.correct?'Resposta correta.':'Resposta incorreta.'}</strong><br>${question.explicacao}`}else{explanation.innerHTML='Selecione uma alternativa para liberar a explicacao.'}}
+function buildReviewOrder(){const wrongIds=new Set(Object.entries(state.answered).filter(([,value])=>value&&!value.correct).map(([key])=>Number(key)));const wrong=[];const rest=[];state.quiz.questoes.forEach(question=>{if(wrongIds.has(question.id))wrong.push(question);else rest.push(question)});state.reviewOrder=wrong.concat(rest);if(!state.reviewOrder.length)state.reviewOrder=[...state.quiz.questoes]}
+function renderReview(){if(!state.quiz||state.packMode!=='default')return;buildReviewOrder();const card=state.reviewOrder[state.reviewIndex%state.reviewOrder.length];const answer=card.opcoes[card.correta];$('#reviewCounter').textContent=`Card ${state.reviewIndex%state.reviewOrder.length+1} de ${state.reviewOrder.length}`;$('#reviewPrompt').textContent=card.pergunta;$('#reviewAnswer').classList.toggle('visible',state.reviewRevealed);$('#reviewAnswer').innerHTML=`<strong>Resposta:</strong> ${answer}<br><br>${card.explicacao}`;$('#reviewProgressFill').style.width=`${((state.reviewIndex%state.reviewOrder.length)+1)/state.reviewOrder.length*100}%`;$('#reviewSeen').textContent=String(state.reviewStats.seen||0);$('#reviewKnown').textContent=String(state.reviewStats.known||0);$('#reviewAgain').textContent=String(state.reviewStats.again||0)}
+function stepReview(mark){if(state.packMode!=='default'||!state.reviewOrder.length)return;state.reviewStats.seen=(state.reviewStats.seen||0)+1;if(mark==='known')state.reviewStats.known=(state.reviewStats.known||0)+1;if(mark==='again'){state.reviewStats.again=(state.reviewStats.again||0)+1;const current=state.reviewOrder[state.reviewIndex%state.reviewOrder.length];state.reviewOrder.push(current)}saveJson(REVIEW_PROGRESS_KEY,state.reviewStats);state.reviewIndex=(state.reviewIndex+1)%state.reviewOrder.length;state.reviewRevealed=false;$('#toggleAnswerBtn').textContent='Mostrar resposta';renderReview()}
+async function checkBackend(){if(!isLocalSecureMode()){state.backend={checked:true,ok:false,message:'Fora do localhost a IA so funciona se voce tiver salvo uma chave manualmente neste navegador.'};renderBackend();return}try{const res=await fetch('/api/health',{cache:'no-store'});const data=await res.json();state.backend={checked:true,ok:Boolean(data.ok&&data.keyConfigured),message:data.ok&&data.keyConfigured?'IA local pronta.':'Servidor local respondeu, mas sem chave configurada no backend.'}}catch(_){state.backend={checked:true,ok:false,message:'Servidor local seguro indisponivel. Rode start-secure-local.cmd.'}}renderBackend()}
+function renderBackend(){const pill=$('#backendPill');pill.textContent=state.backend.message;pill.className=`pill ${state.backend.ok?'ok':'warn'}`}
+async function requestTutor(promptText,targetId='assistantOutput'){const target=document.getElementById(targetId);target.textContent='Consultando assistente...';try{const data=await requestResponses({model:'gpt-4o-mini',input:[{role:'system',content:[{type:'input_text',text:'Voce e um tutor de medicina. Responda em portugues, de forma didatica, objetiva, com bullets curtos, uma dica de prova e um erro comum para evitar.'}]},{role:'user',content:[{type:'input_text',text:promptText}]}],max_output_tokens:700});const raw=cleanText(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'');target.textContent=raw||'A IA respondeu sem texto legivel.'}catch(error){target.textContent=error.message}}
+async function handleFile(file){if(!file)return;const lower=file.name.toLowerCase();try{if(lower.endsWith('.json')){const parsed=normalizePayload(JSON.parse(await file.text()));state.sourceMeta={type:'json',name:file.name,pages:0};applyCustomTree(parsed.tree,parsed.options||{});setUploadStatus(`JSON importado: ${file.name}.`,'success')}else if(lower.endsWith('.pdf')||file.type==='application/pdf'){setUploadStatus('Lendo PDF local...');const result=await extractPdfText(file);$('#sourceInput').value=result.text;state.sourceMeta={type:'pdf',name:file.name,pages:result.pages};setUploadStatus(`PDF lido: ${file.name} com ${result.pages} pagina(s).`,'success');setGenerationStatus('PDF pronto. Agora clique em Gerar mapa.')}else{const text=await file.text();$('#sourceInput').value=text;state.sourceMeta={type:'text',name:file.name,pages:0};setUploadStatus(`Arquivo textual carregado: ${file.name}.`,'success')}}catch(error){console.error(error);setUploadStatus(`Erro ao ler arquivo: ${error.message}`,'error')}}
+async function generateFromSource(){const source=cleanText($('#sourceInput').value);const topic=cleanText($('#topicInput').value)||'Mapa de estudo';if(!source){setGenerationStatus('Cole um conteudo base ou carregue um PDF antes de gerar.','error');setSmokeStatus('error','missing-source');return false}const options=currentOptions();const btn=$('#generateBtn');btn.disabled=true;setGenerationStatus('Gerando mapa no workspace principal...');setSmokeStatus('running',`topic=${topic} model=${options.model} depth=${options.depth}`);try{const response=await requestStudyMap(topic,source,options);const raw=cleanText(response.output_text||response.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'');const tree=normalizeTree(extractLooseJson(raw));applyCustomTree(tree,options);return true}catch(error){console.error(error);setGenerationStatus(`Erro: ${error.message}`,'error');setSmokeStatus('error',error.message);return false}finally{btn.disabled=false}}
+async function runWorkspaceSmoke(){if(!SMOKE_MODE||state.smokeRan)return;state.smokeRan=true;$('#topicInput').value='Teste rapido de hipofise';$('#sourceInput').value='Hipofise regula prolactina, GH, ACTH, TSH, LH e FSH. Adenomas podem causar hiperprolactinemia, acromegalia e doenca de Cushing. Hipopituitarismo cursa com fadiga, infertilidade e falha de lactacao.';state.sourceMeta={type:'text',name:'smoke',pages:0};setUploadStatus('Smoke mode: material de teste carregado.');const ok=await generateFromSource();if(!ok&&document.body.dataset.smokeStatus!=='error')setSmokeStatus('error','generation-failed')}
+async function loadDefaultPack(){const [mapResponse,quizResponse]=await Promise.all([fetch(DEFAULT_MAP_PATH,{cache:'no-store'}),fetch(DEFAULT_QUIZ_PATH,{cache:'no-store'})]);if(!mapResponse.ok)throw new Error(`Falha ao carregar ${DEFAULT_MAP_PATH}`);if(!quizResponse.ok)throw new Error(`Falha ao carregar ${DEFAULT_QUIZ_PATH}`);state.defaultMapTree=normalizeTree(await mapResponse.json());state.mapTree=state.defaultMapTree;state.quiz=await quizResponse.json();state.quizOrder=[...state.quiz.questoes];$('#topicInput').value=splitNodeContent(state.defaultMapTree.root).title}
+async function initialize(){try{await loadDefaultPack();refreshWorkspaceHead();renderMetrics();renderBranchList();renderSelectedNode();refreshMapFrame();renderQuiz();renderReview();setGenerationStatus('Pacote da hipofise carregado. Voce pode estudar direto ou trocar o material e gerar outro mapa.','success');setSmokeStatus('ready','default-pack-loaded')}catch(error){console.error(error);setGenerationStatus(`Falha ao iniciar: ${error.message}`,'error');setSmokeStatus('error',error.message)}await checkBackend();if(SMOKE_MODE)await runWorkspaceSmoke()}
+window.addEventListener('message',event=>{const data=event.data||{};if(data.source!=='mapa-estudo-editor')return;if(data.type==='selection-change'){state.selectedNode=data.detail||null;renderSelectedNode()}if(data.type==='map-ready')refreshFrameMeta(data.detail||null)});
+$$('.tab').forEach(tab=>tab.addEventListener('click',()=>{if(tab.classList.contains('disabled'))return;activateView(tab.dataset.view)}));$$('#depthGroup .seg-btn').forEach(btn=>btn.addEventListener('click',()=>{state.currentDepth=btn.dataset.depth;$$('#depthGroup .seg-btn').forEach(item=>item.classList.toggle('active',item===btn))}));$$('#modelGroup .seg-btn').forEach(btn=>btn.addEventListener('click',()=>{state.currentModel=btn.dataset.model;$$('#modelGroup .seg-btn').forEach(item=>item.classList.toggle('active',item===btn))}));
+$('#fileInput').addEventListener('change',event=>{handleFile(event.target.files[0]).finally(()=>{event.target.value=''})});
+$('#generateBtn').addEventListener('click',generateFromSource);
+$('#usePackBtn').addEventListener('click',restoreDefaultPack);
+$('#openEditorBtn').addEventListener('click',()=>{location.href=state.packMode==='default'?`mapa-estudo-editor.html?data=${encodeURIComponent(DEFAULT_MAP_PATH)}&poster=1&theme=hipofise&model=${state.currentModel}`:`mapa-estudo-editor.html?draft=1&poster=1&theme=hipofise&model=${state.currentModel}`});
+$('#checkBackendBtn').addEventListener('click',checkBackend);
+$('#clearAssistantBtn').addEventListener('click',()=>{$('#assistantOutput').textContent='O assistente local comenta ramos do mapa, questoes e revisao sem expor a chave no navegador.'});
+$('#explainNodeBtn').addEventListener('click',()=>{if(!state.selectedNode){$('#assistantOutput').textContent='Selecione um no no mapa primeiro.';return}requestTutor(`Explique o seguinte ramo de mapa mental de forma objetiva para estudo clinico. Titulo: ${state.selectedNode.title}. Contexto: ${state.selectedNode.description||state.selectedNode.text}.`)});
+$('#summarizeNodeBtn').addEventListener('click',()=>{if(!state.selectedNode){$('#assistantOutput').textContent='Selecione um no no mapa primeiro.';return}requestTutor(`Resuma o seguinte ramo em bullets curtos para revisao rapida. Titulo: ${state.selectedNode.title}. Contexto: ${state.selectedNode.description||state.selectedNode.text}.`)});
+$('#shuffleQuizBtn').addEventListener('click',shuffleQuiz);
+$('#askQuestionAiBtn').addEventListener('click',()=>{if(state.packMode!=='default')return;const q=state.quizOrder[state.currentQuestionIndex];requestTutor(`Explique esta questao de hipofise para prova. Pergunta: ${q.pergunta}. Alternativas: ${q.opcoes.join(' | ')}. Correta: ${q.opcoes[q.correta]}. Explicacao base: ${q.explicacao}.`,'questionAiOutput')});
+$('#prevQuestionBtn').addEventListener('click',()=>setQuestion(state.currentQuestionIndex-1));
+$('#nextQuestionBtn').addEventListener('click',()=>setQuestion(state.currentQuestionIndex+1));
+$('#toggleAnswerBtn').addEventListener('click',()=>{state.reviewRevealed=!state.reviewRevealed;$('#toggleAnswerBtn').textContent=state.reviewRevealed?'Ocultar resposta':'Mostrar resposta';renderReview()});
+$('#markAgainBtn').addEventListener('click',()=>stepReview('again'));
+$('#markKnownBtn').addEventListener('click',()=>stepReview('known'));
+$('#askReviewAiBtn').addEventListener('click',()=>{if(state.packMode!=='default')return;const card=state.reviewOrder[state.reviewIndex%state.reviewOrder.length];requestTutor(`Aprofunde este flashcard de hipofise para revisao. Pergunta: ${card.pergunta}. Resposta: ${card.opcoes[card.correta]}. Explicacao: ${card.explicacao}.`,'reviewAiOutput')});
+$('#sourceInput').addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();generateFromSource()}});
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(error=>console.warn('Falha ao registrar SW:',error))})}
+initialize();
+</script>
+</body>
+</html>

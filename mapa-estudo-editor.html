@@ -33,6 +33,90 @@ body.minimal-ui .sidebar,
 body.minimal-ui .header-btns .editor-only { display:none; }
 body.minimal-ui .app-body { display:block; }
 body.minimal-ui .canvas-area { width:100vw; }
+body.embed-mode header,
+body.study-mode header,
+body.embed-mode .sidebar,
+body.study-mode .sidebar,
+body.embed-mode .canvas-bar,
+body.study-mode .canvas-bar,
+body.embed-mode .canvas-note,
+body.study-mode .canvas-note {
+  display:none;
+}
+body.embed-mode .app-body,
+body.study-mode .app-body { display:block; }
+body.embed-mode .canvas-area,
+body.study-mode .canvas-area {
+  width:100vw;
+  height:100vh;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(126,188,242,.12), transparent 24%),
+    linear-gradient(180deg, rgba(255,255,255,.56), rgba(255,255,255,.12)),
+    var(--bg-primary);
+}
+body.embed-mode,
+body.study-mode {
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(126,188,242,.18), transparent 24%),
+    radial-gradient(circle at 52% 88%, rgba(234,165,200,.12), transparent 22%),
+    linear-gradient(180deg,#fbf7f1,#f3ebe2);
+}
+body.embed-mode .canvas-area::before,
+body.study-mode .canvas-area::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,
+      transparent calc(50% - 1px),
+      rgba(127,190,244,.16) calc(50% - 1px),
+      rgba(127,190,244,.16) calc(50% + 1px),
+      transparent calc(50% + 1px));
+  opacity:.82;
+}
+body.embed-mode .canvas-area::after,
+body.study-mode .canvas-area::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.54), transparent 48%);
+}
+body.embed-mode .node,
+body.study-mode .node {
+  cursor:default;
+  min-width:128px;
+  max-width:208px;
+  padding:8px 14px;
+  border-width:1.35px;
+  border-radius:12px;
+  box-shadow:0 10px 18px rgba(179, 135, 122, .07), 0 1px 0 rgba(255,255,255,.76) inset;
+  font-size:11.5px;
+  line-height:1.34;
+}
+body.embed-mode .node.root,
+body.study-mode .node.root {
+  min-width:176px;
+  padding:12px 18px;
+  border-radius:18px;
+  box-shadow:0 16px 28px rgba(111, 128, 155, .12), 0 1px 0 rgba(255,255,255,.84) inset;
+}
+body.embed-mode .node.selected,
+body.study-mode .node.selected {
+  box-shadow:0 0 0 3px rgba(127,190,244,.18), 0 16px 28px rgba(111, 128, 155, .14);
+}
+body.embed-mode .node .node-desc,
+body.study-mode .node .node-desc {
+  margin-top:5px;
+  font-size:10.5px;
+  line-height:1.42;
+}
+body.embed-mode .node-actions,
+body.study-mode .node-actions {
+  display:none !important;
+}
 body.poster-mode .canvas-area {
   background:
     linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0)),
@@ -334,11 +418,188 @@ body[data-map-model="double-bubble"] .canvas-note::after {
   #svgConns, .map-vp { transform:none !important; }
 }
 </style>
+<style>
+:root{
+  --bg-primary:#f6fbff;
+  --bg-secondary:#eef5fa;
+  --bg-panel:rgba(255,255,255,.9);
+  --bg-card:#fbfdff;
+  --accent-purple:#7cb7f6;
+  --accent-blue:#3aa7ff;
+  --accent-green:#45c977;
+  --text-primary:#16303b;
+  --text-secondary:#607785;
+  --text-muted:#7c95a4;
+  --border:#d7e5ef;
+  --node-text:#1b3341;
+  --paper-shadow:0 22px 50px rgba(92,125,145,.14);
+}
+body{
+  background:
+    radial-gradient(circle at 8% 10%, rgba(124,183,246,.22), transparent 18%),
+    radial-gradient(circle at 88% 12%, rgba(69,201,119,.18), transparent 16%),
+    linear-gradient(180deg,#f8fbfe,#eef4f8);
+}
+header{
+  position:sticky;top:0;
+  background:rgba(248,252,255,.88);
+  border-bottom:1px solid rgba(159,188,206,.28);
+  padding:14px 24px;
+  backdrop-filter:blur(18px);
+}
+.logo{
+  gap:12px;
+  font-size:15px;
+  color:#193443;
+}
+.logo .logo-mark{
+  width:40px;height:40px;border-radius:14px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#3cb0ff,#61df95 58%,#f1b6cb);
+  color:#fff;font-size:15px;font-weight:800;
+  box-shadow:0 14px 28px rgba(60,176,255,.18);
+}
+.logo .logo-copy{
+  display:flex;flex-direction:column;gap:2px;
+}
+.logo .logo-copy strong{font-size:15px;line-height:1}
+.logo .logo-copy small{font-size:11px;color:#6f8796}
+.btn{
+  border-radius:999px;
+  padding:9px 14px;
+  font-weight:700;
+}
+.btn-outline{
+  background:rgba(255,255,255,.86);
+  border-color:rgba(159,188,206,.34);
+  color:#23404f;
+}
+.btn-primary{
+  background:linear-gradient(135deg,#2ea9ff,#33cd79);
+  box-shadow:0 14px 28px rgba(46,169,255,.2);
+}
+.editor-hero{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:18px 24px 6px;
+}
+.editor-hero-copy{
+  display:flex;flex-direction:column;gap:6px;
+}
+.editor-hero-copy span{
+  font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#6e8797;
+}
+.editor-hero-copy h1{
+  margin:0;font-size:32px;letter-spacing:-.04em;color:#13212a;
+}
+.editor-hero-copy p{
+  margin:0;color:#627988;max-width:760px;line-height:1.55;
+}
+.editor-hero-actions{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.editor-link{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:10px 14px;border-radius:999px;text-decoration:none;
+  background:rgba(255,255,255,.88);border:1px solid rgba(159,188,206,.28);
+  color:#1f3d4b;font-weight:800;
+}
+.editor-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 13px;border-radius:999px;background:rgba(255,255,255,.8);
+  border:1px solid rgba(159,188,206,.24);font-size:12px;font-weight:700;color:#5f7786;
+}
+.app-body{
+  padding:12px 24px 24px;
+  gap:18px;
+}
+.sidebar{
+  background:rgba(255,255,255,.82);
+  border-color:rgba(159,188,206,.24);
+  box-shadow:0 20px 42px rgba(92,125,145,.10);
+  border-radius:30px;
+}
+.sidebar-left{width:250px}
+.sidebar-right{width:290px}
+.s-section{
+  border-bottom:1px solid rgba(159,188,206,.22);
+}
+.tool-btn,.tmpl-card,.hist-item,.gh-item,.sugg-btn{
+  background:rgba(251,253,255,.94);
+  border-color:rgba(159,188,206,.24);
+  color:#335061;
+}
+.tool-btn:hover,.tmpl-card:hover,.sugg-btn:hover{
+  background:#fff;
+  border-color:#8ec8f6;
+}
+.tmpl-card:hover{
+  background:rgba(60,176,255,.06);
+}
+.canvas-area{
+  border-radius:34px;
+  border:1px solid rgba(159,188,206,.18);
+  box-shadow:0 24px 50px rgba(92,125,145,.12);
+  overflow:hidden;
+  background:
+    linear-gradient(90deg,transparent calc(50% - 1px), rgba(111,177,228,.12) calc(50% - 1px), rgba(111,177,228,.12) calc(50% + 1px), transparent calc(50% + 1px)),
+    radial-gradient(circle at 50% 10%, rgba(60,176,255,.12), transparent 22%),
+    linear-gradient(180deg,#fbfdff,#f2f7fb);
+}
+.canvas-bar{
+  top:18px;
+  background:rgba(255,255,255,.92);
+  border-color:rgba(159,188,206,.24);
+  box-shadow:0 18px 36px rgba(92,125,145,.12);
+}
+.canvas-btn,.zoom-badge,.poster-chip{
+  background:rgba(251,253,255,.94);
+  border-color:rgba(159,188,206,.24);
+  color:#55707f;
+}
+.canvas-btn:hover{
+  background:#fff;
+}
+.canvas-note{
+  left:28px;bottom:22px;color:#6c8493;
+}
+.node{
+  border-radius:16px;
+  box-shadow:0 12px 24px rgba(92,125,145,.10),0 1px 0 rgba(255,255,255,.74) inset;
+  font-family:"Segoe UI",system-ui,sans-serif;
+}
+.node.root{
+  border-radius:20px;
+}
+.ai-section,.sugg-section,.gen-hist{
+  padding:14px;
+  border-bottom:1px solid rgba(159,188,206,.22);
+}
+.prompt-area,.ai-status,select,input[type="text"],textarea{
+  background:rgba(251,253,255,.94);
+  border-color:rgba(159,188,206,.24);
+  color:#24414f;
+}
+.prompt-area:focus,select:focus,input[type="text"]:focus,textarea:focus{
+  border-color:#8ec8f6;
+}
+body.embed-mode .editor-hero,
+body.study-mode .editor-hero{
+  display:none;
+}
+@media (max-width:1040px){
+  .editor-hero{
+    flex-direction:column;align-items:flex-start;
+  }
+  .app-body{
+    padding:10px 16px 16px;
+  }
+}
+</style>
 </head>
 <body>
 
 <header>
-  <div class="logo"><span>MM</span> Mapa Mental IA</div>
+  <div class="logo"><span class="logo-mark">MS</span><div class="logo-copy"><strong>Mind Study Editor</strong><small>canvas avançado para refinar seus mapas</small></div></div>
   <div class="header-btns">
     <button class="btn btn-outline editor-only" onclick="toggleMinimalUI()">Vista limpa</button>
     <button class="btn btn-outline" onclick="togglePosterMode()">Modo poster</button>
@@ -349,6 +610,18 @@ body[data-map-model="double-bubble"] .canvas-note::after {
     <button class="btn btn-primary editor-only" onclick="saveMap()">Salvar Mapa</button>
   </div>
 </header>
+
+<section class="editor-hero">
+  <div class="editor-hero-copy">
+    <span>Editor visual</span>
+    <h1>Um canvas mais limpo, leve e próximo de ferramentas modernas de mapa mental.</h1>
+    <p>Você continua com criação manual, geração via IA, exportação, zoom, pan e layouts múltiplos, mas agora com uma moldura visual mais parecida com um produto pronto.</p>
+  </div>
+  <div class="editor-hero-actions">
+    <a class="editor-link" href="hipofise-workspace.html">Voltar ao workspace</a>
+    <div class="editor-pill">Tree • Flow • Bubble • Brace</div>
+  </div>
+</section>
 
 <div class="app-body">
 
@@ -374,6 +647,7 @@ body[data-map-model="double-bubble"] .canvas-note::after {
           <option value="negocios">Negocios</option>
           <option value="educacao">Educacao</option>
           <option value="criativo">Criativo</option>
+          <option value="hipofise">Hipofise</option>
         </select>
       </div>
       <div class="cfg-group">
@@ -492,6 +766,18 @@ const MAX_HISTORY = 50;
 const STORAGE_KEY = 'mapaMentalIA';
 const STORAGE_VERSION = 4;
 const DRAFT_TREE_KEY = 'mapaEstudoDraftTree';
+const LOCAL_PROXY_PATH = '/api/openai/responses';
+const SAVED_PROMPT_ID = 'pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
+const SAVED_PROMPT_VERSION = '1';
+const URL_PARAMS = new URLSearchParams(location.search);
+const EMBED_MODE = URL_PARAMS.get('embed') === '1';
+const STUDY_MODE = URL_PARAMS.get('study') === '1';
+const FORCED_MINIMAL_MODE = URL_PARAMS.get('minimal') === '1';
+const FORCED_POSTER_MODE = URL_PARAMS.get('poster') === '1';
+const EXTERNAL_DATA_PATH = URL_PARAMS.get('data') || '';
+const FORCED_THEME = URL_PARAMS.get('theme') || '';
+const FORCED_MODEL = URL_PARAMS.get('model') || '';
+const hostSyncState = { ready:'', selection:'' };
 
 // Public page: keep the shipped HTML free of secrets.
 const OPENAI_API_KEY = '';
@@ -501,6 +787,7 @@ const THEMES = {
   negocios:   { r:'#b57263', l1:'#d4a164', l2:'#9bbbd9', l3:'#89c1a2', l4:'#d0a0ad' },
   educacao:   { r:'#8f87bf', l1:'#78c0d8', l2:'#9dcf8b', l3:'#e6b175', l4:'#d2a8c8' },
   criativo:   { r:'#cf937d', l1:'#79c7b0', l2:'#85b7e8', l3:'#e2ae86', l4:'#cc9ac8' },
+  hipofise:   { r:'#7fbef4', l1:'#7ebcf2', l2:'#f3ba98', l3:'#8fd6a5', l4:'#eaa5c8' },
 };
 let theme = THEMES.tecnologia;
 const MAP_MODELS = {
@@ -638,6 +925,47 @@ function getOpenAIApiKey() {
   }
   return '';
 }
+function isLocalSecureMode() {
+  return location.protocol.startsWith('http') && /^(127\.0\.0\.1|localhost)$/i.test(location.hostname);
+}
+async function requestResponsesPayload(body) {
+  if (isLocalSecureMode()) {
+    const res = await fetch(LOCAL_PROXY_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+  const apiKey = getOpenAIApiKey();
+  if (!apiKey) throw new Error('API key ausente.');
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+function buildSavedPromptInputFromEditor(promptText, depthLabel) {
+  return [
+    `Tema: ${promptText}.`,
+    `Profundidade: ${depthLabel}.`,
+    `Modelo visual: ${mapModel}.`,
+    `Foco didatico: ${generationOptions.focus || 'auto'}.`,
+    `Estilo do texto: ${generationOptions.nodeStyle || 'headline'}.`,
+    `Ramos principais: ${generationOptions.mainBranches || 'auto'}.`,
+    `Leitura do material: ${generationOptions.pdfLens || 'auto'}.`,
+    'Monte um mapa mental de estudo em JSON valido no schema esperado.'
+  ].join('\n\n');
+}
 function applyStudyDepth(node, level, maxDepth) {
   if (level >= maxDepth) node.children = [];
   node.children = (node.children || []).map((child) => applyStudyDepth(child, level + 1, maxDepth));
@@ -681,6 +1009,47 @@ function updateZoomBadge() {
 function normalizePan(p) {
   if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return {x:0,y:0};
   return {x:Number(p.x),y:Number(p.y)};
+}
+function postEditorEvent(type, detail = {}) {
+  if (window.parent === window) return;
+  try {
+    window.parent.postMessage({ source:'mapa-estudo-editor', type, detail }, '*');
+  } catch (_) {}
+}
+function selectedNodeSnapshot() {
+  if (!selectedNode) return null;
+  const content = splitNodeContent(selectedNode.text);
+  return {
+    id:selectedNode.id,
+    parentId:selectedNode.parentId,
+    level:selectedNode.level,
+    title:content.title,
+    description:content.description,
+    text:selectedNode.text,
+    color:selectedNode.color || '',
+    isRoot:Boolean(selectedNode.isRoot)
+  };
+}
+function syncSelectionToHost() {
+  const payload = selectedNodeSnapshot();
+  const nextHash = JSON.stringify(payload);
+  if (hostSyncState.selection === nextHash) return;
+  hostSyncState.selection = nextHash;
+  postEditorEvent('selection-change', payload);
+}
+function syncMapReadyToHost() {
+  const root = nodes.find((node) => node.isRoot) || null;
+  const payload = {
+    root: root ? splitNodeContent(root.text).title : '',
+    nodeCount: nodes.length,
+    mapModel,
+    posterMode,
+    studyMode: STUDY_MODE || EMBED_MODE
+  };
+  const nextHash = JSON.stringify(payload);
+  if (hostSyncState.ready === nextHash) return;
+  hostSyncState.ready = nextHash;
+  postEditorEvent('map-ready', payload);
 }
 function getMaxNodeId() { return nodes.reduce((m,n)=>Math.max(m, Number(n.id)||0),0); }
 function clearNodeMetrics() {
@@ -1145,6 +1514,9 @@ function render(skipLayout = false) {
 
   nodes.forEach(nd => {
     const el = document.createElement('div');
+    const nodeAlpha = (EMBED_MODE || STUDY_MODE)
+      ? (nd.isRoot ? 0.28 : 0.11)
+      : (posterMode ? 0.16 : 0.13);
     el.className = 'node'
       + (nd.isRoot ? ' root' : '')
       + (selectedNode?.id === nd.id ? ' selected' : '');
@@ -1153,7 +1525,7 @@ function render(skipLayout = false) {
     el.style.cssText = `
       left:${nd.x}px; top:${nd.y}px;
       width:${nodeWidth(nd)}px;
-      background:${hexToRgba(nd.color, posterMode ? 0.16 : 0.13)};
+      background:${hexToRgba(nd.color, nodeAlpha)};
       border-color:${nd.color};
       color:var(--node-text);
     `;
@@ -1169,13 +1541,23 @@ function render(skipLayout = false) {
                onclick="event.stopPropagation();deleteNode(${nd.id})">Ã—</button>`
           : ''}
       </div>`;
-    el.addEventListener('mousedown', e => startDrag(e, nd));
-    el.addEventListener('click',    e => { e.stopPropagation(); selectedNode = nd; render(true); });
-    el.addEventListener('dblclick', e => { e.stopPropagation(); editNode(nd); });
+    if (!(EMBED_MODE || STUDY_MODE)) {
+      el.addEventListener('mousedown', e => startDrag(e, nd));
+      el.addEventListener('dblclick', e => { e.stopPropagation(); editNode(nd); });
+    }
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      selectedNode = nd;
+      render(true);
+    });
     vp.appendChild(el);
   });
 
-  requestAnimationFrame(() => drawConnections(svg));
+  syncSelectionToHost();
+  requestAnimationFrame(() => {
+    drawConnections(svg);
+    syncMapReadyToHost();
+  });
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -1237,22 +1619,37 @@ function getConnectionPath(parent, child, offsetX = 0, offsetY = 0) {
   const y1 = parent.y - offsetY + nodeHeight(parent) / 2;
   const x2 = childSide === 'left' ? child.x - offsetX + nodeWidth(child) : child.x - offsetX;
   const y2 = child.y - offsetY + nodeHeight(child) / 2;
-  const mx = (x1 + x2) / 2;
-  return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+  const span = Math.abs(x2 - x1);
+  const curve = child.level <= 1 ? 0.42 : 0.34;
+  const direction = childSide === 'left' ? -1 : 1;
+  const c1x = x1 + direction * span * curve;
+  const c2x = x2 - direction * span * curve;
+  return `M${x1},${y1} C${c1x},${y1} ${c2x},${y2} ${x2},${y2}`;
 }
 
 function drawConnections(svg) {
   svg = svg || document.getElementById('svgConns');
   let paths = '';
+  const showGlow = EMBED_MODE || STUDY_MODE;
+  const mainWidth = showGlow ? (posterMode ? 2.8 : 2.25) : (posterMode ? 2.4 : 2);
+  const glowWidth = showGlow ? (posterMode ? 7.6 : 6.2) : 0;
+  const mainOpacity = showGlow ? 0.96 : (posterMode ? 0.9 : 0.7);
 
   nodes.forEach(nd => {
     if (nd.parentId === null) return;
     const parent = nodes.find(n => n.id === nd.parentId);
     if (!parent) return;
+    const path = getConnectionPath(parent, nd);
+    if (showGlow) {
+      paths += `<path
+      d="${path}"
+      stroke="${hexToRgba(parent.color, 0.15)}" stroke-width="${glowWidth}"
+      fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
     paths += `<path
-      d="${getConnectionPath(parent, nd)}"
-      stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}"
-      fill="none" stroke-opacity="${posterMode ? 0.9 : 0.7}" stroke-linecap="round"/>`;
+      d="${path}"
+      stroke="${parent.color}" stroke-width="${mainWidth}"
+      fill="none" stroke-opacity="${mainOpacity}" stroke-linecap="round" stroke-linejoin="round"/>`;
   });
 
   svg.innerHTML = paths;
@@ -1270,6 +1667,8 @@ function applyXform() {
 function applyUiModes() {
   document.body.classList.toggle('poster-mode', posterMode);
   document.body.classList.toggle('minimal-ui', minimalUiMode);
+  document.body.classList.toggle('embed-mode', EMBED_MODE);
+  document.body.classList.toggle('study-mode', STUDY_MODE);
   const badge = document.getElementById('layoutBadge');
   if (badge) badge.textContent = posterMode ? 'Poster bilateral' : 'Editor livre';
   updateMapModelUi();
@@ -1286,6 +1685,35 @@ function togglePosterMode() {
 function toggleMinimalUI() {
   minimalUiMode = !minimalUiMode;
   applyUiModes();
+}
+function applyThemeByName(themeName) {
+  if (!themeName || !THEMES[themeName]) return false;
+  const select = document.getElementById('mapTheme');
+  if (select) select.value = themeName;
+  changeTheme();
+  return true;
+}
+async function loadMapFromExternalSource(filePath) {
+  if (!filePath) return false;
+  try {
+    const response = await fetch(filePath, { cache:'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = normalizeMindMapJSON(await response.json());
+    buildMapFromJSON(payload, {
+      ...generationOptions,
+      model: normalizeMapModel(FORCED_MODEL || mapModel),
+      depth: generationOptions.depth || 'HIGH'
+    });
+    if (!applyThemeByName(FORCED_THEME) && !document.getElementById('mapTheme')?.value) {
+      applyThemeByName('tecnologia');
+    }
+    setStatus('Mapa de estudo carregado.','success');
+    return true;
+  } catch (error) {
+    console.error(error);
+    setStatus(`Falha ao carregar mapa externo: ${error.message}`,'error');
+    return false;
+  }
 }
 
 function changeMapModel(nextModel) {
@@ -1349,7 +1777,7 @@ function startDrag(e, nd) {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    EVENTOS DO CANVAS
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const ca = document.getElementById('canvasArea');
   const promptField = document.getElementById('aiPrompt');
   applyUiModes();
@@ -1382,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.addEventListener('resize', () => render());
-  try { init(); } catch (err) { console.error(err); setStatus('Erro ao inicializar o app.','error'); }
+  try { await init(); } catch (err) { console.error(err); setStatus('Erro ao inicializar o app.','error'); }
 });
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -1429,17 +1857,41 @@ function loadDraftTreeFromStorage() {
   }
 }
 
-function init() {
+async function init() {
+  if (FORCED_MODEL) mapModel = normalizeMapModel(FORCED_MODEL);
   generationOptions = normalizeGenerationOptions({ ...generationOptions, model: mapModel });
+  if (EMBED_MODE || STUDY_MODE || FORCE_MINIMAL_MODE) minimalUiMode = true;
+  if (EMBED_MODE || STUDY_MODE || FORCE_POSTER_MODE) posterMode = true;
+  applyUiModes();
   updateMapModelUi();
-  const imported = loadDraftTreeFromStorage();
-  const restored = imported || loadMapFromStorage();
+  if (FORCED_THEME && THEMES[FORCED_THEME]) {
+    const themeSelect = document.getElementById('mapTheme');
+    if (themeSelect) themeSelect.value = FORCED_THEME;
+    changeTheme();
+  }
+
+  let restored = false;
+  let imported = false;
+  if (EXTERNAL_DATA_PATH) {
+    restored = await loadMapFromExternalSource(EXTERNAL_DATA_PATH);
+  } else {
+    imported = loadDraftTreeFromStorage();
+    restored = imported || loadMapFromStorage();
+  }
+
   if (!restored) {
     addNode('Meu Mapa Mental', null, true);
     setTimeout(centerMap, 100);
   }
+
   pushHistorySnapshot('initial-state');
-  setStatus(imported ? 'Mapa do gerador carregado.' : 'Digite um tema e gere o mapa.','');
+  if (EXTERNAL_DATA_PATH) {
+    setStatus('Mapa de estudo carregado para revisao.','success');
+  } else if (isLocalSecureMode()) {
+    setStatus(imported ? 'Mapa do gerador carregado no modo seguro local.' : 'Modo seguro local ativo. Gere sem expor a chave no navegador.','success');
+  } else {
+    setStatus(imported ? 'Mapa do gerador carregado.' : 'Digite um tema e gere o mapa.','');
+  }
 }
 
 function mkNode(text, parentId, isRoot) {
@@ -1621,8 +2073,6 @@ function normalizeMindMapJSON(input){
   return { root, children };
 }
 async function requestMindMapJSON(promptText, depthLabel){
-  const apiKey = getOpenAIApiKey();
-  if (!apiKey) throw new Error('API key ausente.');
   const modelInstruction = {
     tree:'Organize em arvore hierarquica com grupos principais e subgrupos logicos.',
     flow:'Organize como fluxo principal de etapas. O primeiro nivel deve representar sequencia ou fases.',
@@ -1655,13 +2105,21 @@ async function requestMindMapJSON(promptText, depthLabel){
     temperature:0.4,
     max_output_tokens:1800
   };
-  const res=await fetch('https://api.openai.com/v1/responses',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
-    body:JSON.stringify(body)
-  });
-  if(!res.ok){const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message||`HTTP ${res.status}`);}
-  const data=await res.json();
+  let data;
+  try {
+    data = await requestResponsesPayload({
+      prompt: {
+        id: SAVED_PROMPT_ID,
+        version: SAVED_PROMPT_VERSION
+      },
+      input:[{role:'user',content:[{type:'input_text',text:buildSavedPromptInputFromEditor(promptText, depthLabel)}]}],
+      text:{ format:{ type:'json_schema', name:'mind_map_schema', strict:true, schema:MINDMAP_JSON_SCHEMA } },
+      max_output_tokens:1800
+    });
+  } catch (error) {
+    console.warn('Falha no prompt salvo do editor, usando fallback inline.', error);
+    data = await requestResponsesPayload(body);
+  }
   const raw=extractTextFromResponsesPayload(data);
   if (!raw) throw new Error('A IA nao retornou conteudo textual.');
   return normalizeMindMapJSON(parseLooseJson(raw));
@@ -1672,7 +2130,7 @@ async function generateWithAI() {
 
   const btn=document.getElementById('genBtn');
   btn.disabled=true; btn.innerHTML='<span class="spin">⚙️</span> Gerando...';
-  setStatus('Gerando mapa de estudo...','loading');
+  setStatus(isLocalSecureMode() ? 'Gerando mapa pelo modo seguro local...' : 'Gerando mapa de estudo...','loading');
 
   const mode = getStudyModeMeta(currentDepth);
   try {
@@ -1680,7 +2138,7 @@ async function generateWithAI() {
     const json=applyStudyDepth(await requestMindMapJSON(prompt, mode.label), 0, mode.maxDepth);
     pushHistorySnapshot('ai-generate');
     buildMapFromJSON(json);
-    setStatus(`Mapa ${mode.label} gerado: "${json.root}"`,'success');
+    setStatus(isLocalSecureMode() ? `Mapa ${mode.label} gerado no modo seguro local: "${json.root}"` : `Mapa ${mode.label} gerado: "${json.root}"`,'success');
     logAIHistory(json.root,prompt);
     logHistory(`IA gerou: "${json.root}"`);
     setTimeout(centerMap, 60);
@@ -1841,7 +2299,11 @@ function buildExportSnapshot() {
     if (nd.parentId === null) return;
     const parent = nodes.find((candidate) => candidate.id === nd.parentId);
     if (!parent) return;
-    paths += `<path d="${getConnectionPath(parent, nd, bounds.minX - padding, bounds.minY - padding)}" stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}" fill="none" stroke-opacity="${posterMode ? 0.9 : 0.72}" stroke-linecap="round"/>`;
+    const path = getConnectionPath(parent, nd, bounds.minX - padding, bounds.minY - padding);
+    if (EMBED_MODE || STUDY_MODE) {
+      paths += `<path d="${path}" stroke="${escapeXml(hexToRgba(parent.color, 0.15))}" stroke-width="${posterMode ? 7.6 : 6.2}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+    paths += `<path d="${path}" stroke="${parent.color}" stroke-width="${(EMBED_MODE || STUDY_MODE) ? (posterMode ? 2.8 : 2.25) : (posterMode ? 2.4 : 2)}" fill="none" stroke-opacity="${(EMBED_MODE || STUDY_MODE) ? 0.96 : (posterMode ? 0.9 : 0.72)}" stroke-linecap="round" stroke-linejoin="round"/>`;
   });
   nodes.forEach((nd) => {
     const x = nd.x - bounds.minX + padding;
@@ -1851,7 +2313,10 @@ function buildExportSnapshot() {
     const content = splitNodeContent(nd.text);
     const textX = x + width / 2;
     const titleY = y + (content.description ? 20 : height / 2 + 4);
-    nodeShapes += `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${nd.isRoot ? 18 : 14}" ry="${nd.isRoot ? 18 : 14}" fill="${escapeXml(hexToRgba(nd.color, posterMode ? 0.16 : 0.13))}" stroke="${nd.color}" stroke-width="1.5"/>`;
+    const exportNodeAlpha = (EMBED_MODE || STUDY_MODE)
+      ? (nd.isRoot ? 0.28 : 0.11)
+      : (posterMode ? 0.16 : 0.13);
+    nodeShapes += `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${nd.isRoot ? 18 : 14}" ry="${nd.isRoot ? 18 : 14}" fill="${escapeXml(hexToRgba(nd.color, exportNodeAlpha))}" stroke="${nd.color}" stroke-width="1.35"/>`;
     nodeShapes += `<text x="${textX}" y="${titleY}" text-anchor="middle" fill="#402a26" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="${nd.isRoot?14:12}" font-weight="${nd.isRoot?700:600}">${escapeXml(content.title)}</text>`;
     if (content.description) {
       nodeShapes += `<text x="${textX}" y="${titleY + 17}" text-anchor="middle" fill="#7b635d" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="11" font-weight="500">${escapeXml(content.description)}</text>`;
@@ -2013,6 +2478,11 @@ document.addEventListener('keydown', (e) => {
     exportPNG();
   }
 });
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((err) => console.warn('SW:', err));
+  });
+}
 
 </script></body>
 </html>

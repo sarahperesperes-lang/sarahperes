@@ -1,0 +1,197 @@
+﻿{
+  "root": "Hipofise e suas disfuncoes | eixo central da regulacao endocrina, tumores funcionantes e falencia hormonal",
+  "children": [
+    {
+      "text": "Fisiologia hipofisaria | anatomia funcional, eixos hormonais e logica de feedback",
+      "children": [
+        {
+          "text": "Adeno-hipofise | secreta prolactina, GH, ACTH, TSH, LH e FSH",
+          "children": [
+            { "text": "Lactotrofos | produzem prolactina sob freio dopaminergico", "children": [] },
+            { "text": "Somatotrofos | liberam GH e modulam IGF-1", "children": [] },
+            { "text": "Corticotrofos | secretam ACTH e ativam o eixo adrenal", "children": [] },
+            { "text": "Tireotrofos e gonadotrofos | sustentam eixo tireoidiano e gonadal", "children": [] }
+          ]
+        },
+        {
+          "text": "Neuro-hipofise | armazena ADH e ocitocina produzidos no hipotalamo",
+          "children": [
+            { "text": "ADH | regula agua livre e osmolaridade", "children": [] },
+            { "text": "Ocitocina | participa de parto e ejecao lactea", "children": [] }
+          ]
+        },
+        {
+          "text": "Feedback hormonal | excesso faz freio e deficiencia gera estimulo", "children": [
+            { "text": "Eixo hipotalamo-hipofise-alvo | TRH-TSH-T4, CRH-ACTH-cortisol, GnRH-LH/FSH", "children": [] },
+            { "text": "Logica clinica | lesao pode causar hipersecrecao, hipossecrecao ou efeito compressivo", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Prolactinoma e hiperprolactinemia | adenoma mais comum e causa classica de galactorreia",
+      "children": [
+        {
+          "text": "Epidemiologia | cerca de 60 por cento dos adenomas hipofisarios funcionantes",
+          "children": [
+            { "text": "Microadenoma | mais comum em mulheres e curso menos compressivo", "children": [] },
+            { "text": "Macroadenoma | mais frequente em homens ao diagnostico tardio", "children": [] }
+          ]
+        },
+        {
+          "text": "Quadro clinico | hipogonadismo, infertilidade e sintomas de massa",
+          "children": [
+            { "text": "Mulheres | amenorreia, galactorreia e infertilidade", "children": [] },
+            { "text": "Homens | queda de libido, disfuncao sexual e macroadenoma", "children": [] },
+            { "text": "Massa selar | cefaleia e hemianopsia bitemporal", "children": [] }
+          ]
+        },
+        {
+          "text": "Diagnostico e tratamento | confirmar prolactina e excluir causas secundarias",
+          "children": [
+            { "text": "Secundarias | gravidez, farmacos antidopaminergicos e hipotireoidismo", "children": [] },
+            { "text": "Imagem | RM de sela turca quando hiperprolactinemia persiste", "children": [] },
+            { "text": "Tratamento | agonistas dopaminergicos sao primeira linha", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Acromegalia e gigantismo | excesso cronico de GH com IGF-1 elevado",
+      "children": [
+        {
+          "text": "Diferenca basica | antes da fusao epifisaria gera gigantismo, depois gera acromegalia",
+          "children": [
+            { "text": "Gigantismo | crianca cresce em estatura de forma acelerada", "children": [] },
+            { "text": "Acromegalia | adulto desenvolve aumento de extremidades e partes moles", "children": [] }
+          ]
+        },
+        {
+          "text": "Clinica | mudanca lenta de facies, maos, pes e repercussao cardiometabolica",
+          "children": [
+            { "text": "Fenotipo | prognatismo, macroglossia, aumento de anel e sapato", "children": [] },
+            { "text": "Comorbidades | HAS, DM, apneia e cardiomiopatia", "children": [] }
+          ]
+        },
+        {
+          "text": "Diagnostico e manejo | IGF-1 alto, GH nao suprime e imagem de sela",
+          "children": [
+            { "text": "Triagem | IGF-1 e marcador mais estavel", "children": [] },
+            { "text": "Confirmacao | TOTG sem supressao do GH", "children": [] },
+            { "text": "Tratamento | cirurgia, analogos de somatostatina e antagonista de GH", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Doenca de Cushing | adenoma produtor de ACTH com hipercortisolismo endogeno",
+      "children": [
+        {
+          "text": "Conceito | doenca de Cushing e causa hipofisaria da sindrome de Cushing",
+          "children": [
+            { "text": "Sindrome de Cushing | qualquer estado de excesso cronico de cortisol", "children": [] },
+            { "text": "Doenca de Cushing | subtipo ACTH dependente por adenoma hipofisario", "children": [] }
+          ]
+        },
+        {
+          "text": "Quadro clinico | redistribuicao de gordura e fragilidade metabolica",
+          "children": [
+            { "text": "Sinais tipicos | face em lua, giba, obesidade central e estrias violaceas", "children": [] },
+            { "text": "Complicacoes | HTA, DM, osteoporose e infeccoes", "children": [] }
+          ]
+        },
+        {
+          "text": "Diagnostico e tratamento | provar excesso de cortisol antes de localizar",
+          "children": [
+            { "text": "Triagem | cortisol urinario, dexametasona 1 mg ou cortisol salivar noturno", "children": [] },
+            { "text": "Etiologia | ACTH ajuda a separar dependente e independente", "children": [] },
+            { "text": "Tratamento | cirurgia transesfenoidal e controle clinico adjuvante", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Hipopituitarismo | perda parcial ou global da secrecao hipofisaria",
+      "children": [
+        {
+          "text": "Causas | tumores, cirurgia, radiacao, necrose e infiltracao",
+          "children": [
+            { "text": "Compressao tumoral | macroadenoma pode destruir tecido normal", "children": [] },
+            { "text": "Pos-operatorio ou radiacao | perda hormonal progressiva", "children": [] },
+            { "text": "Apoplexia e infiltracao | instalacao aguda ou subaguda", "children": [] }
+          ]
+        },
+        {
+          "text": "Manifestacoes | variam conforme eixo comprometido",
+          "children": [
+            { "text": "ACTH baixo | fadiga, hipotensao e risco de insuficiencia adrenal", "children": [] },
+            { "text": "TSH baixo | intolerancia ao frio e constipacao", "children": [] },
+            { "text": "LH/FSH baixos | amenorreia, infertilidade e queda de libido", "children": [] },
+            { "text": "GH baixo | perda de massa magra e pior qualidade de vida", "children": [] }
+          ]
+        },
+        {
+          "text": "Conduta | repor na ordem correta e tratar a causa de base",
+          "children": [
+            { "text": "Prioridade | sempre corrigir cortisol antes de iniciar tiroxina", "children": [] },
+            { "text": "Reposicoes | hidrocortisona, levotiroxina, hormonios sexuais e GH conforme caso", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Sindrome de Sheehan | necrose hipofisaria pos-hemorragia obstetrica",
+      "children": [
+        {
+          "text": "Fisiopatologia | hipofise aumentada da gestacao fica vulneravel a hipoperfusao",
+          "children": [
+            { "text": "Gatilho | choque hemorragico no pos-parto", "children": [] },
+            { "text": "Resultado | falencia progressiva ou imediata da adeno-hipofise", "children": [] }
+          ]
+        },
+        {
+          "text": "Sinais de pista | falha de lactacao e amenorreia pos-parto",
+          "children": [
+            { "text": "Inicial | incapacidade de amamentar", "children": [] },
+            { "text": "Tardio | fadiga, hipotensao, amenorreia e hipotireoidismo central", "children": [] }
+          ]
+        },
+        {
+          "text": "Diagnostico e manejo | reconhecer contexto obstetrico e repor hormonios",
+          "children": [
+            { "text": "Diagnostico | historia clinica + eixos hormonais baixos", "children": [] },
+            { "text": "Tratamento | reposicao vitalicia conforme deficit", "children": [] }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Avaliacao diagnostica | pensar em sindrome hormonal, massa e urgencias",
+      "children": [
+        {
+          "text": "Raciocinio inicial | excesso hormonal, deficit hormonal ou efeito de massa",
+          "children": [
+            { "text": "Excesso | prolactina, GH, ACTH e raramente TSH", "children": [] },
+            { "text": "Deficit | um ou varios eixos centrais comprometidos", "children": [] },
+            { "text": "Massa | cefaleia, alteracao visual e hipopituitarismo", "children": [] }
+          ]
+        },
+        {
+          "text": "Exames chave | laboratorios dirigidos e RM de sela",
+          "children": [
+            { "text": "Laboratorio | prolactina, IGF-1, cortisol/ACTH, TSH/T4L, LH/FSH", "children": [] },
+            { "text": "Imagem | RM define tamanho, invasao e relacao com quiasma", "children": [] },
+            { "text": "Campo visual | quando ha macroadenoma ou sintomas neuro-oftalmologicos", "children": [] }
+          ]
+        },
+        {
+          "text": "Urgencias | apoplexia hipofisaria e insuficiencia adrenal nao podem passar batido",
+          "children": [
+            { "text": "Apoplexia | cefaleia abrupta, oftalmoplegia e queda visual", "children": [] },
+            { "text": "Conduta | corticoide imediato e avaliacao neurocirurgica", "children": [] }
+          ]
+        }
+      ]
+    }
+  ]
+}
