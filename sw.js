@@ -1,10 +1,16 @@
-﻿const CACHE_NAME = 'hipofise-study-v1';
+const CACHE_NAME = 'sarahperes-pages-v2';
 const APP_SHELL = [
   './',
+  './index.html',
+  './sitepra.html',
   './hipofise-workspace.html',
   './mapa-estudo-editor.html',
   './gerador-estudo.html',
+  './psiquiatria-estudo.html',
+  './psiquiatria-print.html',
+  './psiquiatria-editor.html',
   './hipofise-estudo.json',
+  './psiquiatria-estudo.json',
   './questoes-hipofise.json',
   './manifest.json',
   './icons/icon-192.png',
@@ -30,7 +36,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => caches.match('./hipofise-workspace.html')));
+    event.respondWith(fetch(event.request).catch(() => caches.match('./index.html')));
     return;
   }
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {

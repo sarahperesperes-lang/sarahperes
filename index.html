@@ -1,24 +1,469 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AmyMind Verification</title>
-<meta http-equiv="refresh" content="0; url=./sitepra.html">
-<style>
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  font-family: Arial, sans-serif;
-  background: #f7f1ea;
-  color: #352724;
-}
-a { color: #7b635d; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8ec8f6">
+  <meta name="description" content="Portal único para os sites de mapas mentais, estudo, editor e verificacao AmyMind.">
+  <link rel="manifest" href="./manifest.json">
+  <title>SarahPeres Pages</title>
+  <style>
+    :root{
+      --bg:#f6f2ec;
+      --bg2:#fbf8f4;
+      --surface:rgba(255,255,255,.72);
+      --surface-strong:rgba(255,255,255,.9);
+      --text:#2f241f;
+      --muted:#78655d;
+      --line:rgba(142,200,246,.22);
+      --line-strong:rgba(142,200,246,.38);
+      --accent:#4b89c4;
+      --accent-2:#6eb7a6;
+      --accent-3:#c08a5c;
+      --shadow:0 22px 70px rgba(92, 66, 50, .12);
+      --radius:28px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%}
+    body{
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at 16% 12%, rgba(110,183,166,.14), transparent 22%),
+        radial-gradient(circle at 86% 16%, rgba(142,200,246,.16), transparent 20%),
+        radial-gradient(circle at 70% 82%, rgba(192,138,92,.14), transparent 24%),
+        linear-gradient(180deg, #faf7f2 0%, #f4efe7 100%);
+      color:var(--text);
+    }
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter:blur(16px);
+      background:rgba(246,242,236,.78);
+      border-bottom:1px solid rgba(120,101,93,.12);
+    }
+    .topbar{
+      max-width:1240px;
+      margin:0 auto;
+      padding:18px 24px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+    .mark{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg, rgba(142,200,246,.28), rgba(110,183,166,.2));
+      border:1px solid rgba(120,101,93,.12);
+      box-shadow:var(--shadow);
+      flex:0 0 auto;
+      font-size:18px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      line-height:1.1;
+      letter-spacing:-0.03em;
+    }
+    .brand p{
+      margin:2px 0 0;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .status{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:8px;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid rgba(120,101,93,.12);
+      background:rgba(255,255,255,.55);
+      color:var(--muted);
+      font-size:12px;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    main{
+      width:min(1240px, calc(100% - 32px));
+      margin:0 auto;
+      padding:34px 0 46px;
+      flex:1;
+    }
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);
+      gap:24px;
+      align-items:stretch;
+      margin-bottom:26px;
+    }
+    .hero-copy{
+      padding:28px 0 10px;
+    }
+    .eyebrow{
+      margin:0 0 16px;
+      color:var(--accent);
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+    h2{
+      margin:0;
+      font-size:clamp(42px, 7vw, 82px);
+      line-height:.96;
+      letter-spacing:-0.06em;
+      max-width:10ch;
+    }
+    .lead{
+      margin:18px 0 0;
+      max-width:58ch;
+      font-size:18px;
+      line-height:1.55;
+      color:var(--muted);
+    }
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:24px;
+    }
+    .button{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:14px 18px;
+      border-radius:16px;
+      text-decoration:none;
+      font-weight:700;
+      font-size:14px;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      border:1px solid transparent;
+    }
+    .button:hover{transform:translateY(-1px); box-shadow:0 12px 24px rgba(72,53,42,.1)}
+    .button.primary{
+      background:#2f241f;
+      color:#fff;
+    }
+    .button.secondary{
+      background:rgba(255,255,255,.72);
+      color:var(--text);
+      border-color:rgba(120,101,93,.14);
+    }
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.68));
+      border:1px solid rgba(120,101,93,.12);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panel-inner{
+      padding:22px;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:18px;
+      min-height:100%;
+    }
+    .panel-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .panel-title strong{
+      font-size:15px;
+    }
+    .panel-title span{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .stack{
+      display:grid;
+      gap:10px;
+    }
+    .launch{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      padding:16px 16px 15px;
+      border-radius:20px;
+      border:1px solid rgba(120,101,93,.1);
+      background:rgba(255,255,255,.74);
+      text-decoration:none;
+      color:var(--text);
+      transition:transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .launch:hover{
+      transform:translateY(-1px);
+      border-color:var(--line-strong);
+      background:#fff;
+    }
+    .launch h3{
+      margin:0 0 4px;
+      font-size:15px;
+      letter-spacing:-0.02em;
+    }
+    .launch p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+      max-width:42ch;
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(142,200,246,.12);
+      color:var(--accent);
+      border:1px solid rgba(142,200,246,.22);
+      font-size:11px;
+      font-weight:700;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:16px;
+      margin-top:18px;
+    }
+    .section{
+      grid-column:span 6;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(120,101,93,.12);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .section h3{
+      margin:0 0 10px;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--muted);
+    }
+    .section .stack .launch{background:rgba(255,255,255,.82)}
+    .section .stack .launch:nth-child(1) .tag{background:rgba(110,183,166,.12);border-color:rgba(110,183,166,.22);color:#4e8f7f}
+    .section .stack .launch:nth-child(2) .tag{background:rgba(192,138,92,.12);border-color:rgba(192,138,92,.22);color:#ab6d3f}
+    .section .stack .launch:nth-child(3) .tag{background:rgba(184,102,151,.12);border-color:rgba(184,102,151,.22);color:#9c4a7a}
+    .note{
+      margin-top:16px;
+      padding:16px 18px;
+      border-radius:20px;
+      background:rgba(255,255,255,.58);
+      border:1px solid rgba(120,101,93,.12);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+    .note strong{ color:var(--text); }
+    footer{
+      max-width:1240px;
+      margin:0 auto;
+      width:min(1240px, calc(100% - 32px));
+      padding:0 0 24px;
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:space-between;
+    }
+    footer a{ color:inherit; text-decoration:none; }
+    .reveal{ animation:reveal .65s ease both; }
+    .delay-1{ animation-delay:.08s; }
+    .delay-2{ animation-delay:.16s; }
+    @keyframes reveal{
+      from{ opacity:0; transform:translateY(10px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+    @media (max-width: 980px){
+      .hero{ grid-template-columns:1fr; }
+      .section{ grid-column:span 12; }
+    }
+    @media (max-width: 720px){
+      .topbar{ padding:14px 16px; align-items:flex-start; flex-direction:column; }
+      main{ width:min(100% - 24px, 1240px); padding-top:22px; }
+      h2{ max-width:100%; font-size:clamp(36px, 13vw, 58px); }
+      .lead{ font-size:16px; }
+      .launch{ padding:15px 14px; }
+      .panel-inner{ padding:18px; }
+    }
+  </style>
 </head>
 <body>
-<p>Open <a href="./sitepra.html">sitepra.html</a>.</p>
+  <div class="wrap">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <div class="mark">🧭</div>
+          <div>
+            <h1>SarahPeres Pages</h1>
+            <p>Um portal unico para os sites de estudo, edicao e verificacao.</p>
+          </div>
+        </div>
+        <div class="status">
+          <span class="pill">Acesso publico + local</span>
+          <span class="pill">IA segura via servidor local</span>
+          <a class="pill" href="./sitepra.html">Abrir AmyMind</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">Entrada unica</p>
+          <h2>Tudo em um so lugar, sem caçar pagina por pagina.</h2>
+          <p class="lead">
+            Aqui voce escolhe o fluxo que precisa: mapa mental rapido, editor tecnico, workspace de estudo, ou os
+            materiais prontos por tema. O objetivo e deixar tudo navegavel no celular e no PC, com um ponto de entrada
+            simples.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="./hipofise-workspace.html">Abrir workspace</a>
+            <a class="button secondary" href="./gerador-estudo.html?advanced=1">Abrir gerador</a>
+            <a class="button secondary" href="./mapa-estudo-editor.html">Abrir editor</a>
+          </div>
+        </div>
+
+        <div class="panel reveal delay-1">
+          <div class="panel-inner">
+            <div>
+              <div class="panel-title">
+                <strong>Atalhos principais</strong>
+                <span>Fluxo rapido</span>
+              </div>
+              <div class="stack">
+                <a class="launch" href="./hipofise-workspace.html">
+                  <div>
+                    <h3>Workspace de estudo</h3>
+                    <p>Mapa, quiz e revisao no mesmo lugar, com IA local quando o servidor estiver ligado.</p>
+                  </div>
+                  <span class="tag">Principal</span>
+                </a>
+                <a class="launch" href="./gerador-estudo.html?advanced=1">
+                  <div>
+                    <h3>Gerador de mapas</h3>
+                    <p>Carrega PDF, imagem ou texto e transforma em estrutura de estudo com modelos visuais.</p>
+                  </div>
+                  <span class="tag">PDF / imagem</span>
+                </a>
+                <a class="launch" href="./sitepra.html">
+                  <div>
+                    <h3>Verificacao AmyMind</h3>
+                    <p>Pagina isolada para o banner de verificacao e testes de abertura publica.</p>
+                  </div>
+                  <span class="tag">Publico</span>
+                </a>
+              </div>
+            </div>
+            <div class="note">
+              <strong>Observacao:</strong> as funcoes de IA continuam dependendo do servidor local seguro.
+              O restante do portal abre normalmente fora da LAN e no celular.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="section reveal delay-1">
+          <h3>Estudo e revisao</h3>
+          <div class="stack">
+            <a class="launch" href="./hipofise-workspace.html">
+              <div>
+                <h3>Hipofise Study Workspace</h3>
+                <p>Workspace focado em estudo com mapa, perguntas e revisao para entrar direto no conteudo.</p>
+              </div>
+              <span class="tag">Mapa + quiz</span>
+            </a>
+            <a class="launch" href="./psiquiatria-estudo.html">
+              <div>
+                <h3>Psiquiatria — estudo</h3>
+                <p>Mapa mental da hipofise e disfuncoes organizado para estudo e leitura rapida.</p>
+              </div>
+              <span class="tag">Tema pronto</span>
+            </a>
+            <a class="launch" href="./psiquiatria-print.html">
+              <div>
+                <h3>Psiquiatria — impressao</h3>
+                <p>Versao limpa e mais direta para imprimir ou exportar sem ruído visual.</p>
+              </div>
+              <span class="tag">Print</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="section reveal delay-2">
+          <h3>Ferramentas de edicao</h3>
+          <div class="stack">
+            <a class="launch" href="./gerador-estudo.html?advanced=1">
+              <div>
+                <h3>Gerador legado</h3>
+                <p>Modo tecnico para gerar mapa a partir de PDF, texto ou imagem com controles avancados.</p>
+              </div>
+              <span class="tag">Avancado</span>
+            </a>
+            <a class="launch" href="./mapa-estudo-editor.html">
+              <div>
+                <h3>Editor de mapa</h3>
+                <p>Editor para criar, ajustar, mover e exportar mapas com a mesma base de render do projeto.</p>
+              </div>
+              <span class="tag">Editor</span>
+            </a>
+            <a class="launch" href="./psiquiatria-editor.html">
+              <div>
+                <h3>Editor da psiquiatria</h3>
+                <p>Entrada pronta para abrir o tema da psiquiatria no editor e continuar a edicao ali.</p>
+              </div>
+              <span class="tag">Preset</span>
+            </a>
+          </div>
+        </article>
+      </section>
+
+      <div class="note reveal delay-2">
+        <strong>Fluxo recomendado:</strong> se quiser praticidade, entre no workspace. Se quiser gerar algo novo,
+        use o gerador. Se quiser mexer fino na estrutura, abra o editor. Se quiser apenas conferir a verificacao,
+        abra o site AmyMind.
+      </div>
+    </main>
+
+    <footer>
+      <span>Portal consolidado dos sites criados para mapa mental e estudo.</span>
+      <span><a href="./sitepra.html">AmyMind</a> · <a href="./hipofise-workspace.html">Workspace</a> · <a href="./gerador-estudo.html?advanced=1">Gerador</a></span>
+    </footer>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

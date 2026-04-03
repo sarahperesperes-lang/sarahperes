@@ -1,7 +1,7 @@
 ﻿{
-  "name": "Hipofise Study Workspace",
-  "short_name": "Hipofise",
-  "start_url": "hipofise-workspace.html",
+  "name": "SarahPeres Pages",
+  "short_name": "SarahPages",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f6f2ec",
   "theme_color": "#8ec8f6",
