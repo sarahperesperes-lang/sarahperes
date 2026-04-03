@@ -1,0 +1,1551 @@
+﻿
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Mental IA</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg-primary:#f7f1ea; --bg-secondary:#f2e8de; --bg-panel:rgba(255,255,255,.82);
+  --bg-card:#fff8f2; --accent-purple:#b46697; --accent-blue:#5a96d6;
+  --accent-green:#67b88f; --text-primary:#352724; --text-secondary:#7b635d;
+  --text-muted:#9c837c; --border:#dfc9bf; --node-text:#402a26;
+  --paper-shadow:0 18px 50px rgba(120, 84, 73, .12);
+  --header-h:58px; --left-w:230px; --right-w:270px;
+}
+body {
+  font-family:"Segoe UI",system-ui,sans-serif;
+  background:var(--bg-primary); color:var(--text-primary);
+  height:100vh; overflow:hidden; display:flex; flex-direction:column;
+}
+body::before {
+  content:"";
+  position:fixed; inset:0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(103,184,143,.12), transparent 28%),
+    radial-gradient(circle at 78% 12%, rgba(90,150,214,.12), transparent 24%),
+    radial-gradient(circle at 65% 75%, rgba(212,154,129,.18), transparent 25%);
+  pointer-events:none;
+}
+body.minimal-ui .sidebar,
+body.minimal-ui .header-btns .editor-only { display:none; }
+body.minimal-ui .app-body { display:block; }
+body.minimal-ui .canvas-area { width:100vw; }
+body.poster-mode .canvas-area {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0)),
+    var(--bg-primary);
+  background-image:none;
+}
+body.poster-mode .canvas-bar {
+  background:rgba(255,251,247,.94);
+  border-color:rgba(196,161,148,.42);
+}
+body.poster-mode .node {
+  border-width:1.5px;
+  border-radius:14px;
+  box-shadow:0 10px 18px rgba(179, 135, 122, .08);
+}
+body.poster-mode .node.root {
+  border-radius:18px;
+  padding:14px 20px;
+  min-width:170px;
+}
+body.poster-mode .node.selected {
+  box-shadow:0 0 0 3px rgba(180,102,151,.18), 0 12px 26px rgba(179, 135, 122, .15);
+}
+
+/* HEADER */
+header {
+  height:var(--header-h); min-height:var(--header-h);
+  background:rgba(247,241,234,.88); border-bottom:1px solid rgba(196,161,148,.28);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 18px; gap:12px; flex-shrink:0; z-index:200;
+  backdrop-filter:blur(14px);
+}
+.logo { display:flex; align-items:center; gap:8px; font-size:17px; font-weight:700; white-space:nowrap; }
+.logo span { font-size:20px; }
+.header-btns { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:7px 13px; border-radius:8px; border:none;
+  cursor:pointer; font-size:12px; font-weight:500;
+  transition:all .18s; white-space:nowrap;
+}
+.btn:hover { opacity:.82; transform:translateY(-1px); }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-primary); }
+.btn-outline:hover { background:rgba(255,255,255,.6); }
+.btn-primary { background:#3a2d29; color:#fff; }
+
+/* APP BODY */
+.app-body { display:flex; flex:1; overflow:hidden; min-height:0; }
+
+/* SIDEBARS */
+.sidebar {
+  display:flex; flex-direction:column;
+  background:rgba(250,244,238,.8);
+  overflow-y:auto; overflow-x:hidden; flex-shrink:0;
+  backdrop-filter:blur(10px);
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+.sidebar-left  { width:var(--left-w); border-right:1px solid var(--border); }
+.sidebar-right { width:var(--right-w); border-left:1px solid var(--border); }
+
+.s-section { padding:14px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.s-section:last-child { border-bottom:none; }
+.s-title {
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:1.2px; color:var(--text-muted); margin-bottom:10px;
+}
+.tool-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.tool-btn {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; padding:10px 4px; background:rgba(255,250,244,.92);
+  border:1px solid var(--border); border-radius:8px;
+  cursor:pointer; color:var(--text-primary); font-size:11px; font-weight:500;
+  transition:all .18s; text-align:center; min-height:58px;
+}
+.tool-btn .ti { font-size:17px; }
+.tool-btn:hover { background:#fff; border-color:#d9b5a6; color:var(--text-primary); }
+.tool-btn.danger:hover { background:#dc2626; border-color:#dc2626; }
+.cfg-group { margin-bottom:9px; }
+.cfg-label { display:block; font-size:11px; color:var(--text-secondary); margin-bottom:4px; }
+select, input[type="text"], textarea {
+  width:100%; background:rgba(255,250,244,.92); border:1px solid var(--border);
+  border-radius:6px; color:var(--text-primary);
+  padding:6px 9px; font-size:12px; outline:none; transition:border-color .18s;
+}
+select:focus, input[type="text"]:focus, textarea:focus { border-color:var(--accent-purple); }
+select option { background:var(--bg-card); }
+.color-row { display:flex; align-items:center; gap:8px; }
+input[type="color"] {
+  width:34px; height:28px; border:1px solid var(--border);
+  border-radius:6px; background:var(--bg-card); cursor:pointer; padding:2px;
+}
+.hist-list { display:flex; flex-direction:column; gap:4px; max-height:110px; overflow-y:auto; }
+.hist-item { padding:6px 8px; background:var(--bg-card); border-radius:6px; border:1px solid var(--border); }
+.hist-action { font-size:11px; color:var(--text-primary); font-weight:500; }
+.hist-meta   { font-size:10px; color:var(--text-muted); margin-top:2px; }
+.tmpl-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.tmpl-card {
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  padding:12px 6px; background:var(--bg-card);
+  border:1px solid var(--border); border-radius:8px;
+  cursor:pointer; transition:all .18s; text-align:center;
+}
+.tmpl-card:hover { border-color:var(--accent-purple); background:rgba(124,58,237,.12); }
+.tmpl-icon { font-size:22px; }
+.tmpl-name { font-size:11px; color:var(--text-secondary); font-weight:500; }
+
+/* CANVAS */
+.canvas-area {
+  flex:1; position:relative; overflow:hidden;
+  background:var(--bg-primary);
+  min-width:0;
+}
+.canvas-bar {
+  position:absolute; top:14px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:6px;
+  background:var(--bg-panel); border:1px solid rgba(196,161,148,.35);
+  border-radius:12px; padding:7px 14px;
+  z-index:10; white-space:nowrap;
+  box-shadow:var(--paper-shadow);
+}
+.status-dot { width:8px; height:8px; background:var(--accent-green); border-radius:50%; display:inline-block; margin-right:4px; }
+.bar-div { width:1px; height:18px; background:var(--border); margin:0 2px; }
+.canvas-btn {
+  display:flex; align-items:center; gap:4px; padding:5px 10px;
+  background:transparent; border:1px solid var(--border);
+  border-radius:6px; color:var(--text-primary); cursor:pointer;
+  font-size:12px; transition:background .18s;
+}
+.canvas-btn:hover { background:var(--bg-card); }
+.zoom-badge {
+  font-size:12px; color:var(--text-secondary); padding:5px 9px;
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:6px; min-width:58px; text-align:center;
+}
+
+.map-wrap { position:absolute; inset:0; overflow:hidden; cursor:default; }
+.canvas-note {
+  position:absolute; left:24px; bottom:18px; z-index:5;
+  font-size:11px; color:var(--text-muted); letter-spacing:.04em;
+}
+
+#svgConns {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; overflow:visible; transform-origin:0 0;
+}
+.map-vp {
+  position:absolute; top:0; left:0;
+  width:100%; height:100%; transform-origin:0 0;
+}
+
+/* NODES */
+.node {
+  position:absolute;
+  padding:9px 16px; border-radius:14px; border:1.5px solid;
+  cursor:grab; user-select:none;
+  min-width:140px; max-width:220px;
+  text-align:left; font-size:12px; font-weight:600;
+  word-break:break-word; line-height:1.4;
+  transition:box-shadow .12s, transform .12s, opacity .12s;
+  color:var(--node-text);
+  font-family:"Trebuchet MS","Segoe UI",sans-serif;
+  letter-spacing:.01em;
+}
+.node:active { cursor:grabbing; }
+.node.root { font-size:14px; font-weight:700; padding:15px 18px; min-width:170px; text-align:center; }
+.node.selected { box-shadow:0 0 0 3px rgba(180,102,151,.22); transform:translateY(-1px); }
+.node .node-label {
+  display:block;
+}
+.node .node-desc {
+  display:block;
+  margin-top:6px;
+  font-size:11px;
+  font-weight:500;
+  line-height:1.45;
+  color:var(--text-secondary);
+}
+.node-actions { position:absolute; top:-11px; right:-11px; display:none; gap:4px; }
+.node.selected .node-actions { display:flex; }
+.na-btn {
+  width:22px; height:22px; border-radius:50%; border:none;
+  cursor:pointer; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* RIGHT PANEL */
+.ai-section   { padding:16px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.sugg-section { padding:14px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.gen-hist     { padding:14px; flex-shrink:0; }
+.r-title {
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:1.2px; color:var(--text-muted); margin-bottom:12px;
+}
+.prompt-area {
+  width:100%; min-height:110px; max-height:180px;
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:10px; color:var(--text-primary);
+  padding:11px 12px; font-size:13px; line-height:1.5;
+  outline:none; resize:vertical; font-family:inherit;
+  transition:border-color .18s;
+}
+.prompt-area:focus { border-color:var(--accent-purple); }
+.prompt-area::placeholder { color:var(--text-muted); }
+.depth-row { display:flex; gap:6px; margin-top:10px; }
+.depth-btn {
+  flex:1; padding:6px 4px; background:var(--bg-card);
+  border:1px solid var(--border); border-radius:7px;
+  color:var(--text-secondary); font-size:11px; cursor:pointer;
+  transition:all .18s; text-align:center;
+}
+.depth-btn.active { background:rgba(124,58,237,.25); border-color:var(--accent-purple); color:#c4b5fd; font-weight:600; }
+.depth-btn:hover:not(.active) { background:var(--bg-panel); }
+.gen-btn {
+  width:100%; padding:11px;
+  background:linear-gradient(135deg,#3a2d29,#77544c);
+  color:#fff; border:none; border-radius:10px;
+  cursor:pointer; font-size:13px; font-weight:700;
+  transition:all .18s; display:flex;
+  align-items:center; justify-content:center; gap:7px;
+  margin-top:10px;
+}
+.gen-btn:hover { opacity:.88; transform:translateY(-1px); box-shadow:0 4px 18px rgba(124,58,237,.4); }
+.gen-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+.ai-status {
+  padding:8px 10px; background:var(--bg-card); border:1px solid var(--border);
+  border-radius:8px; font-size:11px; color:var(--text-secondary);
+  margin-top:9px;
+}
+.ai-status.loading { border-color:var(--accent-purple); color:#a78bfa; }
+.ai-status.success { border-color:var(--accent-green); color:#6ee7b7; }
+.ai-status.error   { border-color:#dc2626; color:#fca5a5; }
+.sugg-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.sugg-btn {
+  display:flex; align-items:center; gap:5px; padding:8px 9px;
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:8px; cursor:pointer; color:var(--text-secondary);
+  font-size:11px; font-weight:500; transition:all .18s;
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+}
+.sugg-btn:hover { border-color:var(--accent-purple); color:var(--text-primary); background:rgba(124,58,237,.1); }
+.gh-empty { font-size:12px; color:var(--text-muted); text-align:center; padding:14px 0; }
+.gh-item  { padding:7px 9px; background:var(--bg-card); border:1px solid var(--border); border-radius:7px; margin-bottom:5px; }
+.gh-name  { font-size:11px; color:var(--text-primary); font-weight:600; margin-bottom:2px; }
+.gh-meta  { font-size:10px; color:var(--text-muted); }
+.poster-chip {
+  padding:4px 8px; border-radius:999px; border:1px solid var(--border);
+  background:rgba(255,250,244,.88); font-size:11px; color:var(--text-secondary);
+}
+.test-log {
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:11px;
+  color:var(--text-secondary);
+}
+.test-log.hidden { display:none; }
+.test-pass { color:#2f7d57; }
+.test-fail { color:#b54b4b; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.spin { display:inline-block; animation:spin .8s linear infinite; }
+@media print {
+  header, .sidebar, .canvas-bar, .canvas-note { display:none !important; }
+  body, .app-body, .canvas-area, .map-wrap { height:auto; overflow:visible; background:#f8f3ee !important; }
+  #svgConns, .map-vp { transform:none !important; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span>MM</span> Mapa Mental IA</div>
+  <div class="header-btns">
+    <button class="btn btn-outline editor-only" onclick="toggleMinimalUI()">Vista limpa</button>
+    <button class="btn btn-outline" onclick="togglePosterMode()">Modo poster</button>
+    <button class="btn btn-outline" onclick="printPoster()">Imprimir</button>
+    <button class="btn btn-outline editor-only" onclick="runSelfTests()">Self-test</button>
+    <button class="btn btn-outline editor-only" onclick="exportJSON()">Exportar JSON</button>
+    <button class="btn btn-outline" onclick="exportPNG()">Exportar PNG</button>
+    <button class="btn btn-primary editor-only" onclick="saveMap()">Salvar Mapa</button>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- LEFT -->
+  <aside class="sidebar sidebar-left">
+    <div class="s-section">
+      <div class="s-title">Ferramentas</div>
+      <div class="tool-grid">
+        <button class="tool-btn" onclick="addNode()"><span class="ti">+</span>Adicionar no</button>
+        <button class="tool-btn" onclick="addChild()"><span class="ti">[]</span>Adicionar filho</button>
+        <button class="tool-btn danger" onclick="removeNode()"><span class="ti">x</span>Remover no</button>
+        <button class="tool-btn" onclick="centerMap()"><span class="ti">*</span>Centralizar</button>
+        <button class="tool-btn danger" onclick="clearAll()"><span class="ti">-</span>Limpar tudo</button>
+        <button class="tool-btn" onclick="undo()"><span class="ti"><</span>Desfazer</button>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Configuracoes</div>
+      <div class="cfg-group">
+        <label class="cfg-label">Tema do Mapa</label>
+        <select id="mapTheme" onchange="changeTheme()">
+          <option value="tecnologia">Tecnologia</option>
+          <option value="negocios">Negocios</option>
+          <option value="educacao">Educacao</option>
+          <option value="criativo">Criativo</option>
+        </select>
+      </div>
+      <div class="cfg-group">
+        <label class="cfg-label">Cor dos nos</label>
+        <div class="color-row">
+          <input type="color" id="nodeColor" value="#7c3aed" onchange="changeNodeColor()">
+          <span style="font-size:11px;color:var(--text-muted)">Clique para alterar</span>
+        </div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Historico</div>
+      <div class="hist-list" id="historyList">
+        <div class="hist-item"><div class="hist-action">Inicializado</div><div class="hist-meta">Agora · 1 no</div></div>
+      </div>
+    </div>
+    <div class="s-section">
+      <div class="s-title">Templates</div>
+      <div class="tmpl-grid">
+        <div class="tmpl-card" onclick="loadTemplate('brainstorm')"><span class="tmpl-icon">A</span><span class="tmpl-name">Brainstorm</span></div>
+        <div class="tmpl-card" onclick="loadTemplate('projeto')"><span class="tmpl-icon">P</span><span class="tmpl-name">Projeto</span></div>
+        <div class="tmpl-card" onclick="loadTemplate('estudo')"><span class="tmpl-icon">E</span><span class="tmpl-name">Estudo</span></div>
+        <div class="tmpl-card" onclick="loadTemplate('apresentacao')"><span class="tmpl-icon">S</span><span class="tmpl-name">Apresentacao</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CANVAS -->
+  <main class="canvas-area" id="canvasArea">
+    <div class="canvas-bar">
+      <span><span class="status-dot"></span>Online</span>
+      <div class="bar-div"></div>
+      <button class="canvas-btn" onclick="zoomIn()">Zoom +</button>
+      <button class="canvas-btn" onclick="zoomOut()">Zoom -</button>
+      <div class="bar-div"></div>
+      <span class="poster-chip" id="layoutBadge">Poster bilateral</span>
+      <span class="zoom-badge" id="zoomBadge">100%</span>
+    </div>
+    <div class="map-wrap" id="mapWrap">
+      <svg id="svgConns" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="map-vp" id="mapVp"></div>
+    </div>
+    <div class="canvas-note">estilo visual inspirado em mapa mental editorial, com leitura vertical para estudo e impressao</div>
+  </main>
+
+  <!-- RIGHT -->
+  <aside class="sidebar sidebar-right">
+    <div class="ai-section">
+      <div class="r-title">Gerar com IA</div>
+      <textarea class="prompt-area" id="aiPrompt"
+        placeholder="Descreva o tema e os topicos que quer distribuir no mapa."></textarea>
+      <div class="depth-row">
+        <button class="depth-btn" data-depth="1" onclick="setDepth(1)">LOW</button>
+        <button class="depth-btn active" data-depth="2" onclick="setDepth(2)">MEDIUM</button>
+        <button class="depth-btn" data-depth="3" onclick="setDepth(3)">HIGH</button>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="generateWithAI()">Gerar mapa</button>
+      <div class="ai-status" id="aiStatus">Digite um tema e gere o mapa.</div>
+      <div class="test-log hidden" id="testLog"></div>
+    </div>
+    <div class="sugg-section">
+      <div class="r-title">Sugestoes rapidas</div>
+      <div class="sugg-grid">
+        <button class="sugg-btn" onclick="quickSuggest('Como funciona Machine Learning')">ðŸ¤– Machine Learning</button>
+        <button class="sugg-btn" onclick="quickSuggest('Arquitetura de um app React moderno')">âš›ï¸ React</button>
+        <button class="sugg-btn" onclick="quickSuggest('Como montar um Plano de Negocios')">Plano de Negocios</button>
+        <button class="sugg-btn" onclick="quickSuggest('Gestao de Projetos com metodologias ageis')">Gestao Agil</button>
+        <button class="sugg-btn" onclick="quickSuggest('Fundamentos de Python para iniciantes')">ðŸ Python</button>
+        <button class="sugg-btn" onclick="quickSuggest('Estrategias de marketing digital')">Marketing</button>
+      </div>
+    </div>
+    <div class="gen-hist">
+      <div class="r-title">Ultimas geracoes</div>
+      <div id="aiHistList"><div class="gh-empty">Nenhuma geracao ainda.</div></div>
+    </div>
+    <div class="sugg-section">
+      <div class="r-title">AmyMind Verification</div>
+      <a href="https://theresanaiforthat.com/ai/amymind/?ref=featured&v=9853208" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600"></a>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   ESTADO GLOBAL
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+let nodes        = [];
+let selectedNode = null;
+let zoom         = 1;
+let pan          = { x: 0, y: 0 };
+let isPanning    = false, panStart = { x: 0, y: 0 };
+let isDragging   = false, dragNode = null, dragOff = { x: 0, y: 0 };
+let history      = []; // mantido para compatibilidade visual de histÃ³rico
+let historyStack = [];
+let nodeId       = 1;
+let currentDepth = 2;
+let aiGenerations = [];
+let posterMode   = true;
+let minimalUiMode = false;
+let lastGeneratedPrompt = '';
+let nodeMetrics = new Map();
+const MAX_HISTORY = 50;
+const STORAGE_KEY = 'mapaMentalIA';
+const STORAGE_VERSION = 3;
+
+// Public page: keep the shipped HTML free of secrets.
+const OPENAI_API_KEY = '';
+
+const THEMES = {
+  tecnologia: { r:'#bc8070', l1:'#d6a188', l2:'#8ebddf', l3:'#86c6a1', l4:'#d8afd0' },
+  negocios:   { r:'#b57263', l1:'#d4a164', l2:'#9bbbd9', l3:'#89c1a2', l4:'#d0a0ad' },
+  educacao:   { r:'#8f87bf', l1:'#78c0d8', l2:'#9dcf8b', l3:'#e6b175', l4:'#d2a8c8' },
+  criativo:   { r:'#cf937d', l1:'#79c7b0', l2:'#85b7e8', l3:'#e2ae86', l4:'#cc9ac8' },
+};
+let theme = THEMES.tecnologia;
+
+const MINDMAP_JSON_SCHEMA = {
+  type:'object',
+  additionalProperties:false,
+  required:['root','children'],
+  properties:{
+    root:{type:'string', minLength:1},
+    children:{type:'array', items:{$ref:'#/$defs/node'}}
+  },
+  $defs:{
+    node:{
+      type:'object',
+      additionalProperties:false,
+      required:['text','children'],
+      properties:{
+        text:{type:'string', minLength:1},
+        children:{type:'array', items:{$ref:'#/$defs/node'}}
+      }
+    }
+  }
+};
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DIMENSÃ•ES DOS NÃ“S
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+const NODE_W  = { root: 220, l1: 196, default: 186 };
+const NODE_H  = 60;
+const GAP_H   = 34;
+const GAP_X   = { l1: 320, l2: 280, l3: 250 };
+
+function nodeBaseWidth(nd) {
+  if (nd.isRoot) return NODE_W.root;
+  if (nd.level===1) return NODE_W.l1;
+  return NODE_W.default;
+}
+
+function nodeMetric(nd) {
+  const measured = nodeMetrics.get(nd.id);
+  if (measured) return measured;
+  return { width: nodeBaseWidth(nd), height: NODE_H };
+}
+
+function nodeWidth(nd) {
+  return nodeMetric(nd).width;
+}
+
+function nodeHeight(nd) {
+  return nodeMetric(nd).height;
+}
+
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+function cleanText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+function splitNodeContent(text) {
+  const value = cleanText(text);
+  const parts = value.split(/\s*[|:-]\s+/);
+  if (parts.length > 1) {
+    return { title: parts[0], description: parts.slice(1).join(' - ') };
+  }
+  const sentenceBreak = value.match(/^(.{1,54}?[.!?])\s+(.+)$/);
+  if (sentenceBreak) {
+    return { title: sentenceBreak[1].trim(), description: sentenceBreak[2].trim() };
+  }
+  return { title: value, description: '' };
+}
+function getStudyModeMeta(depth) {
+  if (depth === 1) return { label:'LOW', instruction:'Use apenas palavras-chave e poucos ramos principais.', maxDepth:1 };
+  if (depth === 2) return { label:'MEDIUM', instruction:'Use titulos curtos com explicacoes breves e hierarquia simples.', maxDepth:2 };
+  return { label:'HIGH', instruction:'Use estrutura completa para estudo, fluxo logico e explicacoes concisas.', maxDepth:4 };
+}
+function getOpenAIApiKey() {
+  if (OPENAI_API_KEY && OPENAI_API_KEY.startsWith('sk-')) return OPENAI_API_KEY;
+  const saved = localStorage.getItem('openai_api_key') || '';
+  if (saved.startsWith('sk-')) return saved;
+  const provided = window.prompt('Informe sua OpenAI API key para usar a geracao com IA:', '') || '';
+  if (provided.startsWith('sk-')) {
+    localStorage.setItem('openai_api_key', provided);
+    return provided;
+  }
+  return '';
+}
+function applyStudyDepth(node, level, maxDepth) {
+  if (level >= maxDepth) node.children = [];
+  node.children = (node.children || []).map((child) => applyStudyDepth(child, level + 1, maxDepth));
+  if (level > 0 && maxDepth === 1) node.text = splitNodeContent(node.text).title;
+  if (level > 0 && maxDepth === 2) {
+    const content = splitNodeContent(node.text);
+    node.text = content.description ? `${content.title} | ${content.description.slice(0, 72)}` : content.title;
+  }
+  return node;
+}
+function hexToRgba(hex, alpha) {
+  const normalized = String(hex || '#000000').replace('#', '');
+  const value = normalized.length === 3
+    ? normalized.split('').map((v) => v + v).join('')
+    : normalized.padEnd(6, '0').slice(0, 6);
+  const int = parseInt(value, 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+function escapeHtml(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function escapeXml(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+function updateZoomBadge() {
+  const z=document.getElementById('zoomBadge');
+  if (z) z.textContent = `${Math.round(zoom*100)}%`;
+}
+function normalizePan(p) {
+  if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return {x:0,y:0};
+  return {x:Number(p.x),y:Number(p.y)};
+}
+function getMaxNodeId() { return nodes.reduce((m,n)=>Math.max(m, Number(n.id)||0),0); }
+function clearNodeMetrics() {
+  nodeMetrics = new Map();
+}
+function measureNodeMetrics() {
+  const host = document.createElement('div');
+  host.style.cssText = 'position:absolute;left:-10000px;top:-10000px;visibility:hidden;pointer-events:none;';
+  document.body.appendChild(host);
+  const metrics = new Map();
+  nodes.forEach((nd) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = `node${nd.isRoot ? ' root' : ''}`;
+    wrapper.style.position = 'absolute';
+    wrapper.style.width = `${nodeBaseWidth(nd)}px`;
+    wrapper.style.maxWidth = `${posterMode ? 240 : 220}px`;
+    wrapper.style.minWidth = `${nodeBaseWidth(nd)}px`;
+    const parts = splitNodeContent(nd.text);
+    wrapper.innerHTML = `<span class="node-label">${escapeHtml(parts.title)}</span>${parts.description ? `<span class="node-desc">${escapeHtml(parts.description)}</span>` : ''}`;
+    host.appendChild(wrapper);
+    const rect = wrapper.getBoundingClientRect();
+    metrics.set(nd.id, {
+      width: Math.ceil(Math.max(nodeBaseWidth(nd), rect.width)),
+      height: Math.ceil(Math.max(NODE_H, rect.height))
+    });
+  });
+  host.remove();
+  nodeMetrics = metrics;
+}
+
+function getStateSnapshot() {
+  return {
+    nodes: deepClone(nodes),
+    selectedNodeId: selectedNode ? selectedNode.id : null,
+    nodeId, zoom, pan: deepClone(pan),
+    aiGenerations: deepClone(aiGenerations),
+    posterMode,
+    minimalUiMode
+  };
+}
+function snapshotHash(s) {
+  return JSON.stringify({nodes:s.nodes, selectedNodeId:s.selectedNodeId, nodeId:s.nodeId, zoom:s.zoom, pan:s.pan, posterMode:s.posterMode, minimalUiMode:s.minimalUiMode});
+}
+function pushHistorySnapshot(reason='action') {
+  const snapshot=getStateSnapshot();
+  snapshot.reason=reason;
+  const hash=snapshotHash(snapshot);
+  const last=historyStack[historyStack.length-1];
+  if (last && last.hash===hash) return;
+  historyStack.push({hash,snapshot});
+  if (historyStack.length>MAX_HISTORY) historyStack.shift();
+}
+function restoreSnapshot(snapshot) {
+  nodes = Array.isArray(snapshot.nodes)
+    ? deepClone(snapshot.nodes).map((node) => ({ ...node, text: cleanText(node.text), branchSide: node.branchSide || 'right' }))
+    : [];
+  selectedNode = null;
+  if (snapshot.selectedNodeId!=null) {
+    selectedNode = nodes.find(n=>n.id===snapshot.selectedNodeId) || null;
+  }
+  nodeId = Number.isFinite(Number(snapshot.nodeId)) ? Number(snapshot.nodeId) : (getMaxNodeId()+1);
+  if (nodeId <= getMaxNodeId()) nodeId = getMaxNodeId()+1;
+  zoom = Number.isFinite(Number(snapshot.zoom)) ? Math.max(0.2, Math.min(4, Number(snapshot.zoom))) : 1;
+  pan = normalizePan(snapshot.pan);
+  if (Array.isArray(snapshot.aiGenerations)) aiGenerations = snapshot.aiGenerations.slice(0,5);
+  posterMode = snapshot.posterMode !== false;
+  minimalUiMode = Boolean(snapshot.minimalUiMode);
+  renderAIHistory();
+  updateZoomBadge();
+  applyUiModes();
+  render();
+  applyXform();
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   ALGORITMO DE LAYOUT â€” Reingold-Tilford simplificado
+   Calcula "tamanho de subÃ¡rvore" e distribui os filhos
+   simetricamente sem sobreposiÃ§Ã£o.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/**
+ * Retorna a altura total (em px) que a subÃ¡rvore de `nd` ocupa.
+ * Ã‰ o mÃ¡ximo entre a altura mÃ­nima do nÃ³ e a soma de todos os filhos.
+ */
+function subtreeHeight(nd, nodeMap) {
+  const children = nodeMap.get(nd.id) || [];
+  if (children.length === 0) return nodeHeight(nd) + GAP_H;
+  const total = children.reduce((sum, ch) => sum + subtreeHeight(ch, nodeMap), 0);
+  return Math.max(total, nodeHeight(nd) + GAP_H);
+}
+
+function branchGap(level) {
+  const base = GAP_X[`l${Math.min(level, 3)}`] || 250;
+  return posterMode ? Math.max(180, base - 40) : base;
+}
+
+function layoutBranch(nd, anchorX, cy, nodeMap, side) {
+  const width = nodeWidth(nd);
+  const height = nodeHeight(nd);
+  if (!nd.manual || !Number.isFinite(nd.x) || !Number.isFinite(nd.y)) {
+    nd.x = side === 'right' ? anchorX : anchorX - width;
+    nd.y = cy - height / 2;
+  }
+
+  const children = nodeMap.get(nd.id) || [];
+  if (children.length === 0) return;
+
+  const heights = children.map((child) => subtreeHeight(child, nodeMap));
+  const total = heights.reduce((sum, value) => sum + value, 0);
+  let cursorY = cy - total / 2;
+  const nextAnchor = side === 'right'
+    ? nd.x + width + branchGap(nd.level + 1)
+    : nd.x - branchGap(nd.level + 1);
+
+  children.forEach((child, index) => {
+    const childCY = cursorY + heights[index] / 2;
+    child.branchSide = side;
+    layoutBranch(child, nextAnchor, childCY, nodeMap, side);
+    cursorY += heights[index];
+  });
+}
+
+/**
+ * Posiciona recursivamente os nÃ³s.
+ * @param {object} nd       - nÃ³ atual
+ * @param {number} cx       - x do centro-esquerdo deste nÃ³
+ * @param {number} cy       - y do centro vertical desta subÃ¡rvore
+ * @param {Map}    nodeMap  - Map<parentId, children[]>
+ */
+function layoutNode(nd, cx, cy, nodeMap) {
+  const height = nodeHeight(nd);
+  if (!nd.manual || !Number.isFinite(nd.x) || !Number.isFinite(nd.y)) {
+    nd.x = cx;
+    nd.y = cy - height / 2;
+  }
+
+  const children = nodeMap.get(nd.id) || [];
+  if (children.length === 0) return;
+
+  const levelGap = GAP_X[`l${nd.level + 1}`] || 250;
+  const childX   = nd.x + nodeWidth(nd) + levelGap;
+
+  // Calcula a altura total dos filhos
+  const heights  = children.map(ch => subtreeHeight(ch, nodeMap));
+  const total    = heights.reduce((a, b) => a + b, 0);
+
+  // ComeÃ§a no topo da subÃ¡rvore
+  let curY = cy - total / 2;
+
+  children.forEach((ch, i) => {
+    const h = heights[i];
+    // Centro vertical desta sub-subÃ¡rvore
+    const childCY = curY + h / 2;
+    layoutNode(ch, childX, childCY, nodeMap);
+    curY += h;
+  });
+}
+
+/**
+ * Roda o layout completo para todos os nÃ³s.
+ */
+function runLayout() {
+  const root = nodes.find(n => n.isRoot);
+  if (!root) return;
+  clearNodeMetrics();
+  measureNodeMetrics();
+
+  // Monta mapa parentId â†’ filhos
+  const nodeMap = new Map();
+  nodes.forEach(n => {
+    if (!nodeMap.has(n.id)) nodeMap.set(n.id, []);
+    if (n.parentId !== null) {
+      if (!nodeMap.has(n.parentId)) nodeMap.set(n.parentId, []);
+      nodeMap.get(n.parentId).push(n);
+    }
+  });
+
+  const wrap = document.getElementById('mapWrap');
+  const cx   = wrap.offsetWidth  / 2 - nodeWidth(root) / 2;
+  const cy   = wrap.offsetHeight / 2;
+  if (!posterMode) {
+    layoutNode(root, cx, cy, nodeMap);
+    return;
+  }
+
+  if (!root.manual || !Number.isFinite(root.x) || !Number.isFinite(root.y)) {
+    root.x = cx;
+    root.y = cy - nodeHeight(root) / 2;
+  }
+
+  const firstLevel = nodeMap.get(root.id) || [];
+  const leftChildren = [];
+  const rightChildren = [];
+  firstLevel.forEach((child, index) => {
+    child.branchSide = index % 2 === 0 ? 'left' : 'right';
+    (child.branchSide === 'left' ? leftChildren : rightChildren).push(child);
+  });
+
+  const placeSide = (branchNodes, side) => {
+    if (!branchNodes.length) return;
+    const heights = branchNodes.map((child) => subtreeHeight(child, nodeMap));
+    const total = heights.reduce((sum, value) => sum + value, 0);
+    let cursorY = cy - total / 2;
+    const anchorX = side === 'right'
+      ? root.x + nodeWidth(root) + branchGap(1)
+      : root.x - branchGap(1);
+    branchNodes.forEach((child, index) => {
+      const childCY = cursorY + heights[index] / 2;
+      layoutBranch(child, anchorX, childCY, nodeMap, side);
+      cursorY += heights[index];
+    });
+  };
+
+  placeSide(leftChildren, 'left');
+  placeSide(rightChildren, 'right');
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RENDER
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function render(skipLayout = false) {
+  if (!skipLayout) runLayout();
+  else measureNodeMetrics();
+
+  const vp  = document.getElementById('mapVp');
+  const svg = document.getElementById('svgConns');
+
+  vp.querySelectorAll('.node').forEach(e => e.remove());
+
+  nodes.forEach(nd => {
+    const el = document.createElement('div');
+    el.className = 'node'
+      + (nd.isRoot ? ' root' : '')
+      + (selectedNode?.id === nd.id ? ' selected' : '');
+    el.id = `node-${nd.id}`;
+    el.dataset.id = nd.id;
+    el.style.cssText = `
+      left:${nd.x}px; top:${nd.y}px;
+      width:${nodeWidth(nd)}px;
+      background:${hexToRgba(nd.color, posterMode ? 0.16 : 0.13)};
+      border-color:${nd.color};
+      color:var(--node-text);
+    `;
+    const content = splitNodeContent(nd.text);
+    el.innerHTML = `
+      <span class="node-label">${escapeHtml(content.title)}</span>
+      ${content.description ? `<span class="node-desc">${escapeHtml(content.description)}</span>` : ''}
+      <div class="node-actions">
+        <button class="na-btn" style="background:#10b981;color:#fff"
+          onclick="event.stopPropagation();addChildOf(${nd.id})">+</button>
+        ${!nd.isRoot
+          ? `<button class="na-btn" style="background:#dc2626;color:#fff"
+               onclick="event.stopPropagation();deleteNode(${nd.id})">Ã—</button>`
+          : ''}
+      </div>`;
+    el.addEventListener('mousedown', e => startDrag(e, nd));
+    el.addEventListener('click',    e => { e.stopPropagation(); selectedNode = nd; render(true); });
+    el.addEventListener('dblclick', e => { e.stopPropagation(); editNode(nd); });
+    vp.appendChild(el);
+  });
+
+  requestAnimationFrame(() => drawConnections(svg));
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CONEXÃ•ES SVG DINÃ‚MICAS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function drawConnections(svg) {
+  svg = svg || document.getElementById('svgConns');
+  let paths = '';
+
+  nodes.forEach(nd => {
+    if (nd.parentId === null) return;
+    const parent = nodes.find(n => n.id === nd.parentId);
+    if (!parent) return;
+
+    const pw = nodeWidth(parent);
+    const childSide = nd.branchSide || parent.branchSide || 'right';
+
+    const x1 = childSide === 'left' ? parent.x : parent.x + pw;
+    const y1 = parent.y + nodeHeight(parent) / 2;
+    const x2 = childSide === 'left' ? nd.x + nodeWidth(nd) : nd.x;
+    const y2 = nd.y + nodeHeight(nd) / 2;
+    const mx = (x1 + x2) / 2;
+
+    paths += `<path
+      d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"
+      stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}"
+      fill="none" stroke-opacity="${posterMode ? 0.9 : 0.7}" stroke-linecap="round"/>`;
+  });
+
+  svg.innerHTML = paths;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TRANSFORM (pan + zoom)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function applyXform() {
+  const t = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+  document.getElementById('mapVp').style.transform    = t;
+  document.getElementById('svgConns').style.transform = t;
+}
+
+function applyUiModes() {
+  document.body.classList.toggle('poster-mode', posterMode);
+  document.body.classList.toggle('minimal-ui', minimalUiMode);
+  const badge = document.getElementById('layoutBadge');
+  if (badge) badge.textContent = posterMode ? 'Poster bilateral' : 'Editor livre';
+}
+
+function togglePosterMode() {
+  posterMode = !posterMode;
+  applyUiModes();
+  nodes.forEach((node) => { if (!node.isRoot) node.manual = false; });
+  render();
+  centerMap();
+}
+
+function toggleMinimalUI() {
+  minimalUiMode = !minimalUiMode;
+  applyUiModes();
+}
+
+function printPoster() {
+  const previous = minimalUiMode;
+  minimalUiMode = true;
+  posterMode = true;
+  applyUiModes();
+  render();
+  centerMap();
+  setTimeout(() => {
+    window.print();
+    minimalUiMode = previous;
+    applyUiModes();
+  }, 80);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DRAG DE NÃ“S â€” atualiza estado + SVG em tempo real
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function startDrag(e, nd) {
+  if (e.button !== 0) return;
+  e.stopPropagation(); e.preventDefault();
+  isDragging = true; dragNode = nd;
+  const beforeX = nd.x, beforeY = nd.y;
+  dragOff.x = (e.clientX - pan.x) / zoom - nd.x;
+  dragOff.y = (e.clientY - pan.y) / zoom - nd.y;
+
+  const svg = document.getElementById('svgConns');
+
+  function onMove(ev) {
+    if (!isDragging || !dragNode) return;
+    dragNode.x = (ev.clientX - pan.x) / zoom - dragOff.x;
+    dragNode.y = (ev.clientY - pan.y) / zoom - dragOff.y;
+    dragNode.manual = true;
+    const el = document.getElementById(`node-${dragNode.id}`);
+    if (el) { el.style.left = `${dragNode.x}px`; el.style.top = `${dragNode.y}px`; }
+    drawConnections(svg);
+  }
+  function onUp() {
+    if (dragNode && (Math.abs(dragNode.x-beforeX) > 0.5 || Math.abs(dragNode.y-beforeY) > 0.5)) {
+      pushHistorySnapshot('move-node');
+    }
+    isDragging = false; dragNode = null;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   EVENTOS DO CANVAS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+document.addEventListener('DOMContentLoaded', () => {
+  const ca = document.getElementById('canvasArea');
+  const promptField = document.getElementById('aiPrompt');
+  applyUiModes();
+
+  ca.addEventListener('mousedown', e => {
+    const t = e.target;
+    if (t===ca || t.id==='mapWrap' || t.id==='svgConns' || t.id==='mapVp') {
+      isPanning=true; panStart.x=e.clientX-pan.x; panStart.y=e.clientY-pan.y;
+      selectedNode=null; render(true);
+    }
+  });
+  document.addEventListener('mousemove', e => {
+    if (!isPanning) return;
+    pan.x=e.clientX-panStart.x; pan.y=e.clientY-panStart.y; applyXform();
+  });
+  document.addEventListener('mouseup', () => { isPanning=false; });
+
+  ca.addEventListener('wheel', e => {
+    e.preventDefault();
+    zoom = Math.max(0.2, Math.min(4, zoom + (e.deltaY>0?-0.08:0.08)));
+    updateZoomBadge();
+    applyXform();
+  }, { passive:false });
+
+  promptField?.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      generateWithAI();
+    }
+  });
+
+  window.addEventListener('resize', () => render());
+  try { init(); } catch (err) { console.error(err); setStatus('Erro ao inicializar o app.','error'); }
+});
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   ZOOM / CENTER
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function zoomIn()  { zoom=Math.min(4,zoom+0.15); updateZoomBadge(); applyXform(); }
+function zoomOut() { zoom=Math.max(0.2,zoom-0.15); updateZoomBadge(); applyXform(); }
+function centerMap() {
+  const wrap = document.getElementById('mapWrap');
+  const root = nodes.find(n=>n.isRoot);
+  if (!root) return;
+  zoom = posterMode ? 0.92 : 0.75;
+  pan.x = wrap.offsetWidth  / 2 - (root.x + nodeWidth(root)/2) * zoom;
+  pan.y = wrap.offsetHeight / 2 - (root.y + nodeHeight(root)/2) * zoom;
+  applyXform();
+  updateZoomBadge();
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GESTÃƒO DE NÃ“S
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function init() {
+  const restored = loadMapFromStorage();
+  if (!restored) {
+    addNode('Meu Mapa Mental', null, true);
+    setTimeout(centerMap, 100);
+  }
+  pushHistorySnapshot('initial-state');
+  setStatus('Digite um tema e gere o mapa.','');
+}
+
+function mkNode(text, parentId, isRoot) {
+  const parent = parentId ? nodes.find(n=>n.id===parentId) : null;
+  const level  = parent ? parent.level+1 : 0;
+  const palette = [theme.l1, theme.l2, theme.l3, theme.l4 || theme.l1];
+  const color  = isRoot ? theme.r : palette[(level - 1) % palette.length];
+  return { id:nodeId++, text, parentId:parentId||null, level, color, x:0, y:0, isRoot, manual:false, branchSide:'right' };
+}
+
+function addNode(text=null, parentId=null, isRoot=false) {
+  if (!text) { text=prompt('Texto do no:','Novo no'); if(!text) return; }
+  pushHistorySnapshot('add-node');
+  if (!isRoot && !parentId && selectedNode) parentId=selectedNode.id;
+  const n=mkNode(cleanText(text),parentId,isRoot);
+  if (parentId) {
+    const parent = nodes.find((node) => node.id === parentId);
+    if (parent) n.branchSide = parent.branchSide || n.branchSide;
+  }
+  nodes.push(n);
+  selectedNode = n;
+  logHistory(`Adicionar "${text}"`);
+  render();
+}
+
+function addChild() {
+  if (!selectedNode) { alert('Selecione um no primeiro.'); return; }
+  const t=prompt('Texto do filho:','Novo Filho'); if(!t) return;
+  pushHistorySnapshot('add-child');
+  const n=mkNode(cleanText(t),selectedNode.id,false);
+  n.branchSide = selectedNode.branchSide || 'right';
+  nodes.push(n);
+  selectedNode = n;
+  logHistory(`Filho: "${t}"`);
+  render();
+}
+
+function addChildOf(id) {
+  const nd=nodes.find(n=>n.id===id); if(!nd) return;
+  const t=prompt('Texto do filho:','Novo Filho'); if(!t) return;
+  pushHistorySnapshot('add-child-of');
+  const c=mkNode(cleanText(t),id,false);
+  c.branchSide = nd.branchSide || 'right';
+  nodes.push(c);
+  selectedNode = c;
+  logHistory(`Filho: "${t}"`);
+  render();
+}
+
+function removeNode() {
+  if (!selectedNode) { alert('Selecione um no.'); return; }
+  if (selectedNode.isRoot) { alert('Nao e possivel remover o no raiz.'); return; }
+  deleteNode(selectedNode.id);
+}
+function deleteNode(id) {
+  const target = nodes.find(n=>n.id===id);
+  if (!target || target.isRoot) return;
+  pushHistorySnapshot('delete-node');
+  const toDelete = new Set();
+  function collect(targetId){
+    toDelete.add(targetId);
+    nodes.filter(n=>n.parentId===targetId).forEach(c=>collect(c.id));
+  }
+  collect(id);
+  nodes = nodes.filter(n=>!toDelete.has(n.id));
+  if (selectedNode && toDelete.has(selectedNode.id)) selectedNode=null;
+  clearNodeMetrics();
+  render();
+}
+
+function clearAll() {
+  if (!confirm('Limpar todo o mapa?')) return;
+  pushHistorySnapshot('clear-all');
+  nodes=[]; selectedNode=null; nodeId=1; history=[];
+  document.getElementById('historyList').innerHTML='';
+  addNode('Meu Mapa Mental',null,true);
+  setTimeout(centerMap,100);
+}
+
+function undo() {
+  if (!historyStack.length) { setStatus('Sem ações para desfazer.','error'); return; }
+  const last=historyStack.pop();
+  if (!last?.snapshot) { setStatus('Não foi possível desfazer.','error'); return; }
+  restoreSnapshot(last.snapshot);
+  logHistory('Desfazer');
+}
+
+function editNode(nd) {
+  const t=prompt('Editar:',nd.text);
+  if(t?.trim() && t.trim()!==nd.text) {
+    pushHistorySnapshot('edit-node');
+    nd.text=cleanText(t);
+    clearNodeMetrics();
+    render();
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TEMA / COR
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function changeTheme() {
+  theme=THEMES[document.getElementById('mapTheme').value]||THEMES.tecnologia;
+  const palette = [theme.l1, theme.l2, theme.l3, theme.l4 || theme.l1];
+  nodes.forEach(nd=>{
+    nd.color=nd.isRoot ? theme.r : palette[(nd.level - 1) % palette.length];
+  });
+  render(true);
+}
+function changeNodeColor() {
+  const c=document.getElementById('nodeColor').value;
+  if(selectedNode){pushHistorySnapshot('change-node-color'); selectedNode.color=c;render(true);}
+}
+function setDepth(d) {
+  currentDepth=d;
+  document.querySelectorAll('.depth-btn').forEach(b=>{
+    b.classList.toggle('active',parseInt(b.dataset.depth)===d);
+  });
+  const mode = getStudyModeMeta(d);
+  setStatus(`${mode.label}: ${mode.instruction}`,'');
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HISTÃ“RICO
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function logHistory(action) {
+  const list=document.getElementById('historyList');
+  const now=new Date().toLocaleTimeString('pt-BR');
+  const item=document.createElement('div');
+  item.className='hist-item';
+  item.innerHTML=`<div class="hist-action">${escapeHtml(action)}</div>
+    <div class="hist-meta">${now} Â· ${nodes.length} nÃ³${nodes.length!==1?'s':''}</div>`;
+  list.prepend(item);
+  while(list.children.length>20) list.removeChild(list.lastChild);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   IA â€” OpenAI GPT-4o
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function extractTextFromResponsesPayload(data){
+  if (!data || typeof data !== 'object') return '';
+  if (typeof data.output_text === 'string' && data.output_text.trim()) return data.output_text.trim();
+  const out = Array.isArray(data.output) ? data.output : [];
+  const chunks = [];
+  out.forEach(item=>{
+    const content = Array.isArray(item.content) ? item.content : [];
+    content.forEach(c=>{
+      if (typeof c.text === 'string' && c.text.trim()) chunks.push(c.text.trim());
+      if (typeof c.output_text === 'string' && c.output_text.trim()) chunks.push(c.output_text.trim());
+    });
+  });
+  return chunks.join('\n').trim();
+}
+function parseLooseJson(raw){
+  if (typeof raw !== 'string') throw new Error('Resposta da IA vazia.');
+  const direct = raw.trim();
+  const attempts = [direct, direct.replace(/```json/gi,'```').replace(/```/g,'').trim()];
+  const s=direct.indexOf('{'), e=direct.lastIndexOf('}');
+  if (s>=0 && e>s) attempts.push(direct.slice(s,e+1));
+  for (const c of attempts) { if (!c) continue; try { return JSON.parse(c); } catch(_) {} }
+  throw new Error('Nao foi possivel interpretar o JSON retornado pela IA.');
+}
+function normalizeTreeNode(n){
+  if (!n || typeof n!=='object') return null;
+  const text = String(n.text||'').trim();
+  if (!text) return null;
+  const children = Array.isArray(n.children) ? n.children : [];
+  return { text, children: children.map(normalizeTreeNode).filter(Boolean) };
+}
+function normalizeMindMapJSON(input){
+  if (!input || typeof input!=='object') throw new Error('Formato do mapa invalido.');
+  const root = String(input.root||'').trim();
+  if (!root) throw new Error('Campo root vazio.');
+  const children = (Array.isArray(input.children)?input.children:[]).map(normalizeTreeNode).filter(Boolean);
+  return { root, children };
+}
+async function requestMindMapJSON(promptText, depthLabel){
+  const apiKey = getOpenAIApiKey();
+  if (!apiKey) throw new Error('API key ausente.');
+  const systemPrompt = [
+    'Voce cria mapas mentais de estudo em portugues.',
+    'Responda somente JSON valido no schema informado.',
+    'Organize o conteudo em progressao de aprendizagem: fundamentos, blocos principais, detalhes, revisao.',
+    'Evite ramos soltos, repeticoes, jargoes desnecessarios e topicos desconexos.',
+    depthLabel === 'LOW'
+      ? 'Modo LOW: use apenas palavras-chave e poucos ramos principais.'
+      : depthLabel === 'MEDIUM'
+        ? 'Modo MEDIUM: use titulos com explicacoes curtas e hierarquia simples.'
+        : 'Modo HIGH: use estrutura completa para estudo com explicacoes curtas e fluxo logico.'
+  ].join(' ');
+  const userPrompt=`Tema de estudo: "${promptText}". Monte um mapa organizado e estudavel.`;
+  const body={
+    model:'gpt-4o',
+    input:[
+      {role:'system',content:[{type:'input_text',text:systemPrompt}]},
+      {role:'user',content:[{type:'input_text',text:userPrompt}]}
+    ],
+    text:{ format:{ type:'json_schema', name:'mind_map_schema', strict:true, schema:MINDMAP_JSON_SCHEMA } },
+    temperature:0.4,
+    max_output_tokens:1800
+  };
+  const res=await fetch('https://api.openai.com/v1/responses',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message||`HTTP ${res.status}`);}
+  const data=await res.json();
+  const raw=extractTextFromResponsesPayload(data);
+  if (!raw) throw new Error('A IA nao retornou conteudo textual.');
+  return normalizeMindMapJSON(parseLooseJson(raw));
+}
+async function generateWithAI() {
+  const prompt=document.getElementById('aiPrompt').value.trim();
+  if(!prompt){setStatus('Escreva algo antes de gerar.','error');return;}
+
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spin">⚙️</span> Gerando...';
+  setStatus('Gerando mapa de estudo...','loading');
+
+  const mode = getStudyModeMeta(currentDepth);
+  try {
+    lastGeneratedPrompt = prompt;
+    const json=applyStudyDepth(await requestMindMapJSON(prompt, mode.label), 0, mode.maxDepth);
+    pushHistorySnapshot('ai-generate');
+    buildMapFromJSON(json);
+    setStatus(`Mapa ${mode.label} gerado: "${json.root}"`,'success');
+    logAIHistory(json.root,prompt);
+    logHistory(`IA gerou: "${json.root}"`);
+    setTimeout(centerMap, 60);
+  } catch(err) {
+    console.error(err);
+    setStatus(`Erro: ${err.message}`,'error');
+  } finally {
+    btn.disabled=false; btn.innerHTML='Gerar mapa';
+  }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   BUILD MAP FROM JSON â€” usa o layout automÃ¡tico
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function buildMapFromJSON(json) {
+  json = normalizeMindMapJSON(json);
+  nodes=[]; selectedNode=null; nodeId=1;
+  clearNodeMetrics();
+  const palette = [theme.l1, theme.l2, theme.l3, theme.l4 || theme.l1];
+
+  // Monta a Ã¡rvore de nÃ³s sem posiÃ§Ã£o (o layout cuida disso)
+  function insertNode(data, parentId, level) {
+    const color  = level===0 ? theme.r : palette[(level - 1) % palette.length];
+    const nd = {
+      id: nodeId++, text: cleanText(data.text||data.root),
+      parentId: parentId||null, level,
+      color, x:0, y:0, isRoot: level===0, manual:false, branchSide:'right'
+    };
+    if (parentId) {
+      const parent = nodes.find((node) => node.id === parentId);
+      if (parent) nd.branchSide = parent.branchSide || nd.branchSide;
+    }
+    nodes.push(nd);
+    (data.children||[]).forEach(ch => insertNode(ch, nd.id, level+1));
+  }
+
+  insertNode({ text: json.root, children: json.children }, null, 0);
+  selectedNode = nodes.find((node) => node.isRoot) || null;
+  render(); // render chama runLayout() automaticamente
+  setTimeout(centerMap, 100);
+}
+
+function setStatus(msg,type='') {
+  const el=document.getElementById('aiStatus');
+  el.textContent=msg; el.className='ai-status'+(type?` ${type}`:'');
+}
+
+function renderAIHistory() {
+  const el=document.getElementById('aiHistList');
+  if(!el) return;
+  if(!aiGenerations.length){ el.innerHTML='<div class="gh-empty">Nenhuma geração ainda.</div>'; return; }
+  el.innerHTML='';
+  aiGenerations.forEach(g=>{
+    const d=document.createElement('div'); d.className='gh-item';
+    d.innerHTML=`<div class="gh-name">🗺️ ${escapeHtml(g.root)}</div>
+      <div class="gh-meta">${escapeHtml(g.time)} — "${escapeHtml(g.prompt.slice(0,38))}${g.prompt.length>38?'…':''}"</div>`;
+    el.appendChild(d);
+  });
+}
+function logAIHistory(rootName,prompt) {
+  aiGenerations.unshift({root:rootName,prompt,time:new Date().toLocaleTimeString('pt-BR')});
+  if(aiGenerations.length>5) aiGenerations.pop();
+  renderAIHistory();
+}
+
+function quickSuggest(text) {
+  document.getElementById('aiPrompt').value=text;
+  generateWithAI();
+}
+
+function regenerateLastPrompt() {
+  if (!lastGeneratedPrompt) return;
+  document.getElementById('aiPrompt').value = lastGeneratedPrompt;
+  generateWithAI();
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TEMPLATES
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+const TEMPLATES = {
+  brainstorm:{root:'Brainstorm',children:[
+    {text:'Ideias Principais',children:[{text:'Ideia A',children:[]},{text:'Ideia B',children:[]},{text:'Ideia C',children:[]}]},
+    {text:'Problemas',children:[{text:'ObstÃ¡culo 1',children:[]},{text:'ObstÃ¡culo 2',children:[]}]},
+    {text:'SoluÃ§Ãµes',children:[{text:'SoluÃ§Ã£o 1',children:[]},{text:'SoluÃ§Ã£o 2',children:[]}]},
+    {text:'PrÃ³ximos Passos',children:[{text:'Passo 1',children:[]},{text:'Passo 2',children:[]}]},
+  ]},
+  projeto:{root:'Projeto',children:[
+    {text:'Objetivos',children:[{text:'Meta 1',children:[]},{text:'Meta 2',children:[]}]},
+    {text:'Equipe',children:[{text:'Dev',children:[]},{text:'Design',children:[]},{text:'QA',children:[]}]},
+    {text:'Cronograma',children:[{text:'Fase 1',children:[]},{text:'Fase 2',children:[]},{text:'Fase 3',children:[]}]},
+    {text:'Riscos',children:[{text:'Risco TÃ©cnico',children:[]},{text:'Risco de Prazo',children:[]}]},
+  ]},
+  estudo:{root:'Estudo',children:[
+    {text:'Conceitos-Chave',children:[{text:'Conceito 1',children:[]},{text:'Conceito 2',children:[]}]},
+    {text:'Exemplos PrÃ¡ticos',children:[{text:'Exemplo 1',children:[]},{text:'Exemplo 2',children:[]}]},
+    {text:'RevisÃ£o',children:[{text:'TÃ³pico A',children:[]},{text:'TÃ³pico B',children:[]}]},
+    {text:'ExercÃ­cios',children:[{text:'Lista 1',children:[]},{text:'Lista 2',children:[]}]},
+  ]},
+  apresentacao:{root:'ApresentaÃ§Ã£o',children:[
+    {text:'IntroduÃ§Ã£o',children:[{text:'Contexto',children:[]},{text:'Objetivos',children:[]}]},
+    {text:'Desenvolvimento',children:[{text:'Ponto 1',children:[]},{text:'Ponto 2',children:[]},{text:'Ponto 3',children:[]}]},
+    {text:'ConclusÃ£o',children:[{text:'Resumo',children:[]},{text:'PrÃ³ximos Passos',children:[]}]},
+  ]},
+};
+
+function loadTemplate(t) {
+  if(!TEMPLATES[t]) return;
+  if(nodes.length>1&&!confirm('Substituir o mapa pelo template?')) return;
+  buildMapFromJSON(TEMPLATES[t]);
+  logHistory(`Template: ${t}`);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   EXPORT / SAVE
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function exportJSON() {
+  const payload={version:STORAGE_VERSION, exportedAt:new Date().toISOString(), theme:document.getElementById('mapTheme')?.value||'tecnologia', zoom, pan, nodeId, nodes};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='mapa-mental.json'; a.click();
+  logHistory('Exportou JSON');
+}
+function wrapTextLines(text, maxChars=18, maxLines=3){
+  const words=String(text||'').split(/\s+/).filter(Boolean); if(!words.length) return [''];
+  const lines=[]; let cur=words[0];
+  for(let i=1;i<words.length;i++){ const tr=`${cur} ${words[i]}`; if(tr.length<=maxChars){cur=tr;} else { lines.push(cur); cur=words[i]; if(lines.length>=maxLines-1) break; } }
+  const used=lines.join(' ').split(/\s+/).filter(Boolean).length; const rest=[cur,...words.slice(used)].join(' ').trim();
+  if(lines.length<maxLines) lines.push(rest.length>maxChars?`${rest.slice(0,maxChars-1)}…`:rest);
+  return lines.slice(0,maxLines);
+}
+function getMapBounds(){
+  if(!nodes.length) return null;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(n=>{ minX=Math.min(minX,n.x); minY=Math.min(minY,n.y); maxX=Math.max(maxX,n.x+nodeWidth(n)); maxY=Math.max(maxY,n.y+nodeHeight(n)); });
+  return {minX,minY,maxX,maxY};
+}
+function buildExportSnapshot() {
+  render(true);
+  const bounds = getMapBounds();
+  if (!bounds) return null;
+  const padding = posterMode ? 56 : 40;
+  let paths = '';
+  let nodeShapes = '';
+  nodes.forEach((nd) => {
+    if (nd.parentId === null) return;
+    const parent = nodes.find((candidate) => candidate.id === nd.parentId);
+    if (!parent) return;
+    const side = nd.branchSide || parent.branchSide || 'right';
+    const x1 = (side==='left' ? parent.x : parent.x + nodeWidth(parent)) - bounds.minX + padding;
+    const y1 = parent.y + nodeHeight(parent) / 2 - bounds.minY + padding;
+    const x2 = (side==='left' ? nd.x + nodeWidth(nd) : nd.x) - bounds.minX + padding;
+    const y2 = nd.y + nodeHeight(nd) / 2 - bounds.minY + padding;
+    const mx = (x1 + x2) / 2;
+    paths += `<path d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}" fill="none" stroke-opacity="${posterMode ? 0.9 : 0.72}" stroke-linecap="round"/>`;
+  });
+  nodes.forEach((nd) => {
+    const x = nd.x - bounds.minX + padding;
+    const y = nd.y - bounds.minY + padding;
+    const width = nodeWidth(nd);
+    const height = nodeHeight(nd);
+    const content = splitNodeContent(nd.text);
+    const textX = x + width / 2;
+    const titleY = y + (content.description ? 20 : height / 2 + 4);
+    nodeShapes += `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${nd.isRoot ? 18 : 14}" ry="${nd.isRoot ? 18 : 14}" fill="${escapeXml(hexToRgba(nd.color, posterMode ? 0.16 : 0.13))}" stroke="${nd.color}" stroke-width="1.5"/>`;
+    nodeShapes += `<text x="${textX}" y="${titleY}" text-anchor="middle" fill="#402a26" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="${nd.isRoot?14:12}" font-weight="${nd.isRoot?700:600}">${escapeXml(content.title)}</text>`;
+    if (content.description) {
+      nodeShapes += `<text x="${textX}" y="${titleY + 17}" text-anchor="middle" fill="#7b635d" font-family="Trebuchet MS, Segoe UI, sans-serif" font-size="11" font-weight="500">${escapeXml(content.description)}</text>`;
+    }
+  });
+  return {
+    bounds,
+    width: Math.max(360, Math.ceil(bounds.maxX - bounds.minX + padding * 2)),
+    height: Math.max(260, Math.ceil(bounds.maxY - bounds.minY + padding * 2)),
+    paths,
+    nodeShapes
+  };
+}
+async function exportPNG() {
+  try {
+    const snapshot = buildExportSnapshot();
+    if(!snapshot){ setStatus('Nao ha mapa para exportar.','error'); return; }
+    const bg=(getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim()||'#f7f1ea');
+    const svgText=`<svg xmlns="http://www.w3.org/2000/svg" width="${snapshot.width}" height="${snapshot.height}" viewBox="0 0 ${snapshot.width} ${snapshot.height}"><rect x="0" y="0" width="${snapshot.width}" height="${snapshot.height}" fill="${bg}"/>${snapshot.paths}${snapshot.nodeShapes}</svg>`;
+    const svgBlob=new Blob([svgText],{type:'image/svg+xml;charset=utf-8'}), url=URL.createObjectURL(svgBlob);
+    const img=new Image(), scale=2, out=document.createElement('canvas'); out.width=snapshot.width*scale; out.height=snapshot.height*scale;
+    const ctx=out.getContext('2d'); ctx.scale(scale,scale);
+    await new Promise((ok,err)=>{ img.onload=ok; img.onerror=err; img.src=url; });
+    ctx.drawImage(img,0,0,snapshot.width,snapshot.height); URL.revokeObjectURL(url);
+    const a=document.createElement('a'); a.href=out.toDataURL('image/png');
+    a.download=`mapa-mental-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`; document.body.appendChild(a); a.click(); a.remove();
+    setStatus('PNG exportado com sucesso.','success'); logHistory('Exportou PNG');
+  } catch (e) { console.error(e); setStatus('Erro ao exportar PNG.','error'); }
+}
+function saveMap() {
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({
+      version:STORAGE_VERSION,
+      nodes,nodeId,zoom,pan,
+      theme:document.getElementById('mapTheme')?.value||'tecnologia',
+      selectedNodeId:selectedNode?.id??null,
+      aiGenerations,
+      posterMode,
+      minimalUiMode
+    }));
+    setStatus('Mapa salvo.','success'); logHistory('Mapa salvo'); setTimeout(()=>setStatus('✨ Pronto para gerar',''),2500);
+  } catch(e){ console.error(e); setStatus('Falha ao salvar no navegador.','error'); }
+}
+function loadMapFromStorage(){
+  const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return false;
+  try{
+    const data=JSON.parse(raw); if(!Array.isArray(data.nodes) || !data.nodes.length) return false;
+    nodes=deepClone(data.nodes).map((node) => ({ ...node, text: cleanText(node.text), branchSide: node.branchSide || 'right' }));
+    clearNodeMetrics();
+    nodeId=Number.isFinite(Number(data.nodeId))?Number(data.nodeId):(getMaxNodeId()+1);
+    if(nodeId<=getMaxNodeId()) nodeId=getMaxNodeId()+1;
+    zoom=Number.isFinite(Number(data.zoom))?Math.max(0.2,Math.min(4,Number(data.zoom))):1;
+    pan=normalizePan(data.pan); selectedNode=null;
+    if (data.theme && THEMES[data.theme]) { document.getElementById('mapTheme').value=data.theme; changeTheme(); }
+    if(data.selectedNodeId!=null) selectedNode=nodes.find(n=>n.id===data.selectedNodeId)||null;
+    aiGenerations=Array.isArray(data.aiGenerations)?data.aiGenerations.slice(0,5):[];
+    posterMode = data.posterMode !== false;
+    minimalUiMode = Boolean(data.minimalUiMode);
+    applyUiModes();
+    renderAIHistory(); render(); applyXform(); updateZoomBadge();
+    setStatus('Mapa restaurado do navegador.','success'); setTimeout(()=>setStatus('✨ Pronto para gerar',''),2500);
+    return true;
+  } catch(e){ console.error(e); setStatus('Falha ao restaurar mapa salvo.','error'); return false; }
+}
+function writeTestLog(results) {
+  const log = document.getElementById('testLog');
+  if (!log) return;
+  log.classList.remove('hidden');
+  log.innerHTML = results.map((result) => `<div class="${result.pass ? 'test-pass' : 'test-fail'}">${result.pass ? 'PASS' : 'FAIL'} - ${escapeHtml(result.name)}${result.detail ? `: ${escapeHtml(result.detail)}` : ''}</div>`).join('');
+}
+function assertTest(name, condition, detail='') {
+  return { name, pass:Boolean(condition), detail };
+}
+function runSelfTests() {
+  const previousState = getStateSnapshot();
+  const results = [];
+  try {
+    nodes = [];
+    selectedNode = null;
+    nodeId = 1;
+    clearNodeMetrics();
+    addNode('Teste raiz', null, true);
+    results.push(assertTest('node creation', nodes.length === 1 && nodes[0].isRoot, `nodes=${nodes.length}`));
+
+    const root = nodes[0];
+    const child = mkNode('Ramo | descricao curta', root.id, false);
+    child.branchSide = 'right';
+    nodes.push(child);
+    results.push(assertTest('branch creation', nodes.length >= 2 && nodes.some((node) => node.parentId === 1), `nodes=${nodes.length}`));
+
+    render();
+    const allPositioned = nodes.every((node) => Number.isFinite(node.x) && Number.isFinite(node.y));
+    results.push(assertTest('render positioning', allPositioned));
+
+    const svgMarkup = document.getElementById('svgConns').innerHTML;
+    results.push(assertTest('connection svg generation', /<path\b/.test(svgMarkup), `svgLength=${svgMarkup.length}`));
+
+    const exportSnapshot = buildExportSnapshot();
+    results.push(assertTest('export snapshot', Boolean(exportSnapshot && exportSnapshot.width > 0 && exportSnapshot.height > 0), exportSnapshot ? `${exportSnapshot.width}x${exportSnapshot.height}` : 'none'));
+  } catch (error) {
+    results.push(assertTest('self-test runtime', false, error.message));
+  } finally {
+    restoreSnapshot(previousState);
+  }
+  writeTestLog(results);
+  const failed = results.filter((result) => !result.pass).length;
+  setStatus(failed ? `Self-test com ${failed} falha(s).` : 'Self-test concluido sem falhas.', failed ? 'error' : 'success');
+}
+</script>
+<script>window.parent.postMessage({ action: "ready" }, "*"); 
+ 
+window.console = new Proxy(console, {
+  get(target, prop) {
+    if (['log', 'warn', 'error'].includes(prop)) {
+      return new Proxy(target[prop], {
+        apply(fn, thisArg, args) {
+          fn.apply(thisArg, args);
+          window.parent.postMessage({ action: 'console', 
+            type: prop, 
+            args: args.map((arg) => {
+              try {
+                return JSON.stringify(arg).replace(/^["']|["']$/g, '');
+              } catch (e) {
+                return arg;
+              }
+            }) 
+          }, '*');
+        }
+      });
+    }
+    return target[prop];
+  }
+});
+
+// Atalho: Ctrl+Shift+S para exportar PNG
+document.addEventListener('keydown', (e) => {
+  const key = (e.key || '').toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && key === 's') {
+    e.preventDefault();
+    exportPNG();
+  }
+});
+
+</script></body>
+</html>
+
+
