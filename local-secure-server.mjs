@@ -10,11 +10,19 @@ const ROOT = __dirname;
 const env = loadEnvFile(path.join(ROOT, '.env.local'));
 const HOST = process.env.HOST || env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || env.PORT || 8787);
-const OPENAI_API_KEY =
+const SITE_OPENAI_API_KEY =
+  process.env.SITE_OPENAI_API_KEY ||
+  env.SITE_OPENAI_API_KEY ||
   process.env.OPENAI_API_KEY ||
   env.OPENAI_API_KEY ||
   process.env.ADMKEY ||
   env.ADMKEY ||
+  '';
+const BOT_OPENAI_API_KEY =
+  process.env.BOT_OPENAI_API_KEY ||
+  env.BOT_OPENAI_API_KEY ||
+  process.env.OPENAI_BOT_API_KEY ||
+  env.OPENAI_BOT_API_KEY ||
   process.env.LUCASJOGA ||
   env.LUCASJOGA ||
   '';
@@ -105,9 +113,32 @@ async function serveStatic(req, res) {
   }
 }
 
-async function proxyOpenAI(req, res) {
-  if (!OPENAI_API_KEY) {
-    return json(res, 503, { error: { message: 'OPENAI_API_KEY nao configurada no servidor local.' } });
+function getProfileFromRequest(req) {
+  const url = new URL(req.url || '/', `http://${HOST}:${PORT}`);
+  const headerProfile = String(req.headers['x-openai-profile'] || '').trim().toLowerCase();
+  if (headerProfile === 'bot' || headerProfile === 'site') return headerProfile;
+  const queryProfile = String(url.searchParams.get('profile') || '').trim().toLowerCase();
+  if (queryProfile === 'bot' || queryProfile === 'site') return queryProfile;
+  return 'site';
+}
+
+function getKeyForProfile(profile) {
+  return profile === 'bot' ? BOT_OPENAI_API_KEY : SITE_OPENAI_API_KEY;
+}
+
+async function proxyOpenAI(req, res, forcedProfile = null) {
+  const profile = forcedProfile || getProfileFromRequest(req);
+  const primaryKey = getKeyForProfile(profile);
+  const fallbackKey = profile === 'site' && BOT_OPENAI_API_KEY ? BOT_OPENAI_API_KEY : '';
+  if (!primaryKey && !fallbackKey) {
+    return json(res, 503, {
+      error: {
+        message:
+          profile === 'bot'
+            ? 'BOT_OPENAI_API_KEY nao configurada no servidor local.'
+            : 'SITE_OPENAI_API_KEY/OPENAI_API_KEY nao configurada no servidor local.'
+      }
+    });
   }
   let rawBody = '';
   try {
@@ -117,14 +148,23 @@ async function proxyOpenAI(req, res) {
   }
 
   try {
-    const upstream = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: rawBody
-    });
+    const attemptRequest = async (apiKey) =>
+      fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: rawBody
+      });
+
+    let upstream = primaryKey ? await attemptRequest(primaryKey) : null;
+    if (upstream && (upstream.status === 401 || upstream.status === 403) && fallbackKey && fallbackKey !== primaryKey) {
+      upstream = await attemptRequest(fallbackKey);
+    } else if (!upstream && fallbackKey) {
+      upstream = await attemptRequest(fallbackKey);
+    }
+
     const text = await upstream.text();
     res.writeHead(upstream.status, {
       'Content-Type': upstream.headers.get('content-type') || 'application/json; charset=utf-8',
@@ -143,10 +183,20 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
   if (req.method === 'GET' && req.url.startsWith('/api/health')) {
-    return json(res, 200, { ok: true, host: HOST, port: PORT, keyConfigured: Boolean(OPENAI_API_KEY) });
+    return json(res, 200, {
+      ok: true,
+      host: HOST,
+      port: PORT,
+      keyConfigured: Boolean(SITE_OPENAI_API_KEY),
+      siteKeyConfigured: Boolean(SITE_OPENAI_API_KEY),
+      botKeyConfigured: Boolean(BOT_OPENAI_API_KEY)
+    });
   }
   if (req.method === 'POST' && req.url === '/api/openai/responses') {
-    return proxyOpenAI(req, res);
+    return proxyOpenAI(req, res, 'site');
+  }
+  if (req.method === 'POST' && req.url === '/api/bot/responses') {
+    return proxyOpenAI(req, res, 'bot');
   }
   if (req.method === 'GET' || req.method === 'HEAD') {
     return serveStatic(req, res);
@@ -155,6 +205,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Servidor local seguro ativo em http://${HOST}:${PORT}/hipofise-workspace.html`);
-  console.log('A chave da OpenAI esta no backend local e nao e enviada para o navegador.');
+  console.log(`Servidor local seguro ativo em http://${HOST}:${PORT}/`);
+  console.log(`Perfil site configurado: ${Boolean(SITE_OPENAI_API_KEY)} | Perfil bot configurado: ${Boolean(BOT_OPENAI_API_KEY)}`);
+  console.log('As chaves da OpenAI ficam no backend local e nao sao enviadas para o navegador.');
 });
