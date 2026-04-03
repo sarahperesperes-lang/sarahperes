@@ -767,6 +767,7 @@ const STORAGE_KEY = 'mapaMentalIA';
 const STORAGE_VERSION = 4;
 const DRAFT_TREE_KEY = 'mapaEstudoDraftTree';
 const LOCAL_PROXY_PATH = '/api/openai/responses';
+const LOCAL_API_PASSWORD_KEY = 'local_api_password';
 const SAVED_PROMPT_ID = 'pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
 const SAVED_PROMPT_VERSION = '1';
 const URL_PARAMS = new URLSearchParams(location.search);
@@ -928,13 +929,38 @@ function getOpenAIApiKey() {
 function isLocalSecureMode() {
   return location.protocol.startsWith('http') && /^(127\.0\.0\.1|localhost)$/i.test(location.hostname);
 }
+function getLocalApiPassword(forcePrompt = false) {
+  let password = forcePrompt ? '' : (sessionStorage.getItem(LOCAL_API_PASSWORD_KEY) || localStorage.getItem(LOCAL_API_PASSWORD_KEY) || '');
+  if (!password) {
+    password = window.prompt('Digite a senha da API local:', '') || '';
+  }
+  password = String(password || '').trim();
+  if (password) {
+    sessionStorage.setItem(LOCAL_API_PASSWORD_KEY, password);
+    localStorage.setItem(LOCAL_API_PASSWORD_KEY, password);
+  }
+  return password;
+}
 async function requestResponsesPayload(body) {
   if (isLocalSecureMode()) {
-    const res = await fetch(LOCAL_PROXY_PATH, {
+    let password = getLocalApiPassword(false);
+    if (!password) throw new Error('Senha da API local ausente.');
+    let res = await fetch(LOCAL_PROXY_PATH, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-password': password },
       body: JSON.stringify(body)
     });
+    if (res.status === 401) {
+      localStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+      sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+      password = getLocalApiPassword(true);
+      if (!password) throw new Error('Senha da API local ausente.');
+      res = await fetch(LOCAL_PROXY_PATH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-password': password },
+        body: JSON.stringify(body)
+      });
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);

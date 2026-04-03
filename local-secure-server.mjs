@@ -10,6 +10,7 @@ const ROOT = __dirname;
 const env = loadEnvFile(path.join(ROOT, '.env.local'));
 const HOST = process.env.HOST || env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || env.PORT || 8787);
+const API_ACCESS_PASSWORD = process.env.API_ACCESS_PASSWORD || env.API_ACCESS_PASSWORD || '324125';
 const SITE_OPENAI_API_KEY =
   process.env.SITE_OPENAI_API_KEY ||
   env.SITE_OPENAI_API_KEY ||
@@ -126,7 +127,19 @@ function getKeyForProfile(profile) {
   return profile === 'bot' ? BOT_OPENAI_API_KEY : SITE_OPENAI_API_KEY;
 }
 
+function getApiPasswordFromRequest(req) {
+  const url = new URL(req.url || '/', `http://${HOST}:${PORT}`);
+  return String(req.headers['x-api-password'] || url.searchParams.get('password') || '').trim();
+}
+
+function isAuthorizedRequest(req) {
+  return Boolean(API_ACCESS_PASSWORD) && getApiPasswordFromRequest(req) === API_ACCESS_PASSWORD;
+}
+
 async function proxyOpenAI(req, res, forcedProfile = null) {
+  if (!isAuthorizedRequest(req)) {
+    return json(res, 401, { error: { message: 'Senha da API local invalida ou ausente.' } });
+  }
   const profile = forcedProfile || getProfileFromRequest(req);
   const primaryKey = getKeyForProfile(profile);
   const fallbackKey = profile === 'site' && BOT_OPENAI_API_KEY ? BOT_OPENAI_API_KEY : '';
@@ -189,7 +202,8 @@ const server = http.createServer(async (req, res) => {
       port: PORT,
       keyConfigured: Boolean(SITE_OPENAI_API_KEY),
       siteKeyConfigured: Boolean(SITE_OPENAI_API_KEY),
-      botKeyConfigured: Boolean(BOT_OPENAI_API_KEY)
+      botKeyConfigured: Boolean(BOT_OPENAI_API_KEY),
+      apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD)
     });
   }
   if (req.method === 'POST' && req.url === '/api/openai/responses') {
@@ -207,5 +221,6 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log(`Servidor local seguro ativo em http://${HOST}:${PORT}/`);
   console.log(`Perfil site configurado: ${Boolean(SITE_OPENAI_API_KEY)} | Perfil bot configurado: ${Boolean(BOT_OPENAI_API_KEY)}`);
+  console.log(`Senha da API local configurada: ${Boolean(API_ACCESS_PASSWORD)}`);
   console.log('As chaves da OpenAI ficam no backend local e nao sao enviadas para o navegador.');
 });

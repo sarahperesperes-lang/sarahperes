@@ -30,6 +30,8 @@ Variaveis aceitas:
 
 ## Perfis locais
 
+- A API local agora exige uma senha de acesso via header `x-api-password`.
+- Se `API_ACCESS_PASSWORD` nao estiver definida no ambiente local, o servidor usa `324125`.
 - `POST /api/openai/responses` usa o perfil do site.
 - `POST /api/openai/responses` tenta o perfil do site primeiro e cai para o perfil do bot se a chave do site estiver invalida.
 - `POST /api/bot/responses` usa o perfil do bot.

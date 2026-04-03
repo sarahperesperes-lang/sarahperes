@@ -580,6 +580,7 @@ const STORAGE_VERSION = 3;
 
 // Public page: keep the shipped HTML free of secrets.
 const OPENAI_API_KEY = '';
+const LOCAL_API_PASSWORD_KEY = 'local_api_password';
 
 const THEMES = {
   tecnologia: { r:'#bc8070', l1:'#d6a188', l2:'#8ebddf', l3:'#86c6a1', l4:'#d8afd0' },
@@ -673,13 +674,38 @@ function getOpenAIApiKey() {
 function isLocalSecureMode() {
   return location.protocol.startsWith('http') && /^(127\.0\.0\.1|localhost)$/i.test(location.hostname);
 }
+function getLocalApiPassword(forcePrompt = false) {
+  let password = forcePrompt ? '' : (sessionStorage.getItem(LOCAL_API_PASSWORD_KEY) || localStorage.getItem(LOCAL_API_PASSWORD_KEY) || '');
+  if (!password) {
+    password = window.prompt('Digite a senha da API local:', '') || '';
+  }
+  password = String(password || '').trim();
+  if (password) {
+    sessionStorage.setItem(LOCAL_API_PASSWORD_KEY, password);
+    localStorage.setItem(LOCAL_API_PASSWORD_KEY, password);
+  }
+  return password;
+}
 async function requestOpenAIResponses(body) {
   if (isLocalSecureMode()) {
-    const res = await fetch('/api/openai/responses', {
+    let password = getLocalApiPassword(false);
+    if (!password) throw new Error('Senha da API local ausente.');
+    let res = await fetch('/api/openai/responses', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-password': password },
       body: JSON.stringify(body)
     });
+    if (res.status === 401) {
+      localStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+      sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+      password = getLocalApiPassword(true);
+      if (!password) throw new Error('Senha da API local ausente.');
+      res = await fetch('/api/openai/responses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-password': password },
+        body: JSON.stringify(body)
+      });
+    }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
