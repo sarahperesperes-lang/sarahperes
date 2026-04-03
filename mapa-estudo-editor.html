@@ -218,6 +218,37 @@ input[type="color"] {
   cursor:pointer; font-size:13px;
   display:flex; align-items:center; justify-content:center;
 }
+body[data-map-model="circle"] .node,
+body[data-map-model="bubble"] .node,
+body[data-map-model="double-bubble"] .node {
+  border-radius:999px;
+  text-align:center;
+  min-width:128px;
+  max-width:190px;
+  padding:11px 14px;
+}
+body[data-map-model="circle"] .node.root,
+body[data-map-model="bubble"] .node.root,
+body[data-map-model="double-bubble"] .node.root {
+  min-width:164px;
+  max-width:220px;
+  padding:16px 18px;
+}
+body[data-map-model="flow"] .node,
+body[data-map-model="brace"] .node {
+  border-radius:16px;
+}
+body[data-map-model="multi-flow"] .node.root {
+  min-width:190px;
+}
+body[data-map-model="flow"] .canvas-note::after,
+body[data-map-model="multi-flow"] .canvas-note::after,
+body[data-map-model="brace"] .canvas-note::after,
+body[data-map-model="circle"] .canvas-note::after,
+body[data-map-model="bubble"] .canvas-note::after,
+body[data-map-model="double-bubble"] .canvas-note::after {
+  content:"";
+}
 
 /* RIGHT PANEL */
 .ai-section   { padding:16px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -352,6 +383,19 @@ input[type="color"] {
           <span style="font-size:11px;color:var(--text-muted)">Clique para alterar</span>
         </div>
       </div>
+      <div class="cfg-group">
+        <label class="cfg-label">Modelo visual</label>
+        <select id="mapModelSelect" onchange="changeMapModel(this.value)">
+          <option value="tree">Tree map</option>
+          <option value="flow">Flow map</option>
+          <option value="multi-flow">Multi-flow map</option>
+          <option value="brace">Brace map</option>
+          <option value="circle">Circle map</option>
+          <option value="bubble">Bubble map</option>
+          <option value="double-bubble">Double bubble</option>
+        </select>
+        <div style="margin-top:6px;font-size:11px;color:var(--text-muted)" id="mapModelHint">Layout atual: arvore editorial.</div>
+      </div>
     </div>
     <div class="s-section">
       <div class="s-title">Historico</div>
@@ -378,6 +422,7 @@ input[type="color"] {
       <button class="canvas-btn" onclick="zoomIn()">Zoom +</button>
       <button class="canvas-btn" onclick="zoomOut()">Zoom -</button>
       <div class="bar-div"></div>
+      <span class="poster-chip" id="modelBadge">Tree map</span>
       <span class="poster-chip" id="layoutBadge">Poster bilateral</span>
       <span class="zoom-badge" id="zoomBadge">100%</span>
     </div>
@@ -441,9 +486,11 @@ let posterMode   = true;
 let minimalUiMode = false;
 let lastGeneratedPrompt = '';
 let nodeMetrics = new Map();
+let mapModel = 'tree';
+let generationOptions = {};
 const MAX_HISTORY = 50;
 const STORAGE_KEY = 'mapaMentalIA';
-const STORAGE_VERSION = 3;
+const STORAGE_VERSION = 4;
 const DRAFT_TREE_KEY = 'mapaEstudoDraftTree';
 
 // Public page: keep the shipped HTML free of secrets.
@@ -456,6 +503,15 @@ const THEMES = {
   criativo:   { r:'#cf937d', l1:'#79c7b0', l2:'#85b7e8', l3:'#e2ae86', l4:'#cc9ac8' },
 };
 let theme = THEMES.tecnologia;
+const MAP_MODELS = {
+  tree: { label:'Tree map', hint:'Arvore editorial para estudo longo.', badge:'Tree map' },
+  flow: { label:'Flow map', hint:'Fluxo sequencial com etapas principais.', badge:'Flow map' },
+  'multi-flow': { label:'Multi-flow map', hint:'Entradas, saidas e polos complementares.', badge:'Multi-flow' },
+  brace: { label:'Brace map', hint:'Quebra analitica em grupos compactos.', badge:'Brace map' },
+  circle: { label:'Circle map', hint:'Aneis de contexto ao redor do tema.', badge:'Circle map' },
+  bubble: { label:'Bubble map', hint:'Bolhas descritivas ao redor do conceito.', badge:'Bubble map' },
+  'double-bubble': { label:'Double bubble', hint:'Comparacao entre dois eixos com pontos em comum.', badge:'Double bubble' }
+};
 
 const MINDMAP_JSON_SCHEMA = {
   type:'object',
@@ -486,7 +542,51 @@ const NODE_H  = 60;
 const GAP_H   = 34;
 const GAP_X   = { l1: 320, l2: 280, l3: 250 };
 
+function normalizeMapModel(value) {
+  return MAP_MODELS[value] ? value : 'tree';
+}
+
+function normalizeGenerationOptions(input = {}) {
+  const safe = input && typeof input === 'object' ? input : {};
+  return {
+    model: normalizeMapModel(safe.model || mapModel),
+    depth: ['LOW', 'MEDIUM', 'HIGH'].includes(safe.depth) ? safe.depth : null,
+    focus: typeof safe.focus === 'string' ? safe.focus : '',
+    nodeStyle: typeof safe.nodeStyle === 'string' ? safe.nodeStyle : '',
+    mainBranches: typeof safe.mainBranches === 'string' ? safe.mainBranches : '',
+    pdfLens: typeof safe.pdfLens === 'string' ? safe.pdfLens : '',
+    sourceType: typeof safe.sourceType === 'string' ? safe.sourceType : '',
+    sourceName: typeof safe.sourceName === 'string' ? safe.sourceName : '',
+    sourcePages: Number.isFinite(Number(safe.sourcePages)) ? Number(safe.sourcePages) : 0,
+    createdAt: typeof safe.createdAt === 'string' ? safe.createdAt : ''
+  };
+}
+
+function getMapModelMeta(model = mapModel) {
+  return MAP_MODELS[normalizeMapModel(model)];
+}
+
 function nodeBaseWidth(nd) {
+  if (['circle', 'bubble', 'double-bubble'].includes(mapModel)) {
+    if (nd.isRoot) return 182;
+    if (nd.level === 1) return 154;
+    return 142;
+  }
+  if (mapModel === 'flow') {
+    if (nd.isRoot) return 198;
+    if (nd.level === 1) return 170;
+    return 160;
+  }
+  if (mapModel === 'brace') {
+    if (nd.isRoot) return 208;
+    if (nd.level === 1) return 178;
+    return 170;
+  }
+  if (mapModel === 'multi-flow') {
+    if (nd.isRoot) return 210;
+    if (nd.level === 1) return 186;
+    return 174;
+  }
   if (nd.isRoot) return NODE_W.root;
   if (nd.level===1) return NODE_W.l1;
   return NODE_W.default;
@@ -565,6 +665,15 @@ function escapeHtml(v) {
 function escapeXml(v) {
   return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 }
+function updateMapModelUi() {
+  const select = document.getElementById('mapModelSelect');
+  if (select) select.value = mapModel;
+  const hint = document.getElementById('mapModelHint');
+  if (hint) hint.textContent = `Layout atual: ${getMapModelMeta().hint}`;
+  const badge = document.getElementById('modelBadge');
+  if (badge) badge.textContent = getMapModelMeta().badge;
+  document.body.dataset.mapModel = mapModel;
+}
 function updateZoomBadge() {
   const z=document.getElementById('zoomBadge');
   if (z) z.textContent = `${Math.round(zoom*100)}%`;
@@ -587,7 +696,7 @@ function measureNodeMetrics() {
     wrapper.className = `node${nd.isRoot ? ' root' : ''}`;
     wrapper.style.position = 'absolute';
     wrapper.style.width = `${nodeBaseWidth(nd)}px`;
-    wrapper.style.maxWidth = `${posterMode ? 240 : 220}px`;
+    wrapper.style.maxWidth = `${['circle', 'bubble', 'double-bubble'].includes(mapModel) ? 190 : (posterMode ? 240 : 220)}px`;
     wrapper.style.minWidth = `${nodeBaseWidth(nd)}px`;
     const parts = splitNodeContent(nd.text);
     wrapper.innerHTML = `<span class="node-label">${escapeHtml(parts.title)}</span>${parts.description ? `<span class="node-desc">${escapeHtml(parts.description)}</span>` : ''}`;
@@ -609,11 +718,13 @@ function getStateSnapshot() {
     nodeId, zoom, pan: deepClone(pan),
     aiGenerations: deepClone(aiGenerations),
     posterMode,
-    minimalUiMode
+    minimalUiMode,
+    mapModel,
+    generationOptions: deepClone(generationOptions)
   };
 }
 function snapshotHash(s) {
-  return JSON.stringify({nodes:s.nodes, selectedNodeId:s.selectedNodeId, nodeId:s.nodeId, zoom:s.zoom, pan:s.pan, posterMode:s.posterMode, minimalUiMode:s.minimalUiMode});
+  return JSON.stringify({nodes:s.nodes, selectedNodeId:s.selectedNodeId, nodeId:s.nodeId, zoom:s.zoom, pan:s.pan, posterMode:s.posterMode, minimalUiMode:s.minimalUiMode, mapModel:s.mapModel, generationOptions:s.generationOptions});
 }
 function pushHistorySnapshot(reason='action') {
   const snapshot=getStateSnapshot();
@@ -639,9 +750,12 @@ function restoreSnapshot(snapshot) {
   if (Array.isArray(snapshot.aiGenerations)) aiGenerations = snapshot.aiGenerations.slice(0,5);
   posterMode = snapshot.posterMode !== false;
   minimalUiMode = Boolean(snapshot.minimalUiMode);
+  mapModel = normalizeMapModel(snapshot.mapModel || mapModel);
+  generationOptions = normalizeGenerationOptions(snapshot.generationOptions || {});
   renderAIHistory();
   updateZoomBadge();
   applyUiModes();
+  updateMapModelUi();
   render();
   applyXform();
 }
@@ -739,9 +853,8 @@ function runLayout() {
   clearNodeMetrics();
   measureNodeMetrics();
 
-  // Monta mapa parentId â†’ filhos
   const nodeMap = new Map();
-  nodes.forEach(n => {
+  nodes.forEach((n) => {
     if (!nodeMap.has(n.id)) nodeMap.set(n.id, []);
     if (n.parentId !== null) {
       if (!nodeMap.has(n.parentId)) nodeMap.set(n.parentId, []);
@@ -749,6 +862,31 @@ function runLayout() {
     }
   });
 
+  if (mapModel === 'flow') return runFlowLayout(root, nodeMap);
+  if (mapModel === 'multi-flow') return runMultiFlowLayout(root, nodeMap);
+  if (mapModel === 'brace') return runBraceLayout(root, nodeMap);
+  if (mapModel === 'circle') return runCircleLayout(root, nodeMap);
+  if (mapModel === 'bubble') return runBubbleLayout(root, nodeMap);
+  if (mapModel === 'double-bubble') return runDoubleBubbleLayout(root, nodeMap);
+  return runTreeLayout(root, nodeMap);
+}
+
+function placeNodeIfAuto(nd, x, y) {
+  if (!nd.manual || !Number.isFinite(nd.x) || !Number.isFinite(nd.y)) {
+    nd.x = x;
+    nd.y = y;
+  }
+}
+
+function getWrapMetrics() {
+  const wrap = document.getElementById('mapWrap');
+  return {
+    width: wrap?.offsetWidth || 1400,
+    height: wrap?.offsetHeight || 900
+  };
+}
+
+function runTreeLayout(root, nodeMap) {
   const wrap = document.getElementById('mapWrap');
   const cx   = wrap.offsetWidth  / 2 - nodeWidth(root) / 2;
   const cy   = wrap.offsetHeight / 2;
@@ -757,10 +895,7 @@ function runLayout() {
     return;
   }
 
-  if (!root.manual || !Number.isFinite(root.x) || !Number.isFinite(root.y)) {
-    root.x = cx;
-    root.y = cy - nodeHeight(root) / 2;
-  }
+  placeNodeIfAuto(root, cx, cy - nodeHeight(root) / 2);
 
   const firstLevel = nodeMap.get(root.id) || [];
   const leftChildren = [];
@@ -787,6 +922,213 @@ function runLayout() {
 
   placeSide(leftChildren, 'left');
   placeSide(rightChildren, 'right');
+}
+
+function layoutLinearChildren(parent, nodeMap, side, startX, startY, depth = 1) {
+  const children = nodeMap.get(parent.id) || [];
+  if (!children.length) return startY;
+  let cursorY = startY;
+  const baseGap = 22;
+  children.forEach((child) => {
+    const x = side === 'left'
+      ? startX - nodeWidth(child)
+      : startX;
+    placeNodeIfAuto(child, x, cursorY);
+    child.branchSide = side;
+    const nextX = side === 'left'
+      ? child.x - Math.max(92, 120 - depth * 10)
+      : child.x + nodeWidth(child) + Math.max(92, 120 - depth * 10);
+    cursorY = layoutLinearChildren(child, nodeMap, side, nextX, child.y + nodeHeight(child) + 16, depth + 1);
+    cursorY += baseGap;
+  });
+  return cursorY;
+}
+
+function runFlowLayout(root, nodeMap) {
+  const wrap = getWrapMetrics();
+  const centerY = wrap.height / 2 - nodeHeight(root) / 2;
+  const rootX = 72;
+  placeNodeIfAuto(root, rootX, centerY);
+  const steps = nodeMap.get(root.id) || [];
+  let stepX = root.x + nodeWidth(root) + 170;
+  steps.forEach((step, index) => {
+    placeNodeIfAuto(step, stepX, centerY);
+    step.branchSide = 'right';
+    const children = nodeMap.get(step.id) || [];
+    const leftChildren = children.filter((_, childIndex) => childIndex % 2 === 0);
+    const rightChildren = children.filter((_, childIndex) => childIndex % 2 === 1);
+    let leftY = step.y - ((leftChildren.length * (NODE_H + 18)) / 2);
+    let rightY = step.y - ((rightChildren.length * (NODE_H + 18)) / 2);
+    leftChildren.forEach((child) => {
+      placeNodeIfAuto(child, step.x - 150 - nodeWidth(child), leftY);
+      child.branchSide = 'left';
+      leftY = layoutLinearChildren(child, nodeMap, 'left', child.x - 110, child.y + nodeHeight(child) + 16, 2) + 12;
+    });
+    rightChildren.forEach((child) => {
+      placeNodeIfAuto(child, step.x + nodeWidth(step) + 150, rightY);
+      child.branchSide = 'right';
+      rightY = layoutLinearChildren(child, nodeMap, 'right', child.x + nodeWidth(child) + 110, child.y + nodeHeight(child) + 16, 2) + 12;
+    });
+    stepX += nodeWidth(step) + 170;
+  });
+}
+
+function runMultiFlowLayout(root, nodeMap) {
+  const wrap = getWrapMetrics();
+  const cx = wrap.width / 2 - nodeWidth(root) / 2;
+  const cy = wrap.height / 2;
+  placeNodeIfAuto(root, cx, cy - nodeHeight(root) / 2);
+
+  const firstLevel = nodeMap.get(root.id) || [];
+  const leftChildren = [];
+  const rightChildren = [];
+  firstLevel.forEach((child, index) => {
+    const leftHint = /causa|entrada|gatilho|antes|problema/i.test(child.text);
+    const rightHint = /efeito|saida|resultado|depois|impacto/i.test(child.text);
+    child.branchSide = leftHint ? 'left' : rightHint ? 'right' : index % 2 === 0 ? 'left' : 'right';
+    (child.branchSide === 'left' ? leftChildren : rightChildren).push(child);
+  });
+
+  const placeColumn = (branchNodes, side) => {
+    if (!branchNodes.length) return;
+    const total = branchNodes.reduce((sum, child) => sum + subtreeHeight(child, nodeMap), 0);
+    let cursorY = cy - total / 2;
+    const anchorX = side === 'left'
+      ? root.x - 210
+      : root.x + nodeWidth(root) + 210;
+    branchNodes.forEach((child) => {
+      const height = subtreeHeight(child, nodeMap);
+      const childCY = cursorY + height / 2;
+      layoutBranch(child, anchorX, childCY, nodeMap, side);
+      cursorY += height;
+    });
+  };
+
+  placeColumn(leftChildren, 'left');
+  placeColumn(rightChildren, 'right');
+}
+
+function runBraceLayout(root, nodeMap) {
+  const wrap = getWrapMetrics();
+  const rootX = 80;
+  const cy = wrap.height / 2;
+  placeNodeIfAuto(root, rootX, cy - nodeHeight(root) / 2);
+  const firstLevel = nodeMap.get(root.id) || [];
+  const heights = firstLevel.map((child) => subtreeHeight(child, nodeMap));
+  const total = heights.reduce((sum, value) => sum + value, 0);
+  let cursorY = cy - total / 2;
+  const anchorX = root.x + nodeWidth(root) + 170;
+  firstLevel.forEach((child, index) => {
+    child.branchSide = 'right';
+    const childCY = cursorY + heights[index] / 2;
+    layoutBranch(child, anchorX, childCY, nodeMap, 'right');
+    cursorY += heights[index];
+  });
+}
+
+function layoutOrbitChildren(parent, nodeMap, baseAngle, radius, spread, depth = 1) {
+  const children = nodeMap.get(parent.id) || [];
+  if (!children.length) return;
+  const parentCenter = {
+    x: parent.x + nodeWidth(parent) / 2,
+    y: parent.y + nodeHeight(parent) / 2
+  };
+  const clampedSpread = Math.min(spread, Math.PI * 1.15);
+  children.forEach((child, index) => {
+    const ratio = children.length === 1 ? 0.5 : index / (children.length - 1);
+    const angle = baseAngle - clampedSpread / 2 + clampedSpread * ratio;
+    const childCenterX = parentCenter.x + Math.cos(angle) * radius;
+    const childCenterY = parentCenter.y + Math.sin(angle) * radius;
+    placeNodeIfAuto(child, childCenterX - nodeWidth(child) / 2, childCenterY - nodeHeight(child) / 2);
+    child.branchSide = Math.cos(angle) >= 0 ? 'right' : 'left';
+    layoutOrbitChildren(child, nodeMap, angle, Math.max(74, radius - 30), Math.max(0.45, clampedSpread * 0.72), depth + 1);
+  });
+}
+
+function runCircleLayout(root, nodeMap) {
+  const wrap = getWrapMetrics();
+  const centerX = wrap.width / 2;
+  const centerY = wrap.height / 2;
+  placeNodeIfAuto(root, centerX - nodeWidth(root) / 2, centerY - nodeHeight(root) / 2);
+  const firstLevel = nodeMap.get(root.id) || [];
+  const radius = Math.min(240, Math.max(170, 120 + firstLevel.length * 16));
+  firstLevel.forEach((child, index) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(firstLevel.length, 1);
+    const childCenterX = centerX + Math.cos(angle) * radius;
+    const childCenterY = centerY + Math.sin(angle) * radius;
+    placeNodeIfAuto(child, childCenterX - nodeWidth(child) / 2, childCenterY - nodeHeight(child) / 2);
+    child.branchSide = Math.cos(angle) >= 0 ? 'right' : 'left';
+    layoutOrbitChildren(child, nodeMap, angle, 112, 1.05, 1);
+  });
+}
+
+function runBubbleLayout(root, nodeMap) {
+  const wrap = getWrapMetrics();
+  const centerX = wrap.width / 2;
+  const centerY = wrap.height / 2;
+  placeNodeIfAuto(root, centerX - nodeWidth(root) / 2, centerY - nodeHeight(root) / 2);
+  const firstLevel = nodeMap.get(root.id) || [];
+  const radius = Math.min(210, Math.max(150, 130 + firstLevel.length * 10));
+  firstLevel.forEach((child, index) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(firstLevel.length, 1);
+    const childCenterX = centerX + Math.cos(angle) * radius;
+    const childCenterY = centerY + Math.sin(angle) * radius;
+    placeNodeIfAuto(child, childCenterX - nodeWidth(child) / 2, childCenterY - nodeHeight(child) / 2);
+    child.branchSide = Math.cos(angle) >= 0 ? 'right' : 'left';
+    layoutOrbitChildren(child, nodeMap, angle, 90, 0.95, 1);
+  });
+}
+
+function layoutDoubleBubbleSide(centerNode, nodeMap, side) {
+  const children = nodeMap.get(centerNode.id) || [];
+  if (!children.length) return;
+  const totalHeight = children.reduce((sum, child) => sum + nodeHeight(child) + 20, 0) - 20;
+  let cursorY = centerNode.y + nodeHeight(centerNode) / 2 - totalHeight / 2;
+  children.forEach((child) => {
+    const x = side === 'left'
+      ? centerNode.x - nodeWidth(child) - 150
+      : centerNode.x + nodeWidth(centerNode) + 150;
+    placeNodeIfAuto(child, x, cursorY);
+    child.branchSide = side;
+    cursorY = layoutLinearChildren(child, nodeMap, side, side === 'left' ? child.x - 105 : child.x + nodeWidth(child) + 105, child.y + nodeHeight(child) + 14, 2) + 10;
+  });
+}
+
+function runDoubleBubbleLayout(root, nodeMap) {
+  const wrap = getWrapMetrics();
+  const centerX = wrap.width / 2;
+  const centerY = wrap.height / 2;
+  placeNodeIfAuto(root, centerX - nodeWidth(root) / 2, 72);
+  const firstLevel = nodeMap.get(root.id) || [];
+  if (firstLevel.length < 2) {
+    runBubbleLayout(root, nodeMap);
+    return;
+  }
+  const leftNode = firstLevel[0];
+  const rightNode = firstLevel.length > 2 ? firstLevel[firstLevel.length - 1] : firstLevel[1];
+  const middleNodes = firstLevel.length > 2 ? firstLevel.slice(1, -1) : [];
+  placeNodeIfAuto(leftNode, centerX - 270 - nodeWidth(leftNode) / 2, centerY - nodeHeight(leftNode) / 2);
+  placeNodeIfAuto(rightNode, centerX + 270 - nodeWidth(rightNode) / 2, centerY - nodeHeight(rightNode) / 2);
+  leftNode.branchSide = 'left';
+  rightNode.branchSide = 'right';
+  layoutDoubleBubbleSide(leftNode, nodeMap, 'left');
+  layoutDoubleBubbleSide(rightNode, nodeMap, 'right');
+  if (middleNodes.length) {
+    let startY = centerY - ((middleNodes.length * 92) / 2);
+    middleNodes.forEach((child) => {
+      placeNodeIfAuto(child, centerX - nodeWidth(child) / 2, startY);
+      child.branchSide = 'right';
+      const grandChildren = nodeMap.get(child.id) || [];
+      let bubbleY = child.y + nodeHeight(child) + 18;
+      grandChildren.forEach((grand, index) => {
+        const bubbleX = centerX + (index % 2 === 0 ? -84 - nodeWidth(grand) : 84);
+        placeNodeIfAuto(grand, bubbleX, bubbleY);
+        grand.branchSide = index % 2 === 0 ? 'left' : 'right';
+        bubbleY += nodeHeight(grand) + 14;
+      });
+      startY += 92;
+    });
+  }
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -839,6 +1181,66 @@ function render(skipLayout = false) {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    CONEXÃ•ES SVG DINÃ‚MICAS
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+function nodeCenterPoint(nd, offsetX = 0, offsetY = 0) {
+  return {
+    x: nd.x - offsetX + nodeWidth(nd) / 2,
+    y: nd.y - offsetY + nodeHeight(nd) / 2
+  };
+}
+
+function edgePointToward(nd, targetX, targetY, offsetX = 0, offsetY = 0) {
+  const center = nodeCenterPoint(nd, offsetX, offsetY);
+  const dx = targetX - center.x || 0.001;
+  const dy = targetY - center.y || 0.001;
+  const halfW = nodeWidth(nd) / 2;
+  const halfH = nodeHeight(nd) / 2;
+  const scale = 1 / Math.max(Math.abs(dx) / halfW, Math.abs(dy) / halfH);
+  return {
+    x: center.x + dx * scale,
+    y: center.y + dy * scale
+  };
+}
+
+function getConnectionPath(parent, child, offsetX = 0, offsetY = 0) {
+  if (mapModel === 'brace') {
+    const x1 = parent.x - offsetX + nodeWidth(parent);
+    const y1 = parent.y - offsetY + nodeHeight(parent) / 2;
+    const x2 = child.x - offsetX;
+    const y2 = child.y - offsetY + nodeHeight(child) / 2;
+    const elbowX = x1 + Math.max(24, Math.min(72, (x2 - x1) * 0.45));
+    return `M${x1},${y1} L${elbowX},${y1} Q${elbowX + 10},${y1} ${elbowX + 10},${(y1 + y2) / 2} T${elbowX},${y2} L${x2},${y2}`;
+  }
+
+  if (['circle', 'bubble', 'double-bubble'].includes(mapModel)) {
+    const childCenter = nodeCenterPoint(child, offsetX, offsetY);
+    const parentCenter = nodeCenterPoint(parent, offsetX, offsetY);
+    const start = edgePointToward(parent, childCenter.x, childCenter.y, offsetX, offsetY);
+    const end = edgePointToward(child, parentCenter.x, parentCenter.y, offsetX, offsetY);
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const curve = mapModel === 'bubble' ? 0.22 : 0.16;
+    return `M${start.x},${start.y} C${start.x + dx * curve},${start.y + dy * 0.1} ${end.x - dx * curve},${end.y - dy * 0.1} ${end.x},${end.y}`;
+  }
+
+  if (mapModel === 'flow') {
+    const vertical = Math.abs((child.y + nodeHeight(child) / 2) - (parent.y + nodeHeight(parent) / 2)) > Math.abs((child.x + nodeWidth(child) / 2) - (parent.x + nodeWidth(parent) / 2));
+    if (vertical) {
+      const start = edgePointToward(parent, child.x + nodeWidth(child) / 2 - offsetX, child.y + nodeHeight(child) / 2 - offsetY, offsetX, offsetY);
+      const end = edgePointToward(child, parent.x + nodeWidth(parent) / 2 - offsetX, parent.y + nodeHeight(parent) / 2 - offsetY, offsetX, offsetY);
+      const my = (start.y + end.y) / 2;
+      return `M${start.x},${start.y} C${start.x},${my} ${end.x},${my} ${end.x},${end.y}`;
+    }
+  }
+
+  const childSide = child.branchSide || parent.branchSide || 'right';
+  const x1 = childSide === 'left' ? parent.x - offsetX : parent.x - offsetX + nodeWidth(parent);
+  const y1 = parent.y - offsetY + nodeHeight(parent) / 2;
+  const x2 = childSide === 'left' ? child.x - offsetX + nodeWidth(child) : child.x - offsetX;
+  const y2 = child.y - offsetY + nodeHeight(child) / 2;
+  const mx = (x1 + x2) / 2;
+  return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+}
+
 function drawConnections(svg) {
   svg = svg || document.getElementById('svgConns');
   let paths = '';
@@ -847,18 +1249,8 @@ function drawConnections(svg) {
     if (nd.parentId === null) return;
     const parent = nodes.find(n => n.id === nd.parentId);
     if (!parent) return;
-
-    const pw = nodeWidth(parent);
-    const childSide = nd.branchSide || parent.branchSide || 'right';
-
-    const x1 = childSide === 'left' ? parent.x : parent.x + pw;
-    const y1 = parent.y + nodeHeight(parent) / 2;
-    const x2 = childSide === 'left' ? nd.x + nodeWidth(nd) : nd.x;
-    const y2 = nd.y + nodeHeight(nd) / 2;
-    const mx = (x1 + x2) / 2;
-
     paths += `<path
-      d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"
+      d="${getConnectionPath(parent, nd)}"
       stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}"
       fill="none" stroke-opacity="${posterMode ? 0.9 : 0.7}" stroke-linecap="round"/>`;
   });
@@ -880,6 +1272,7 @@ function applyUiModes() {
   document.body.classList.toggle('minimal-ui', minimalUiMode);
   const badge = document.getElementById('layoutBadge');
   if (badge) badge.textContent = posterMode ? 'Poster bilateral' : 'Editor livre';
+  updateMapModelUi();
 }
 
 function togglePosterMode() {
@@ -893,6 +1286,16 @@ function togglePosterMode() {
 function toggleMinimalUI() {
   minimalUiMode = !minimalUiMode;
   applyUiModes();
+}
+
+function changeMapModel(nextModel) {
+  mapModel = normalizeMapModel(nextModel);
+  generationOptions = normalizeGenerationOptions({ ...generationOptions, model: mapModel });
+  nodes.forEach((node) => { node.manual = false; });
+  updateMapModelUi();
+  render();
+  centerMap();
+  setStatus(`Modelo alterado para ${getMapModelMeta().label}.`, 'success');
 }
 
 function printPoster() {
@@ -990,10 +1393,15 @@ function zoomOut() { zoom=Math.max(0.2,zoom-0.15); updateZoomBadge(); applyXform
 function centerMap() {
   const wrap = document.getElementById('mapWrap');
   const root = nodes.find(n=>n.isRoot);
-  if (!root) return;
-  zoom = posterMode ? 0.92 : 0.75;
-  pan.x = wrap.offsetWidth  / 2 - (root.x + nodeWidth(root)/2) * zoom;
-  pan.y = wrap.offsetHeight / 2 - (root.y + nodeHeight(root)/2) * zoom;
+  const bounds = getMapBounds();
+  if (!root || !bounds) return;
+  if (['circle', 'bubble', 'double-bubble'].includes(mapModel)) zoom = posterMode ? 0.84 : 0.72;
+  else if (mapModel === 'flow') zoom = posterMode ? 0.78 : 0.68;
+  else zoom = posterMode ? 0.92 : 0.75;
+  const targetX = (bounds.minX + bounds.maxX) / 2;
+  const targetY = (bounds.minY + bounds.maxY) / 2;
+  pan.x = wrap.offsetWidth  / 2 - targetX * zoom;
+  pan.y = wrap.offsetHeight / 2 - targetY * zoom;
   applyXform();
   updateZoomBadge();
 }
@@ -1005,10 +1413,13 @@ function loadDraftTreeFromStorage() {
   const raw = localStorage.getItem(DRAFT_TREE_KEY);
   if (!raw) return false;
   try {
-    const tree = normalizeMindMapJSON(JSON.parse(raw));
+    const parsed = JSON.parse(raw);
+    const payload = parsed && typeof parsed === 'object' && parsed.tree
+      ? { tree: normalizeMindMapJSON(parsed.tree), options: normalizeGenerationOptions(parsed.options || {}) }
+      : { tree: normalizeMindMapJSON(parsed), options: normalizeGenerationOptions({}) };
     localStorage.removeItem(DRAFT_TREE_KEY);
-    buildMapFromJSON(tree);
-    setStatus('Mapa importado do gerador.','success');
+    buildMapFromJSON(payload.tree, payload.options);
+    setStatus(`Mapa importado do gerador em ${getMapModelMeta(payload.options.model || mapModel).label}.`,'success');
     return true;
   } catch (error) {
     console.error(error);
@@ -1019,6 +1430,8 @@ function loadDraftTreeFromStorage() {
 }
 
 function init() {
+  generationOptions = normalizeGenerationOptions({ ...generationOptions, model: mapModel });
+  updateMapModelUi();
   const imported = loadDraftTreeFromStorage();
   const restored = imported || loadMapFromStorage();
   if (!restored) {
@@ -1141,6 +1554,11 @@ function changeNodeColor() {
 }
 function setDepth(d) {
   currentDepth=d;
+  generationOptions = normalizeGenerationOptions({
+    ...generationOptions,
+    model: mapModel,
+    depth: getStudyModeMeta(d).label
+  });
   document.querySelectorAll('.depth-btn').forEach(b=>{
     b.classList.toggle('active',parseInt(b.dataset.depth)===d);
   });
@@ -1205,11 +1623,21 @@ function normalizeMindMapJSON(input){
 async function requestMindMapJSON(promptText, depthLabel){
   const apiKey = getOpenAIApiKey();
   if (!apiKey) throw new Error('API key ausente.');
+  const modelInstruction = {
+    tree:'Organize em arvore hierarquica com grupos principais e subgrupos logicos.',
+    flow:'Organize como fluxo principal de etapas. O primeiro nivel deve representar sequencia ou fases.',
+    'multi-flow':'Organize em polos complementares, como causas e efeitos, entradas e saidas ou antes e depois.',
+    brace:'Organize como quebra analitica do tema em grupos compactos e subgrupos objetivos.',
+    circle:'Organize em aneis de contexto ao redor do conceito central.',
+    bubble:'Organize em bolhas descritivas ao redor do conceito central.',
+    'double-bubble':'Organize como comparacao entre dois eixos principais com pontos em comum quando fizer sentido.'
+  }[mapModel];
   const systemPrompt = [
     'Voce cria mapas mentais de estudo em portugues.',
     'Responda somente JSON valido no schema informado.',
     'Organize o conteudo em progressao de aprendizagem: fundamentos, blocos principais, detalhes, revisao.',
     'Evite ramos soltos, repeticoes, jargoes desnecessarios e topicos desconexos.',
+    modelInstruction,
     depthLabel === 'LOW'
       ? 'Modo LOW: use apenas palavras-chave e poucos ramos principais.'
       : depthLabel === 'MEDIUM'
@@ -1267,8 +1695,20 @@ async function generateWithAI() {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    BUILD MAP FROM JSON â€” usa o layout automÃ¡tico
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-function buildMapFromJSON(json) {
+function buildMapFromJSON(json, options = null) {
   json = normalizeMindMapJSON(json);
+  if (options) {
+    generationOptions = normalizeGenerationOptions(options);
+    mapModel = normalizeMapModel(generationOptions.model || mapModel);
+  } else {
+    generationOptions = normalizeGenerationOptions({ ...generationOptions, model: mapModel });
+  }
+  const depthFromOptions = generationOptions.depth === 'LOW' ? 1 : generationOptions.depth === 'HIGH' ? 3 : 2;
+  currentDepth = depthFromOptions;
+  document.querySelectorAll('.depth-btn').forEach((button) => {
+    button.classList.toggle('active', Number(button.dataset.depth) === currentDepth);
+  });
+  updateMapModelUi();
   nodes=[]; selectedNode=null; nodeId=1;
   clearNodeMetrics();
   const palette = [theme.l1, theme.l2, theme.l3, theme.l4 || theme.l1];
@@ -1361,7 +1801,8 @@ const TEMPLATES = {
 function loadTemplate(t) {
   if(!TEMPLATES[t]) return;
   if(nodes.length>1&&!confirm('Substituir o mapa pelo template?')) return;
-  buildMapFromJSON(TEMPLATES[t]);
+  const templateModels = { brainstorm:'bubble', projeto:'flow', estudo:'tree', apresentacao:'brace' };
+  buildMapFromJSON(TEMPLATES[t], { model: templateModels[t] || mapModel });
   logHistory(`Template: ${t}`);
 }
 
@@ -1400,13 +1841,7 @@ function buildExportSnapshot() {
     if (nd.parentId === null) return;
     const parent = nodes.find((candidate) => candidate.id === nd.parentId);
     if (!parent) return;
-    const side = nd.branchSide || parent.branchSide || 'right';
-    const x1 = (side==='left' ? parent.x : parent.x + nodeWidth(parent)) - bounds.minX + padding;
-    const y1 = parent.y + nodeHeight(parent) / 2 - bounds.minY + padding;
-    const x2 = (side==='left' ? nd.x + nodeWidth(nd) : nd.x) - bounds.minX + padding;
-    const y2 = nd.y + nodeHeight(nd) / 2 - bounds.minY + padding;
-    const mx = (x1 + x2) / 2;
-    paths += `<path d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}" fill="none" stroke-opacity="${posterMode ? 0.9 : 0.72}" stroke-linecap="round"/>`;
+    paths += `<path d="${getConnectionPath(parent, nd, bounds.minX - padding, bounds.minY - padding)}" stroke="${parent.color}" stroke-width="${posterMode ? 2.4 : 2}" fill="none" stroke-opacity="${posterMode ? 0.9 : 0.72}" stroke-linecap="round"/>`;
   });
   nodes.forEach((nd) => {
     const x = nd.x - bounds.minX + padding;
@@ -1455,7 +1890,9 @@ function saveMap() {
       selectedNodeId:selectedNode?.id??null,
       aiGenerations,
       posterMode,
-      minimalUiMode
+      minimalUiMode,
+      mapModel,
+      generationOptions
     }));
     setStatus('Mapa salvo.','success'); logHistory('Mapa salvo'); setTimeout(()=>setStatus('✨ Pronto para gerar',''),2500);
   } catch(e){ console.error(e); setStatus('Falha ao salvar no navegador.','error'); }
@@ -1475,7 +1912,14 @@ function loadMapFromStorage(){
     aiGenerations=Array.isArray(data.aiGenerations)?data.aiGenerations.slice(0,5):[];
     posterMode = data.posterMode !== false;
     minimalUiMode = Boolean(data.minimalUiMode);
+    mapModel = normalizeMapModel(data.mapModel || mapModel);
+    generationOptions = normalizeGenerationOptions(data.generationOptions || { model: mapModel });
+    currentDepth = generationOptions.depth === 'LOW' ? 1 : generationOptions.depth === 'HIGH' ? 3 : 2;
+    document.querySelectorAll('.depth-btn').forEach((button) => {
+      button.classList.toggle('active', Number(button.dataset.depth) === currentDepth);
+    });
     applyUiModes();
+    updateMapModelUi();
     renderAIHistory(); render(); applyXform(); updateZoomBadge();
     setStatus('Mapa restaurado do navegador.','success'); setTimeout(()=>setStatus('✨ Pronto para gerar',''),2500);
     return true;
@@ -1497,6 +1941,8 @@ function runSelfTests() {
     nodes = [];
     selectedNode = null;
     nodeId = 1;
+    mapModel = 'tree';
+    generationOptions = normalizeGenerationOptions({ model: 'tree' });
     clearNodeMetrics();
     addNode('Teste raiz', null, true);
     results.push(assertTest('node creation', nodes.length === 1 && nodes[0].isRoot, `nodes=${nodes.length}`));
@@ -1516,6 +1962,14 @@ function runSelfTests() {
 
     const exportSnapshot = buildExportSnapshot();
     results.push(assertTest('export snapshot', Boolean(exportSnapshot && exportSnapshot.width > 0 && exportSnapshot.height > 0), exportSnapshot ? `${exportSnapshot.width}x${exportSnapshot.height}` : 'none'));
+
+    mapModel = 'bubble';
+    generationOptions = normalizeGenerationOptions({ model: 'bubble' });
+    nodes.forEach((node) => { node.manual = false; });
+    updateMapModelUi();
+    render();
+    const bubblePositioned = nodes.every((node) => Number.isFinite(node.x) && Number.isFinite(node.y));
+    results.push(assertTest('bubble layout positioning', bubblePositioned, `model=${mapModel}`));
   } catch (error) {
     results.push(assertTest('self-test runtime', false, error.message));
   } finally {

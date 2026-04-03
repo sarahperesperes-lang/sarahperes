@@ -1,73 +1,303 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gerador de Estudo</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#0f1115;color:#eef4f1}main{max-width:1100px;margin:0 auto;padding:28px 20px 34px}h1{margin:0 0 8px;font-size:30px}p.lead{margin:0 0 18px;color:#a8bbb3;line-height:1.7}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}.card{background:#161a20;border:1px solid #263038;border-radius:20px;padding:18px;box-shadow:0 16px 40px rgba(0,0,0,.25)}label{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8ca59b;margin-bottom:8px}input[type=text],textarea{width:100%;border:1px solid #32404b;background:#0f1318;color:#eef4f1;border-radius:14px;padding:12px 14px;font:inherit;outline:none}textarea{min-height:170px;resize:vertical;line-height:1.55}input[type=text]:focus,textarea:focus{border-color:#39f0a1}.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;border-radius:999px;border:1px solid #32404b;background:#0f1318;color:#eef4f1;font-weight:700;cursor:pointer}.btn.primary{background:#39f0a1;color:#062116;border-color:#39f0a1}.btn:disabled{opacity:.55;cursor:not-allowed}.depths{display:flex;gap:8px;margin:12px 0 14px}.depth{flex:1;padding:10px 8px;border-radius:12px;border:1px solid #32404b;background:#10151a;color:#b5c7c0;font-weight:700;cursor:pointer}.depth.active{background:#1f2b30;border-color:#39f0a1;color:#fff}.status{margin-top:12px;font-size:13px;color:#9ab1a8;line-height:1.5}.meta{margin-top:10px;font-size:12px;color:#83a195;line-height:1.5}.tree{margin:0;padding-left:18px}.tree li{margin:8px 0;line-height:1.45}.tree strong{color:#fff}.jsonBox{margin-top:14px;background:#0d1116;border:1px solid #28333c;border-radius:16px;padding:12px;max-height:340px;overflow:auto;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;color:#9ee9c3}.hint{font-size:12px;color:#7c948a;margin-top:8px}.hidden{display:none}@media (max-width:900px){.grid{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+:root{
+  --bg:#0b0f14;
+  --panel:#121923;
+  --panel-2:#18212d;
+  --line:#253342;
+  --soft:#314457;
+  --text:#eef4f1;
+  --muted:#9cb4aa;
+  --accent:#39f0a1;
+  --accent-2:#6db9ff;
+  --danger:#ff9fb5;
+  --shadow:0 18px 44px rgba(0,0,0,.28);
+}
+body{
+  margin:0;
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(57,240,161,.09), transparent 28%),
+    radial-gradient(circle at right 12%, rgba(109,185,255,.08), transparent 26%),
+    var(--bg);
+  color:var(--text);
+}
+main{max-width:1180px;margin:0 auto;padding:30px 20px 36px}
+h1{margin:0 0 10px;font-size:34px;line-height:1.05}
+p.lead{max-width:880px;margin:0 0 22px;color:var(--muted);line-height:1.7}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:18px}
+.card{
+  background:linear-gradient(180deg, rgba(22,29,38,.98), rgba(18,25,35,.96));
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+.section-title{display:block;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8ca59b;margin:0 0 10px}
+label{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8ca59b;margin-bottom:8px}
+input[type=text],textarea,select{
+  width:100%;
+  border:1px solid #32404b;
+  background:#0e141c;
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 14px;
+  font:inherit;
+  outline:none;
+}
+input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{min-height:200px;resize:vertical;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 15px;border-radius:999px;border:1px solid #32404b;
+  background:#0f1318;color:var(--text);font-weight:700;cursor:pointer;
+}
+.btn:hover{transform:translateY(-1px);border-color:#415363}
+.btn.primary{background:var(--accent);color:#062116;border-color:var(--accent)}
+.btn.secondary{background:#0f1620;color:#dce7e2}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.depths{display:flex;gap:8px;margin:12px 0 16px}
+.depth{flex:1;padding:10px 8px;border-radius:12px;border:1px solid #32404b;background:#10151a;color:#b5c7c0;font-weight:800;cursor:pointer}
+.depth.active{background:#1f2b30;border-color:var(--accent);color:#fff}
+.panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.option-stack{display:flex;flex-direction:column;gap:12px}
+.model-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.model-card{
+  padding:12px 12px 13px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(19,27,37,.92), rgba(12,18,26,.92));
+  cursor:pointer;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.model-card:hover{transform:translateY(-1px);border-color:#4c6377}
+.model-card.active{border-color:var(--accent);box-shadow:0 0 0 1px rgba(57,240,161,.16),0 12px 28px rgba(0,0,0,.22)}
+.model-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.model-title{font-size:14px;font-weight:800;color:#fff}
+.model-icon{font-size:18px;line-height:1}
+.model-copy{font-size:12px;color:#98afa6;line-height:1.45}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.summary-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 11px;border-radius:999px;
+  background:#0e141c;border:1px solid #31404e;
+  font-size:12px;color:#d2dfd9;
+}
+.status{margin-top:12px;font-size:13px;color:#9ab1a8;line-height:1.5}
+.meta{margin-top:10px;font-size:12px;color:#83a195;line-height:1.55}
+.hint{font-size:12px;color:#7c948a;margin-top:9px;line-height:1.5}
+.preview-shell{display:flex;flex-direction:column;gap:14px}
+.preview-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.preview-title{font-size:18px;font-weight:800;color:#fff}
+.preview-sub{font-size:12px;color:#8bb9a4}
+.preview-card{padding:14px;border-radius:18px;background:#0d1116;border:1px solid #28333c}
+.tree{margin:0;padding-left:18px}.tree li{margin:8px 0;line-height:1.45}.tree strong{color:#fff}
+.jsonBox{background:#0d1116;border:1px solid #28333c;border-radius:16px;padding:12px;max-height:320px;overflow:auto;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;color:#9ee9c3}
+.hidden{display:none!important}
+.inline-note{display:flex;gap:10px;align-items:flex-start;padding:12px 13px;border-radius:16px;background:rgba(15,20,28,.9);border:1px solid #263441;color:#c7d6d0;font-size:12px;line-height:1.55}
+.inline-note strong{color:#fff}
+@media (max-width:980px){
+  .grid{grid-template-columns:1fr}
+  .panel-grid,.choice-grid{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  .model-grid{grid-template-columns:1fr}
+  h1{font-size:29px}
+}
 </style>
 </head>
 <body>
 <main>
-  <h1>Gerador de estudo a partir de conteudo base</h1>
-  <p class="lead">Cole o texto do PDF, envie um PDF, TXT ou JSON e gere uma arvore de estudo pronta para abrir no editor. A chave da OpenAI continua local no navegador.</p>
+  <h1>Gerador de estudo com modelos de mapa</h1>
+  <p class="lead">Carregue um PDF, cole texto bruto ou importe JSON e escolha como o mapa deve nascer: arvore, fluxo, bubble, circle, comparativo e outros formatos. O resultado abre no editor publico com o layout escolhido.</p>
   <div class="grid">
     <section class="card">
       <label for="topic">Tema ou foco do mapa</label>
       <input id="topic" type="text" placeholder="Ex.: Psiquiatria - exame do estado mental e espectro psicotico">
+
       <div class="depths">
-        <button class="depth" data-depth="LOW">LOW</button>
-        <button class="depth active" data-depth="MEDIUM">MEDIUM</button>
-        <button class="depth" data-depth="HIGH">HIGH</button>
+        <button class="depth" data-depth="LOW" type="button">LOW</button>
+        <button class="depth active" data-depth="MEDIUM" type="button">MEDIUM</button>
+        <button class="depth" data-depth="HIGH" type="button">HIGH</button>
       </div>
+
+      <div class="panel-grid">
+        <div>
+          <span class="section-title">Modelo visual do mapa</span>
+          <div class="model-grid" id="modelGrid">
+            <button class="model-card active" data-model="tree" type="button">
+              <div class="model-head"><span class="model-title">Tree</span><span class="model-icon">A</span></div>
+              <div class="model-copy">Hierarquia principal com leitura limpa para estudo longo.</div>
+            </button>
+            <button class="model-card" data-model="flow" type="button">
+              <div class="model-head"><span class="model-title">Flow</span><span class="model-icon">></span></div>
+              <div class="model-copy">Sequencia de etapas, processo ou raciocinio em ordem.</div>
+            </button>
+            <button class="model-card" data-model="multi-flow" type="button">
+              <div class="model-head"><span class="model-title">Multi-flow</span><span class="model-icon">&lt;&gt;</span></div>
+              <div class="model-copy">Entradas e saidas, causa e efeito, polos complementares.</div>
+            </button>
+            <button class="model-card" data-model="brace" type="button">
+              <div class="model-head"><span class="model-title">Brace</span><span class="model-icon">}</span></div>
+              <div class="model-copy">Quebra o tema em grupos compactos e subgrupos bem proximos.</div>
+            </button>
+            <button class="model-card" data-model="circle" type="button">
+              <div class="model-head"><span class="model-title">Circle</span><span class="model-icon">O</span></div>
+              <div class="model-copy">Conceito central com aneis de contexto, definicao e exemplos.</div>
+            </button>
+            <button class="model-card" data-model="bubble" type="button">
+              <div class="model-head"><span class="model-title">Bubble</span><span class="model-icon">o</span></div>
+              <div class="model-copy">Bolhas descritivas para memorizar atributos ao redor do tema.</div>
+            </button>
+            <button class="model-card" data-model="double-bubble" type="button" style="grid-column:1/-1">
+              <div class="model-head"><span class="model-title">Double bubble</span><span class="model-icon">oo</span></div>
+              <div class="model-copy">Comparacao visual entre dois eixos principais com pontos em comum e diferencas.</div>
+            </button>
+          </div>
+        </div>
+        <div class="option-stack">
+          <div>
+            <span class="section-title">Como organizar o PDF</span>
+            <div class="choice-grid">
+              <div>
+                <label for="focusSelect">Foco didatico</label>
+                <select id="focusSelect">
+                  <option value="progressivo">Progressao de aprendizagem</option>
+                  <option value="comparativo">Comparar conceitos</option>
+                  <option value="processual">Passo a passo / fluxo</option>
+                  <option value="revisao">Revisao rapida</option>
+                </select>
+              </div>
+              <div>
+                <label for="pdfLensSelect">Leitura do PDF</label>
+                <select id="pdfLensSelect">
+                  <option value="auto">Auto</option>
+                  <option value="titulos">Priorizar titulos e secoes</option>
+                  <option value="conceitos">Priorizar conceitos-chave</option>
+                  <option value="comparacoes">Priorizar comparacoes</option>
+                  <option value="etapas">Priorizar fluxos e etapas</option>
+                </select>
+              </div>
+              <div>
+                <label for="nodeStyleSelect">Estilo do texto nos nos</label>
+                <select id="nodeStyleSelect">
+                  <option value="headline">Titulo + explicacao curta</option>
+                  <option value="keywords">Palavras-chave</option>
+                  <option value="study-notes">Mini anotacoes de estudo</option>
+                </select>
+              </div>
+              <div>
+                <label for="branchCountSelect">Ramos principais</label>
+                <select id="branchCountSelect">
+                  <option value="auto">Auto</option>
+                  <option value="4">4 ramos</option>
+                  <option value="6">6 ramos</option>
+                  <option value="8">8 ramos</option>
+                </select>
+              </div>
+            </div>
+            <div class="summary-wrap" id="choiceSummary"></div>
+          </div>
+          <div class="inline-note">
+            <div>i</div>
+            <div><strong>Fluxo recomendado:</strong> carregue o PDF, ajuste o tipo de mapa, escolha o foco didatico e gere. O editor recebe o layout com o modelo escolhido, sem perder a edicao manual.</div>
+          </div>
+        </div>
+      </div>
+
       <label for="source">Conteudo base</label>
       <textarea id="source" placeholder="Cole aqui o texto do PDF, resumo da aula, apostila ou material bruto."></textarea>
       <div class="row" style="margin-top:12px">
-        <label class="btn" style="padding:11px 15px">Carregar arquivo<input id="fileInput" type="file" accept=".txt,.md,.json,.pdf,application/pdf,application/json,text/plain" hidden></label>
+        <label class="btn secondary" style="padding:11px 15px">Carregar arquivo<input id="fileInput" type="file" accept=".txt,.md,.json,.pdf,application/pdf,application/json,text/plain" hidden></label>
         <button class="btn" id="clearBtn" type="button">Limpar base</button>
-        <button class="btn primary" id="generateBtn" type="button">Gerar arvore</button>
+        <button class="btn primary" id="generateBtn" type="button">Gerar mapa</button>
       </div>
       <div class="status" id="status">Cole um conteudo base ou selecione um PDF para comecar.</div>
       <div class="meta" id="meta">Sem conteudo carregado.</div>
-      <div class="hint">Se o arquivo for JSON no formato root + children, ele vai direto para o editor sem passar pela IA.</div>
+      <div class="hint">JSON no formato <code>root + children</code> abre direto no editor. Se o arquivo trouxer <code>{ tree, options }</code>, o modelo selecionado tambem e reaplicado.</div>
     </section>
+
     <section class="card">
-      <label>Previa estruturada</label>
-      <div id="preview">Nenhum resultado ainda.</div>
-      <div class="row" style="margin-top:14px">
-        <button class="btn primary hidden" id="openEditorBtn" type="button">Abrir no editor</button>
-        <button class="btn hidden" id="copyJsonBtn" type="button">Copiar JSON</button>
+      <div class="preview-shell">
+        <div>
+          <span class="section-title">Previa estruturada</span>
+          <div class="preview-header">
+            <div>
+              <div class="preview-title">Saida pronta para abrir no editor</div>
+              <div class="preview-sub" id="previewSub">Nenhum resultado ainda.</div>
+            </div>
+            <div class="summary-wrap" id="previewChips"></div>
+          </div>
+        </div>
+        <div class="preview-card" id="preview">Nenhum resultado ainda.</div>
+        <div class="row">
+          <button class="btn primary hidden" id="openEditorBtn" type="button">Abrir no editor</button>
+          <button class="btn hidden" id="copyJsonBtn" type="button">Copiar JSON</button>
+        </div>
+        <pre class="jsonBox hidden" id="jsonBox"></pre>
       </div>
-      <pre class="jsonBox hidden" id="jsonBox"></pre>
     </section>
   </div>
 </main>
 <script>
 const OPENAI_API_KEY='';
 const DRAFT_TREE_KEY='mapaEstudoDraftTree';
+const MODEL_META={
+  tree:{label:'Tree',prompt:'Organize em arvore de estudo hierarquica, com grupos logicos e subgrupos claros.'},
+  flow:{label:'Flow',prompt:'Organize como fluxo principal de etapas. O primeiro nivel deve representar uma sequencia de passos ou fases.'},
+  'multi-flow':{label:'Multi-flow',prompt:'Organize como multiplos fluxos ligados ao tema central, destacando causas e efeitos, entradas e saidas ou polos complementares.'},
+  brace:{label:'Brace',prompt:'Organize como quebra analitica do tema em grupos compactos, categorias e subcategorias objetivas.'},
+  circle:{label:'Circle',prompt:'Organize em circulos de contexto ao redor do tema central, priorizando definicoes, contexto, exemplos e aplicacoes.'},
+  bubble:{label:'Bubble',prompt:'Organize em bolhas descritivas ao redor do conceito central, com atributos curtos, memoraveis e bem separados.'},
+  'double-bubble':{label:'Double bubble',prompt:'Organize como comparacao. Estruture dois eixos principais e, se fizer sentido, um bloco de pontos em comum entre eles.'}
+};
 const MINDMAP_JSON_SCHEMA={type:'object',additionalProperties:false,required:['root','children'],properties:{root:{type:'string',minLength:1},children:{type:'array',items:{$ref:'#/$defs/node'}}},$defs:{node:{type:'object',additionalProperties:false,required:['text','children'],properties:{text:{type:'string',minLength:1},children:{type:'array',items:{$ref:'#/$defs/node'}}}}}};
-let currentDepth='MEDIUM',generatedTree=null,pdfJsPromise=null;
+let currentDepth='MEDIUM';
+let currentModel='tree';
+let generatedPayload=null;
+let pdfJsPromise=null;
+let sourceMeta={type:'manual',name:'',pages:0};
 const $=selector=>document.querySelector(selector);
 const depthButtons=[...document.querySelectorAll('.depth')];
+const modelCards=[...document.querySelectorAll('.model-card')];
 function setStatus(msg,type=''){const el=$('#status');el.textContent=msg;el.style.color=type==='error'?'#ff9fb5':type==='success'?'#8df0bc':'#9ab1a8';}
-function updateMeta(extra=''){const len=$('#source').value.trim().length;$('#meta').textContent=len?`${len} caracteres carregados. ${extra||'A IA vai organizar o mapa com base nesse material.'}`:(extra||'Sem conteudo carregado.');}
 function getOpenAIApiKey(){if(OPENAI_API_KEY&&OPENAI_API_KEY.startsWith('sk-'))return OPENAI_API_KEY;const saved=localStorage.getItem('openai_api_key')||'';if(saved.startsWith('sk-'))return saved;const provided=prompt('Informe sua OpenAI API key para usar o gerador:','')||'';if(provided.startsWith('sk-')){localStorage.setItem('openai_api_key',provided);return provided}return ''}
 function normalizeNode(node){if(!node||typeof node!=='object')return null;const text=String(node.text||'').trim();if(!text)return null;return{text,children:(Array.isArray(node.children)?node.children:[]).map(normalizeNode).filter(Boolean)}}
 function normalizeTree(data){if(!data||typeof data!=='object')throw new Error('Formato invalido.');const root=String(data.root||'').trim();if(!root)throw new Error('Campo root vazio.');return{root,children:(Array.isArray(data.children)?data.children:[]).map(normalizeNode).filter(Boolean)}}
+function normalizeDraftPayload(data){if(data&&typeof data==='object'&&data.tree){const tree=normalizeTree(data.tree);const options=normalizeOptions(data.options||{});return{tree,options}}return{tree:normalizeTree(data),options:normalizeOptions({})}}
+function normalizeOptions(input={}){const model=MODEL_META[input.model]?input.model:currentModel;return{model,depth:['LOW','MEDIUM','HIGH'].includes(input.depth)?input.depth:currentDepth,focus:['progressivo','comparativo','processual','revisao'].includes(input.focus)?input.focus:$('#focusSelect').value,nodeStyle:['headline','keywords','study-notes'].includes(input.nodeStyle)?input.nodeStyle:$('#nodeStyleSelect').value,mainBranches:['auto','4','6','8'].includes(String(input.mainBranches))?String(input.mainBranches):$('#branchCountSelect').value,pdfLens:['auto','titulos','conceitos','comparacoes','etapas'].includes(input.pdfLens)?input.pdfLens:$('#pdfLensSelect').value,sourceType:input.sourceType||sourceMeta.type||'manual',sourceName:input.sourceName||sourceMeta.name||'',sourcePages:Number(input.sourcePages)||sourceMeta.pages||0,createdAt:input.createdAt||new Date().toISOString()}}
+function getGenerationOptions(){return normalizeOptions({model:currentModel,depth:currentDepth,focus:$('#focusSelect').value,nodeStyle:$('#nodeStyleSelect').value,mainBranches:$('#branchCountSelect').value,pdfLens:$('#pdfLensSelect').value,sourceType:sourceMeta.type,sourceName:sourceMeta.name,sourcePages:sourceMeta.pages})}
+function updateMeta(extra=''){const len=$('#source').value.trim().length;const sourceLabel=sourceMeta.type==='pdf'?(sourceMeta.pages?`PDF com ${sourceMeta.pages} pagina(s). `:'PDF carregado. '):sourceMeta.type==='json'?'JSON carregado. ':sourceMeta.type==='text-file'?'Arquivo de texto carregado. ':'';$('#meta').textContent=len?`${len} caracteres carregados. ${sourceLabel}${extra||'A IA vai organizar o mapa com base no material e nas escolhas acima.'}`:(extra||'Sem conteudo carregado.');}
+function renderChoiceSummary(){const options=getGenerationOptions();const chips=[`Modelo: ${MODEL_META[options.model].label}`,`Profundidade: ${options.depth}`,`Foco: ${options.focus}`,`Texto: ${options.nodeStyle}`,`Ramos: ${options.mainBranches==='auto'?'auto':options.mainBranches}`];$('#choiceSummary').innerHTML=chips.map(item=>`<span class="chip">${item}</span>`).join('');}
+function syncModelUi(model){currentModel=model;modelCards.forEach(card=>card.classList.toggle('active',card.dataset.model===model));renderChoiceSummary();}
 function renderTree(node){const ul=document.createElement('ul');ul.className='tree';(node.children||[]).forEach(child=>{const li=document.createElement('li');const parts=String(child.text).split(/\s*[|:-]\s+/);li.innerHTML=`<strong>${parts[0]}</strong>${parts[1]?`<div class="hint">${parts.slice(1).join(' - ')}</div>`:''}`;if(child.children&&child.children.length)li.appendChild(renderTree(child));ul.appendChild(li)});return ul}
-function showTree(tree){generatedTree=tree;const preview=$('#preview');preview.innerHTML=`<div style="font-size:18px;font-weight:800;margin-bottom:8px">${tree.root}</div>`;preview.appendChild(renderTree(tree));$('#jsonBox').textContent=JSON.stringify(tree,null,2);$('#jsonBox').classList.remove('hidden');$('#openEditorBtn').classList.remove('hidden');$('#copyJsonBtn').classList.remove('hidden');}
+function showTree(tree,payload=null){const options=payload?.options||getGenerationOptions();generatedPayload={version:2,tree,options};const preview=$('#preview');preview.innerHTML=`<div style="font-size:18px;font-weight:800;margin-bottom:8px">${tree.root}</div>`;preview.appendChild(renderTree(tree));$('#previewSub').textContent=`${MODEL_META[options.model].label} · ${options.depth} · ${options.focus}`;$('#previewChips').innerHTML=[MODEL_META[options.model].label,options.depth,options.nodeStyle,options.sourceType==='pdf'?'PDF':'Base textual'].map(item=>`<span class="chip">${item}</span>`).join('');$('#jsonBox').textContent=JSON.stringify(generatedPayload,null,2);$('#jsonBox').classList.remove('hidden');$('#openEditorBtn').classList.remove('hidden');$('#copyJsonBtn').classList.remove('hidden');}
 async function loadPdfJs(){if(!pdfJsPromise){pdfJsPromise=import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs').then(module=>{const lib=module.default||module;lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';return lib})}return pdfJsPromise}
-async function extractPdfText(file){const lib=await loadPdfJs();const pdf=await lib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];for(let i=1;i<=pdf.numPages;i+=1){const page=await pdf.getPage(i);const textContent=await page.getTextContent();const text=textContent.items.map(item=>item.str||'').join(' ').replace(/\s+/g,' ').trim();if(text)pages.push(text)}return pages.join('\n\n')}
-async function handleFile(file){if(!file)return;const lower=file.name.toLowerCase();try{if(lower.endsWith('.json')){const parsed=normalizeTree(JSON.parse(await file.text()));showTree(parsed);setStatus('JSON importado com sucesso.','success');updateMeta('JSON pronto para abrir no editor.')}else if(lower.endsWith('.pdf')||file.type==='application/pdf'){setStatus('Lendo PDF local...');$('#source').value=await extractPdfText(file);updateMeta('PDF convertido em texto.');setStatus('PDF lido. Agora gere a arvore.','success')}else{$('#source').value=await file.text();updateMeta();setStatus('Conteudo base carregado.','success')}}catch(error){console.error(error);setStatus(`Erro no arquivo: ${error.message}`,'error')}}
-async function generate(){const topic=$('#topic').value.trim()||'Organize o conteudo base em um mapa de estudo';const source=$('#source').value.trim();if(!source){setStatus('Cole um conteudo base ou carregue um arquivo antes de gerar.','error');return}const apiKey=getOpenAIApiKey();if(!apiKey){setStatus('API key ausente.','error');return}const btn=$('#generateBtn');btn.disabled=true;setStatus('Gerando arvore de estudo...');try{const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe por progressao de aprendizagem e evite ramos soltos.',currentDepth==='LOW'?'Modo LOW: palavras-chave e poucos ramos principais.':currentDepth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla e explicacoes concisas.'].join(' ');const body={model:'gpt-4o',input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,16000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2400};const res=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`)}const data=await res.json();const raw=(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'').trim();const jsonText=raw.startsWith('{')?raw:(raw.match(/\{[\s\S]*\}$/)?.[0]||'');const tree=normalizeTree(JSON.parse(jsonText));showTree(tree);setStatus('Arvore gerada com sucesso.','success')}catch(error){console.error(error);setStatus(`Erro: ${error.message}`,'error')}finally{btn.disabled=false}}
-depthButtons.forEach(btn=>{btn.addEventListener('click',()=>{currentDepth=btn.dataset.depth;depthButtons.forEach(item=>item.classList.toggle('active',item===btn))})});
+async function extractPdfText(file){const lib=await loadPdfJs();const pdf=await lib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];for(let i=1;i<=pdf.numPages;i+=1){const page=await pdf.getPage(i);const textContent=await page.getTextContent();const text=textContent.items.map(item=>item.str||'').join(' ').replace(/\s+/g,' ').trim();if(text)pages.push(text)}return{text:pages.join('\n\n'),pages:pdf.numPages}}
+function buildPromptOptionsText(options){const focusMap={progressivo:'Organize a explicacao em progressao de aprendizagem, do basico ao avancado.',comparativo:'Destaque contrastes, semelhancas e pontos de decisao quando fizer sentido.',processual:'Mostre sequencia, etapas e dependencias de execucao.',revisao:'Priorize memorizacao, resumao e revisao rapida com alto poder de scan.'};const nodeMap={headline:'Use titulo + explicacao curta nos nos quando precisar detalhar.',keywords:'Prefira palavras-chave e frases bem curtas.', 'study-notes':'Pode usar mini anotacoes de estudo, mas sem textos longos.'};const branchMap=options.mainBranches==='auto'?'Deixe a quantidade de ramos principais livre, mas equilibrada.':`Tente limitar o primeiro nivel a cerca de ${options.mainBranches} ramos principais.`;const lensMap={auto:'Leia o material como um todo.',titulos:'Priorize a espinha dorsal formada por titulos, secoes e subtitulos.',conceitos:'Priorize definicoes, conceitos centrais e classificacoes.',comparacoes:'Procure comparacoes, diferencias e semelhancas.',etapas:'Procure fluxos, sequencias, protocolos e etapas.'};return[MODEL_META[options.model].prompt,focusMap[options.focus],nodeMap[options.nodeStyle],branchMap,lensMap[options.pdfLens]].join(' ')}
+async function handleFile(file){if(!file)return;const lower=file.name.toLowerCase();try{if(lower.endsWith('.json')){const parsed=normalizeDraftPayload(JSON.parse(await file.text()));sourceMeta={type:'json',name:file.name,pages:0};syncModelUi(parsed.options.model);currentDepth=parsed.options.depth;depthButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.depth===currentDepth));$('#focusSelect').value=parsed.options.focus;$('#nodeStyleSelect').value=parsed.options.nodeStyle;$('#branchCountSelect').value=parsed.options.mainBranches;$('#pdfLensSelect').value=parsed.options.pdfLens;showTree(parsed.tree,{options:parsed.options});setStatus('JSON importado com sucesso.','success');updateMeta('JSON pronto para abrir no editor.')}else if(lower.endsWith('.pdf')||file.type==='application/pdf'){setStatus('Lendo PDF local...');const result=await extractPdfText(file);$('#source').value=result.text;sourceMeta={type:'pdf',name:file.name,pages:result.pages};updateMeta('PDF convertido em texto e pronto para organizacao.');setStatus('PDF lido. Agora gere o mapa com suas escolhas.','success')}else{$('#source').value=await file.text();sourceMeta={type:'text-file',name:file.name,pages:0};updateMeta('Arquivo textual pronto para gerar.');setStatus('Conteudo base carregado.','success')}}catch(error){console.error(error);setStatus(`Erro no arquivo: ${error.message}`,'error')}}
+function extractLooseJson(raw){const direct=String(raw||'').trim();const attempts=[direct,direct.replace(/```json/gi,'```').replace(/```/g,'').trim()];const start=direct.indexOf('{');const end=direct.lastIndexOf('}');if(start>=0&&end>start)attempts.push(direct.slice(start,end+1));for(const candidate of attempts){if(!candidate)continue;try{return JSON.parse(candidate)}catch(_){}}throw new Error('Nao foi possivel interpretar o JSON retornado pela IA.')}
+async function generate(){const topic=$('#topic').value.trim()||'Organize o conteudo base em um mapa de estudo';const source=$('#source').value.trim();if(!source){setStatus('Cole um conteudo base ou carregue um arquivo antes de gerar.','error');return}const apiKey=getOpenAIApiKey();if(!apiKey){setStatus('API key ausente.','error');return}const options=getGenerationOptions();const btn=$('#generateBtn');btn.disabled=true;setStatus('Gerando mapa de estudo...');try{const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe por progressao de aprendizagem e evite ramos soltos.',options.depth==='LOW'?'Modo LOW: palavras-chave e poucos ramos principais.':options.depth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla e explicacoes concisas.',buildPromptOptionsText(options)].join(' ');const body={model:'gpt-4o',input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,18000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2600};const res=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify(body)});if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`)}const data=await res.json();const raw=(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'').trim();const tree=normalizeTree(extractLooseJson(raw));showTree(tree,{options});setStatus('Mapa gerado com sucesso.','success')}catch(error){console.error(error);setStatus(`Erro: ${error.message}`,'error')}finally{btn.disabled=false}}
+depthButtons.forEach(btn=>{btn.addEventListener('click',()=>{currentDepth=btn.dataset.depth;depthButtons.forEach(item=>item.classList.toggle('active',item===btn));renderChoiceSummary()})});
+modelCards.forEach(card=>card.addEventListener('click',()=>syncModelUi(card.dataset.model)));
+['#focusSelect','#nodeStyleSelect','#branchCountSelect','#pdfLensSelect'].forEach(selector=>$(selector).addEventListener('change',renderChoiceSummary));
 $('#fileInput').addEventListener('change',event=>{handleFile(event.target.files[0]).finally(()=>{event.target.value=''})});
-$('#clearBtn').addEventListener('click',()=>{$('#source').value='';generatedTree=null;$('#preview').textContent='Nenhum resultado ainda.';$('#jsonBox').classList.add('hidden');$('#openEditorBtn').classList.add('hidden');$('#copyJsonBtn').classList.add('hidden');updateMeta();setStatus('Conteudo base limpo.')});
+$('#clearBtn').addEventListener('click',()=>{$('#source').value='';generatedPayload=null;sourceMeta={type:'manual',name:'',pages:0};$('#preview').textContent='Nenhum resultado ainda.';$('#previewSub').textContent='Nenhum resultado ainda.';$('#previewChips').innerHTML='';$('#jsonBox').classList.add('hidden');$('#openEditorBtn').classList.add('hidden');$('#copyJsonBtn').classList.add('hidden');updateMeta();setStatus('Conteudo base limpo.')});
 $('#source').addEventListener('input',()=>updateMeta());
 $('#generateBtn').addEventListener('click',generate);
-$('#copyJsonBtn').addEventListener('click',async()=>{if(!generatedTree)return;await navigator.clipboard.writeText(JSON.stringify(generatedTree,null,2));setStatus('JSON copiado.','success')});
-$('#openEditorBtn').addEventListener('click',()=>{if(!generatedTree)return;localStorage.setItem(DRAFT_TREE_KEY,JSON.stringify(generatedTree));location.href='mapa-estudo-editor.html?draft=1'});
+$('#topic').addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();generate()}});
+$('#source').addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();generate()}});
+$('#copyJsonBtn').addEventListener('click',async()=>{if(!generatedPayload)return;await navigator.clipboard.writeText(JSON.stringify(generatedPayload,null,2));setStatus('JSON copiado.','success')});
+$('#openEditorBtn').addEventListener('click',()=>{if(!generatedPayload)return;localStorage.setItem(DRAFT_TREE_KEY,JSON.stringify(generatedPayload));location.href='mapa-estudo-editor.html?draft=1'});
+renderChoiceSummary();
 updateMeta();
 </script>
 </body>
