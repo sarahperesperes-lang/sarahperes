@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psiquiatria no Editor</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;background:#0b0b0d;color:#f3f3f3;display:grid;place-items:center;min-height:100vh;margin:0;padding:24px}
+.card{max-width:620px;padding:28px 26px;border:1px solid #27322d;border-radius:18px;background:#121417;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+h1{margin:0 0 10px;font-size:24px}p{margin:0 0 14px;line-height:1.6;color:#b7c6bf}a{color:#86f0bf}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Abrindo o mapa de psiquiatria no editor</h1>
+<p>Se o redirecionamento n?o acontecer automaticamente, <a href="mapa-estudo-editor.html?draft=1">clique aqui</a>.</p>
+</div>
+<script>
+const tree = {
+  "root": "Psiquiatria | exame do estado mental, psicose e bipolar",
+  "children": [
+    {
+      "text": "Consci?ncia | eixo do sens?rio e n?vel de alerta",
+      "children": [
+        {
+          "text": "Altera??es quantitativas | problema no volume da consci?ncia",
+          "children": [
+            {
+              "text": "Estupor | reage apenas a est?mulos intensos e repetidos",
+              "children": []
+            },
+            {
+              "text": "Coma | inconsci?ncia total com fun??es vitais preservadas",
+              "children": []
+            },
+            {
+              "text": "Morte cerebral | cessa??o irrevers?vel da atividade encef?lica",
+              "children": []
+            },
+            {
+              "text": "Etiologias | org?nica, infecciosa, t?xica e psiqui?trica",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Altera??es qualitativas | alerta presente, mas conte?do distorcido",
+          "children": [
+            {
+              "text": "Hipervig?lia | clareza exaltada com aumento motor e verbal",
+              "children": []
+            },
+            {
+              "text": "Letargia / sopor | vig?lia oscilante com resposta flutuante",
+              "children": []
+            },
+            {
+              "text": "Obnubila??o | confus?o, desorienta??o e distraibilidade",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Fio condutor | quantitativo = quanto, qualitativo = como",
+          "children": []
+        }
+      ]
+    },
+    {
+      "text": "Aten??o | foco, vigil?ncia e capacidade de sustentar est?mulos",
+      "children": [
+        {
+          "text": "Hipoprosexia | redu??o da aten??o por fadiga, apatia ou TDAH",
+          "children": []
+        },
+        {
+          "text": "Hiperprosexia | aumento com instabilidade atencional",
+          "children": []
+        },
+        {
+          "text": "Aprosexia | aboli??o total da aten??o",
+          "children": []
+        }
+      ]
+    },
+    {
+      "text": "Mem?ria | registrar, armazenar e recuperar informa??es",
+      "children": [
+        {
+          "text": "Transtornos | altera??es cl?nicas cl?ssicas",
+          "children": [
+            {
+              "text": "Hipermnesia | evoca??o facilitada de fatos passados",
+              "children": []
+            },
+            {
+              "text": "Paramnesia | falsos reconhecimentos e lembran?as irreais",
+              "children": []
+            },
+            {
+              "text": "S?ndrome amn?sica pura | amn?sia anter?grada grave com curto prazo preservado",
+              "children": []
+            },
+            {
+              "text": "Amn?sia lacunar | perda restrita a um per?odo delimitado",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Classifica??o | dura??o e tipo de conte?do",
+          "children": [
+            {
+              "text": "Curto prazo | 5 a 20 segundos e 5 a 7 elementos",
+              "children": []
+            },
+            {
+              "text": "Longo prazo | armazenamento prolongado e amplo",
+              "children": []
+            },
+            {
+              "text": "Procedimental | habilidades impl?citas e autom?ticas",
+              "children": []
+            },
+            {
+              "text": "Declarativa | mem?ria epis?dica e sem?ntica",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Abordabilidade e identidade | v?nculo cl?nico e reconhecimento",
+      "children": [
+        {
+          "text": "Abordabilidade | forma como o paciente entra em contato",
+          "children": [
+            {
+              "text": "Colaborador / abord?vel | coopera com a entrevista",
+              "children": []
+            },
+            {
+              "text": "N?o colaborador ativo | recusa expl?cita ao contato",
+              "children": []
+            },
+            {
+              "text": "N?o colaborador passivo | altera??o da consci?ncia impede express?o",
+              "children": []
+            },
+            {
+              "text": "Contato visual | presen?a ou aus?ncia tem valor cl?nico",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Autorrepresenta??o externa | s?ndromes de reconhecimento",
+          "children": [
+            {
+              "text": "Capgras | familiar percebido como impostor",
+              "children": []
+            },
+            {
+              "text": "Fregoli | estranho percebido como algu?m conhecido",
+              "children": []
+            },
+            {
+              "text": "Cotard | nega??o do corpo, da exist?ncia ou do mundo",
+              "children": []
+            },
+            {
+              "text": "Duplos / intermetamorfose | confus?o entre identidade e apar?ncia",
+              "children": []
+            },
+            {
+              "text": "Cl?rambault | erotomania com figura de status superior",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Psicomotricidade | postura, gesto e atividade motora",
+      "children": [
+        {
+          "text": "Catalepsia / flexibilidade c?rea | postura mantida e resist?ncia passiva",
+          "children": []
+        },
+        {
+          "text": "Negativismo / obedi?ncia autom?tica | oposi??o ou repeti??o autom?tica",
+          "children": []
+        },
+        {
+          "text": "Estereotipias e manierismos | gestos repetitivos ou parasitas",
+          "children": []
+        },
+        {
+          "text": "Apraxia | falha em sequenciar e coordenar atos",
+          "children": []
+        },
+        {
+          "text": "Tremores | repouso, postural e intencional",
+          "children": []
+        },
+        {
+          "text": "Tiques | movimentos r?pidos, involunt?rios e repetitivos",
+          "children": []
+        }
+      ]
+    },
+    {
+      "text": "Linguagem e afetividade | express?o verbal e tonalidade do humor",
+      "children": [
+        {
+          "text": "Linguagem | ritmo, repeti??o e significa??o",
+          "children": [
+            {
+              "text": "Ritmo | bradifasia, taquifasia, lat?ncia e gagueira",
+              "children": []
+            },
+            {
+              "text": "Iterativos | palilalia, ecolalia e coprolalia",
+              "children": []
+            },
+            {
+              "text": "Significa??o | neologismos e condensa??es pr?prias",
+              "children": []
+            },
+            {
+              "text": "Afasias | incapacidade de compreender ou usar a palavra",
+              "children": []
+            },
+            {
+              "text": "Outros sinais | logorreia, solil?quio e mutismo",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Afetividade | estado de ?nimo predominante",
+          "children": [
+            {
+              "text": "Eut?mico | humor dentro do habitual",
+              "children": []
+            },
+            {
+              "text": "Deprimido | tristeza e rebaixamento do ?nimo",
+              "children": []
+            },
+            {
+              "text": "Disf?rico / irrit?vel | mal-estar e baixa toler?ncia",
+              "children": []
+            },
+            {
+              "text": "Elevado / expansivo | euforia e desinibi??o",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Pensamento | curso, forma, conte?do e l?gica",
+      "children": [
+        {
+          "text": "Curso | velocidade e continuidade do fluxo",
+          "children": [
+            {
+              "text": "Acelera??o | pensamentos r?pidos demais",
+              "children": []
+            },
+            {
+              "text": "Lentifica??o | processamento mais lento",
+              "children": []
+            },
+            {
+              "text": "Bloqueio | interrup??o s?bita do fluxo",
+              "children": []
+            },
+            {
+              "text": "Roubo do pensamento | ideia de que o conte?do foi retirado",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Forma | arquitetura l?gica",
+          "children": [
+            {
+              "text": "Fuga de ideias | sucess?o r?pida com pouca liga??o",
+              "children": []
+            },
+            {
+              "text": "Dissocia??o | sequ?ncia desorganizada",
+              "children": []
+            },
+            {
+              "text": "Descarrilamento | desvios laterais do tema",
+              "children": []
+            },
+            {
+              "text": "Disgrega??o | perda grave de coer?ncia",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Conte?do | temas predominantes",
+          "children": [
+            {
+              "text": "Persecut?rio, depreciativo e hipocondr?aco | amea?a, culpa e doen?a",
+              "children": []
+            },
+            {
+              "text": "M?stico, sexual e grandioso | cren?as centrais patol?gicas",
+              "children": []
+            },
+            {
+              "text": "Pensamento m?gico | fantasia causal e onipot?ncia",
+              "children": []
+            },
+            {
+              "text": "Pensamento l?gico | causalidade, contradi??o, espa?o e tempo",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Sensa??o e sensopercep??o | da capta??o ao significado",
+      "children": [
+        {
+          "text": "Sensa??o | detec??o de est?mulos pelos sentidos",
+          "children": []
+        },
+        {
+          "text": "Sensopercep??o | aquisi??o de material do mundo externo e interno",
+          "children": []
+        },
+        {
+          "text": "Percep??o | interpreta??o das sensa??es e organiza??o da conduta",
+          "children": []
+        },
+        {
+          "text": "Transtornos da sensa??o | les?o org?nica ou origem funcional",
+          "children": [
+            {
+              "text": "Defeitos sensoriais | amaurose, hipoacusia, anosmia, ageusia",
+              "children": []
+            },
+            {
+              "text": "Agnosias | falha em reconhecer est?mulos sem les?o do ?rg?o",
+              "children": []
+            },
+            {
+              "text": "Conversivos | cegueira ou surdez psic?gena",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Psicose e esquizofrenia | ruptura do ju?zo de realidade",
+      "children": [
+        {
+          "text": "Psicose | ju?zo delirante da realidade com perda de contato",
+          "children": []
+        },
+        {
+          "text": "Achados comuns | ju?zo de realidade alterado, pensamento e conduta desorganizados",
+          "children": []
+        },
+        {
+          "text": "Hist?ria natural da esquizofrenia | evolu??o ao longo da vida",
+          "children": [
+            {
+              "text": "Pr?-m?rbido | neurodesenvolvimento anormal e sinais leves",
+              "children": []
+            },
+            {
+              "text": "Prodr?mico | mudan?as inespec?ficas e queda funcional",
+              "children": []
+            },
+            {
+              "text": "Fase ativa | sintomas positivos, negativos e cognitivos",
+              "children": []
+            },
+            {
+              "text": "Residual | persist?ncia parcial e neurodeteriora??o",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Fases cl?nicas | leitura r?pida da evolu??o",
+          "children": [
+            {
+              "text": "Pr?dromica | isolamento, despersonaliza??o e queda de rendimento",
+              "children": []
+            },
+            {
+              "text": "Aguda | del?rios e alucina??es em pico",
+              "children": []
+            },
+            {
+              "text": "Residual | sintomas negativos e cren?as atenuadas",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Esquizofrenia infantil | retra??o, v?nculo pobre, altera??o motora e mutismo",
+          "children": []
+        },
+        {
+          "text": "Vias dopamin?rgicas | quatro circuitos, quatro efeitos",
+          "children": [
+            {
+              "text": "Mesol?mbica | hiperatividade gera sintomas positivos",
+              "children": []
+            },
+            {
+              "text": "Mesocortical | hipoatividade gera sintomas negativos e cognitivos",
+              "children": []
+            },
+            {
+              "text": "Nigroestriatal | bloqueio causa efeitos extrapiramidais",
+              "children": []
+            },
+            {
+              "text": "Tuberoinfundibular | bloqueio eleva prolactina",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Tratamento do espectro psic?tico | estabilizar, avaliar e escalar",
+      "children": [
+        {
+          "text": "Abordagem global | integra??o m?dica, psicol?gica e psicossocial",
+          "children": []
+        },
+        {
+          "text": "Cen?rio assistencial | ambulatorial como regra, hospitaliza??o em crise",
+          "children": []
+        },
+        {
+          "text": "Injet?veis de longa a??o | menos reca?da, mais ader?ncia e comodidade",
+          "children": []
+        },
+        {
+          "text": "Algoritmo farmacol?gico | l?gica bin?ria do IPAP",
+          "children": [
+            {
+              "text": "Passos cr?ticos | suic?dio, catatonia, agita??o, ades?o, humor e subst?ncias",
+              "children": []
+            },
+            {
+              "text": "1? monoterapia | antipsic?tico at?pico por 4 a 6 semanas",
+              "children": []
+            },
+            {
+              "text": "2? monoterapia | novo at?pico ou t?pico se indispon?vel",
+              "children": []
+            },
+            {
+              "text": "Clozapina | resist?ncia ao tratamento com monitoriza??o hematol?gica",
+              "children": []
+            },
+            {
+              "text": "Manuten??o | consolidar resposta e prevenir reca?da",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Transtornos psic?ticos relacionados | diferencial pelo tempo e pelo humor",
+      "children": [
+        {
+          "text": "Esquizoafetivo | psicose + sintomas afetivos no mesmo per?odo",
+          "children": [
+            {
+              "text": "Crit?rio central | del?rio ou alucina??o por 2 semanas sem humor proeminente",
+              "children": []
+            },
+            {
+              "text": "Leitura cl?nica | sobreposi??o cont?nua entre psicose e afeto",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Delirante | del?rios sistematizados com funcionamento preservado",
+          "children": [
+            {
+              "text": "Pistas | aus?ncia de comportamento bizarro e preju?zo global menor",
+              "children": []
+            },
+            {
+              "text": "DSM-5 | del?rio ? 1 m?s e Crit?rio A da esquizofrenia n?o preenchido",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Psic?tico breve | curta dura??o e recupera??o completa",
+          "children": [
+            {
+              "text": "Sintomas | del?rios, alucina??es, discurso ou comportamento desorganizado",
+              "children": []
+            },
+            {
+              "text": "Dura??o | 1 dia a 1 m?s com retorno ao estado pr?-m?rbido",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Esquizofreniforme | mesmo n?cleo da esquizofrenia por 1 a 6 meses",
+          "children": []
+        },
+        {
+          "text": "Psicose compartilhada | ideias delirantes em duas ou mais pessoas",
+          "children": []
+        },
+        {
+          "text": "Compara??o final | dura??o e progn?stico organizam o espectro psic?tico",
+          "children": []
+        }
+      ]
+    },
+    {
+      "text": "Transtorno bipolar | humor, energia e cogni??o em desregula??o extrema",
+      "children": [
+        {
+          "text": "Etiologia | intera??o entre biologia, ambiente e dimens?o cl?nica",
+          "children": [
+            {
+              "text": "Ambiental | subst?ncias, estresse, abuso e antidepressivos",
+              "children": []
+            },
+            {
+              "text": "Biol?gico | hist?rico familiar e neurodesenvolvimento",
+              "children": []
+            },
+            {
+              "text": "Dimensional | sintomas sublimiares, ansiedade e problemas de sono",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Epis?dios afetivos | crit?rios DSM-5 essenciais",
+          "children": [
+            {
+              "text": "Hipomania | ? 4 dias sem deteriora??o marcada",
+              "children": []
+            },
+            {
+              "text": "Mania | ? 1 semana ou interna??o, com preju?zo importante",
+              "children": []
+            },
+            {
+              "text": "Depressivo maior | ? 2 semanas com anedonia ou humor deprimido",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Classifica??o | subtipos do espectro bipolar",
+          "children": [
+            {
+              "text": "Bipolar I | um ?nico epis?dio man?aco j? define o diagn?stico",
+              "children": []
+            },
+            {
+              "text": "Bipolar II | hipomania + depress?o maior, sem mania plena",
+              "children": []
+            },
+            {
+              "text": "Ciclotimia | flutua??es cr?nicas subcl?nicas por ? 2 anos",
+              "children": []
+            },
+            {
+              "text": "Hierarquia | ciclotimia < bipolar II < bipolar I",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Diagn?stico diferencial | armadilhas cl?nicas",
+          "children": [
+            {
+              "text": "Depress?o unipolar | aus?ncia absoluta de mania ou hipomania",
+              "children": []
+            },
+            {
+              "text": "TPB | instabilidade reativa e cont?nua, n?o epis?dica",
+              "children": []
+            },
+            {
+              "text": "Subst?ncias / condi??o m?dica | coincid?ncia temporal com fator causal",
+              "children": []
+            },
+            {
+              "text": "Psic?ticos | psicose sem humor proeminente",
+              "children": []
+            }
+          ]
+        },
+        {
+          "text": "Tratamento e monitoriza??o | fase aguda + manuten??o",
+          "children": [
+            {
+              "text": "Eutimizantes | l?tio, valproato, carbamazepina e lamotrigina",
+              "children": []
+            },
+            {
+              "text": "Antipsic?ticos at?picos | quetiapina, lurasidona, cariprazina, olanzapina, aripiprazol",
+              "children": []
+            },
+            {
+              "text": "Avalia??o inicial | ECG, fun??o renal, perfil hep?tico, glicemia e lip?dios",
+              "children": []
+            },
+            {
+              "text": "Alertas | haloperidol curto prazo e antidepressivo com risco de viragem",
+              "children": []
+            },
+            {
+              "text": "Depress?o bipolar vs unipolar | hist?ria de hipo/mania e padr?o familiar",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+localStorage.setItem('mapaEstudoDraftTree', JSON.stringify(tree));
+location.replace('mapa-estudo-editor.html?draft=1');
+</script>
+</body>
+</html>
