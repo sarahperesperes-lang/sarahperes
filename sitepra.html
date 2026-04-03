@@ -515,15 +515,19 @@ input[type="color"] {
 
   <!-- RIGHT -->
   <aside class="sidebar sidebar-right">
-    <div class="ai-section">
-      <div class="r-title">Gerar com IA</div>
-      <textarea class="prompt-area" id="aiPrompt"
+  <div class="ai-section">
+    <div class="r-title">Gerar com IA</div>
+    <textarea class="prompt-area" id="aiPrompt"
         placeholder="Descreva o tema e os topicos que quer distribuir no mapa."></textarea>
-      <div class="depth-row">
-        <button class="depth-btn" data-depth="1" onclick="setDepth(1)">LOW</button>
-        <button class="depth-btn active" data-depth="2" onclick="setDepth(2)">MEDIUM</button>
-        <button class="depth-btn" data-depth="3" onclick="setDepth(3)">HIGH</button>
-      </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <label class="btn btn-outline" style="cursor:pointer">Carregar PDF/Imagem<input id="fileInput" type="file" accept=".txt,.md,.json,.pdf,.png,.jpg,.jpeg,.webp,.gif,application/pdf,application/json,text/plain,image/png,image/jpeg,image/webp,image/gif" hidden></label>
+      <button class="btn btn-outline" type="button" onclick="clearPromptFile()">Limpar arquivo</button>
+    </div>
+    <div class="depth-row">
+      <button class="depth-btn" data-depth="1" onclick="setDepth(1)">LOW</button>
+      <button class="depth-btn active" data-depth="2" onclick="setDepth(2)">MEDIUM</button>
+      <button class="depth-btn" data-depth="3" onclick="setDepth(3)">HIGH</button>
+    </div>
       <button class="gen-btn" id="genBtn" onclick="generateWithAI()">Gerar mapa</button>
       <div class="ai-status" id="aiStatus">Digite um tema e gere o mapa.</div>
       <div class="test-log hidden" id="testLog"></div>
@@ -665,6 +669,135 @@ function getOpenAIApiKey() {
     return provided;
   }
   return '';
+}
+function isLocalSecureMode() {
+  return location.protocol.startsWith('http') && /^(127\.0\.0\.1|localhost)$/i.test(location.hostname);
+}
+async function requestOpenAIResponses(body) {
+  if (isLocalSecureMode()) {
+    const res = await fetch('/api/openai/responses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+  const apiKey = getOpenAIApiKey();
+  if (!apiKey) throw new Error('API key ausente.');
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+let pdfJsPromise = null;
+async function loadPdfJs() {
+  if (!pdfJsPromise) {
+    pdfJsPromise = import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs').then((module) => {
+      const lib = module.default || module;
+      lib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+      return lib;
+    });
+  }
+  return pdfJsPromise;
+}
+async function extractPdfText(file) {
+  const lib = await loadPdfJs();
+  const pdf = await lib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i += 1) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const text = textContent.items.map((item) => item.str || '').join(' ').replace(/\s+/g, ' ').trim();
+    if (text) pages.push(text);
+  }
+  return { text: pages.join('\n\n'), pages: pdf.numPages };
+}
+async function fileToDataUrl(file) {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Nao foi possivel ler a imagem.'));
+    reader.readAsDataURL(file);
+  });
+}
+async function imageUrlToCompressedDataUrl(sourceUrl, { maxSide = 1400, quality = 0.8 } = {}) {
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Nao foi possivel carregar a imagem.'));
+    image.src = sourceUrl;
+  });
+  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth || img.width || 1, img.naturalHeight || img.height || 1));
+  const width = Math.max(1, Math.round((img.naturalWidth || img.width || 1) * scale));
+  const height = Math.max(1, Math.round((img.naturalHeight || img.height || 1) * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Nao foi possivel preparar a compressao da imagem.');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', quality);
+}
+async function extractImageText(file) {
+  const imageUrl = await imageUrlToCompressedDataUrl(await fileToDataUrl(file));
+  const data = await requestOpenAIResponses({
+    model: 'gpt-4o-mini',
+    input: [
+      { role: 'system', content: [{ type: 'input_text', text: 'Voce extrai texto e estrutura de imagens para criar mapas mentais de estudo em portugues. Foque em titulos, subtitulos, listas e relacoes principais. Ignore decoracao, marcas d\'agua e elementos visuais sem conteudo.' }] },
+      { role: 'user', content: [
+        { type: 'input_text', text: `Extraia todo o texto util desta imagem e devolva em texto limpo, organizado por topicos curtos para virar base de mapa mental. Nome do arquivo: ${file.name}` },
+        { type: 'input_image', image_url: imageUrl, detail: 'high' }
+      ] }
+    ],
+    max_output_tokens: 1400
+  });
+  const text = cleanText(data.output_text || data.output?.flatMap(item => item.content || []).map(content => content.text || content.output_text || '').join('\n') || '');
+  if (!text) throw new Error('A imagem nao retornou texto legivel.');
+  return text;
+}
+async function handlePromptFile(file) {
+  if (!file) return;
+  const lower = file.name.toLowerCase();
+  try {
+    if (lower.endsWith('.pdf') || file.type === 'application/pdf') {
+      setStatus('Lendo PDF local...','loading');
+      const result = await extractPdfText(file);
+      document.getElementById('aiPrompt').value = result.text;
+      setStatus(`PDF lido: ${file.name} com ${result.pages} pagina(s).`,'success');
+    } else if (/\.(png|jpe?g|webp|gif)$/i.test(lower) || String(file.type || '').startsWith('image/')) {
+      setStatus('Lendo imagem e extraindo texto...','loading');
+      const text = await extractImageText(file);
+      document.getElementById('aiPrompt').value = text;
+      setStatus(`Imagem lida: ${file.name}.`,'success');
+    } else if (lower.endsWith('.json') || lower.endsWith('.txt') || lower.endsWith('.md')) {
+      document.getElementById('aiPrompt').value = await file.text();
+      setStatus(`Arquivo carregado: ${file.name}.`,'success');
+    } else {
+      document.getElementById('aiPrompt').value = await file.text();
+      setStatus(`Arquivo carregado: ${file.name}.`,'success');
+    }
+    lastGeneratedPrompt = document.getElementById('aiPrompt').value.trim();
+  } catch (error) {
+    console.error(error);
+    setStatus(`Erro ao ler arquivo: ${error.message}`,'error');
+  }
+}
+function clearPromptFile() {
+  const input = document.getElementById('fileInput');
+  if (input) input.value = '';
+  setStatus('Arquivo limpo.','success');
 }
 function applyStudyDepth(node, level, maxDepth) {
   if (level >= maxDepth) node.children = [];
@@ -1313,8 +1446,6 @@ function normalizeMindMapJSON(input){
   return { root, children };
 }
 async function requestMindMapJSON(promptText, depthLabel){
-  const apiKey = getOpenAIApiKey();
-  if (!apiKey) throw new Error('API key ausente.');
   const systemPrompt = [
     'Voce cria mapas mentais de estudo em portugues.',
     'Responda somente JSON valido no schema informado.',
@@ -1337,13 +1468,7 @@ async function requestMindMapJSON(promptText, depthLabel){
     temperature:0.4,
     max_output_tokens:1800
   };
-  const res=await fetch('https://api.openai.com/v1/responses',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
-    body:JSON.stringify(body)
-  });
-  if(!res.ok){const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message||`HTTP ${res.status}`);}
-  const data=await res.json();
+  const data = await requestOpenAIResponses(body);
   const raw=extractTextFromResponsesPayload(data);
   if (!raw) throw new Error('A IA nao retornou conteudo textual.');
   return normalizeMindMapJSON(parseLooseJson(raw));
@@ -1438,6 +1563,41 @@ function regenerateLastPrompt() {
   document.getElementById('aiPrompt').value = lastGeneratedPrompt;
   generateWithAI();
 }
+async function handlePromptFile(file) {
+  if (!file) return;
+  const lower = file.name.toLowerCase();
+  try {
+    if (lower.endsWith('.pdf') || file.type === 'application/pdf') {
+      setStatus('Lendo PDF local...','loading');
+      const result = await extractPdfText(file);
+      document.getElementById('aiPrompt').value = result.text;
+      setStatus(`PDF lido: ${file.name} com ${result.pages} pagina(s).`,'success');
+    } else if (/\.(png|jpe?g|webp|gif)$/i.test(lower) || String(file.type || '').startsWith('image/')) {
+      setStatus('Lendo imagem e extraindo texto...','loading');
+      const text = await extractImageText(file);
+      document.getElementById('aiPrompt').value = text;
+      setStatus(`Imagem lida: ${file.name}.`,'success');
+    } else {
+      const text = await file.text();
+      document.getElementById('aiPrompt').value = text;
+      setStatus(`Arquivo carregado: ${file.name}.`,'success');
+    }
+    lastGeneratedPrompt = document.getElementById('aiPrompt').value.trim();
+  } catch (error) {
+    console.error(error);
+    setStatus(`Erro ao ler arquivo: ${error.message}`,'error');
+  }
+}
+function clearPromptFile() {
+  const input = document.getElementById('fileInput');
+  if (input) input.value = '';
+  setStatus('Arquivo limpo.','success');
+}
+document.getElementById('fileInput')?.addEventListener('change', (event) => {
+  handlePromptFile(event.target.files[0]).finally(() => {
+    event.target.value = '';
+  });
+});
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    TEMPLATES
