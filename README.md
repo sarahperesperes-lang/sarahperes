@@ -8,18 +8,19 @@ Portal unico para estudo, geracao e edicao de mapas mentais com:
 - editor visual de mapas
 - pagina AmyMind
 - OCR local para imagem
-- gateway local com Ollama
+- gateway local seguro
 - PWA lite para uso offline basico
 
 ## Uso local
 
-1. Garanta que o Ollama esteja rodando em `http://127.0.0.1:11434`
-2. Confirme que o modelo principal existe:
-   - `ollama run codellama:13b-code-q4_K_M`
-3. Garanta que o fallback tambem exista:
-   - `ollama run llama3:latest`
-4. Rode `start-secure-local.cmd`
-5. Abra `http://127.0.0.1:8787/`
+1. Configure `.env.local` com:
+   - `AI_PROVIDER=openai`
+   - `OPENAI_API_KEY=...`
+   - `SITE_OPENAI_MODEL=gpt-4.1-mini`
+   - `BOT_OPENAI_MODEL=gpt-4.1-mini`
+   - `API_ACCESS_PASSWORD=324125`
+2. Rode `start-secure-local.cmd`
+3. Abra `http://127.0.0.1:8787/`
 
 Links locais principais:
 
@@ -34,35 +35,34 @@ Links locais principais:
 
 O gateway local le:
 
-- `OLLAMA_HOST`
-- `SITE_OLLAMA_MODEL`
-- `BOT_OLLAMA_MODEL`
-- `OLLAMA_FALLBACK_MODEL`
-- `OLLAMA_NUM_CTX`
+- `AI_PROVIDER`
+- `OPENAI_API_KEY`
+- `OPENAI_BASE_URL`
+- `SITE_OPENAI_MODEL`
+- `BOT_OPENAI_MODEL`
 - `API_ACCESS_PASSWORD`
 
 Use `.env.local` ou variaveis de ambiente do Windows.
 
 Padrao recomendado:
 
-- `SITE_OLLAMA_MODEL=codellama:13b-code-q4_K_M`
-- `BOT_OLLAMA_MODEL=codellama:13b-code-q4_K_M`
-- `OLLAMA_FALLBACK_MODEL=llama3:latest`
+- `AI_PROVIDER=openai`
+- `SITE_OPENAI_MODEL=gpt-4.1-mini`
+- `BOT_OPENAI_MODEL=gpt-4.1-mini`
 
 ## Rotas locais
 
 - `POST /api/openai/responses`
-  - mantida por compatibilidade, mas agora responde via Ollama local
+  - mantida por compatibilidade, responde via backend seguro
 - `POST /api/bot/responses`
-  - usa o modelo do bot local
+  - usa o modelo do perfil bot no backend seguro
 - `GET /api/health`
-  - informa host, modelos configurados, fallback e disponibilidade do Ollama
+  - informa host, provider, modelos configurados e disponibilidade do backend
 
 ## Observacoes
 
 - PDF continua sendo convertido com `pdf.js`
 - imagem continua sendo convertida por OCR local no navegador
-- a geracao e o tutor usam Ollama local, sem chave no front-end
-- `codellama:13b-code-q4_K_M` e o modelo preferido para o site
-- se o runner do codellama falhar, o gateway cai automaticamente para `llama3:latest`
+- a geracao e o tutor usam o backend local seguro, sem chave no front-end
+- a chave fica so em `.env.local` ou na variavel de ambiente do Windows
 - se quiser trocar o modelo, ajuste apenas o `.env.local`

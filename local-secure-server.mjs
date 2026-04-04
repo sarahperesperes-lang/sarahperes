@@ -8,14 +8,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = __dirname;
 const env = loadEnvFile(path.join(ROOT, '.env.local'));
-const HOST = process.env.HOST || env.HOST || '127.0.0.1';
-const PORT = Number(process.env.PORT || env.PORT || 8787);
-const API_ACCESS_PASSWORD = process.env.API_ACCESS_PASSWORD || env.API_ACCESS_PASSWORD || '324125';
-const OLLAMA_HOST = process.env.OLLAMA_HOST || env.OLLAMA_HOST || 'http://127.0.0.1:11434';
-const SITE_OLLAMA_MODEL = process.env.SITE_OLLAMA_MODEL || env.SITE_OLLAMA_MODEL || 'codellama:13b-code-q4_K_M';
-const BOT_OLLAMA_MODEL = process.env.BOT_OLLAMA_MODEL || env.BOT_OLLAMA_MODEL || SITE_OLLAMA_MODEL;
-const OLLAMA_FALLBACK_MODEL = process.env.OLLAMA_FALLBACK_MODEL || env.OLLAMA_FALLBACK_MODEL || 'llama3:latest';
-const OLLAMA_NUM_CTX = Number(process.env.OLLAMA_NUM_CTX || env.OLLAMA_NUM_CTX || 12288);
+const HOST = env.HOST || process.env.HOST || '127.0.0.1';
+const PORT = Number(env.PORT || process.env.PORT || 8787);
+const API_ACCESS_PASSWORD = env.API_ACCESS_PASSWORD || process.env.API_ACCESS_PASSWORD || '324125';
+const OPENAI_API_KEY = env.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '';
+const OPENAI_BASE_URL = env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+const SITE_OPENAI_MODEL = env.SITE_OPENAI_MODEL || process.env.SITE_OPENAI_MODEL || 'gpt-4.1-mini';
+const BOT_OPENAI_MODEL = env.BOT_OPENAI_MODEL || process.env.BOT_OPENAI_MODEL || SITE_OPENAI_MODEL;
+const OLLAMA_HOST = env.OLLAMA_HOST || process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
+const SITE_OLLAMA_MODEL = env.SITE_OLLAMA_MODEL || process.env.SITE_OLLAMA_MODEL || 'codellama:13b-code-q4_K_M';
+const BOT_OLLAMA_MODEL = env.BOT_OLLAMA_MODEL || process.env.BOT_OLLAMA_MODEL || SITE_OLLAMA_MODEL;
+const OLLAMA_FALLBACK_MODEL = env.OLLAMA_FALLBACK_MODEL || process.env.OLLAMA_FALLBACK_MODEL || 'llama3:latest';
+const OLLAMA_NUM_CTX = Number(env.OLLAMA_NUM_CTX || process.env.OLLAMA_NUM_CTX || 12288);
+const AI_PROVIDER = resolveProvider();
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
@@ -54,6 +59,12 @@ function loadEnvFile(filePath) {
   } catch {
     return {};
   }
+}
+
+function resolveProvider() {
+  const configured = String(env.AI_PROVIDER || process.env.AI_PROVIDER || '').trim().toLowerCase();
+  if (configured === 'openai' || configured === 'ollama') return configured;
+  return OPENAI_API_KEY ? 'openai' : 'ollama';
 }
 
 function json(res, status, payload) {
@@ -119,6 +130,9 @@ function getProfileFromRequest(req) {
 }
 
 function getModelForProfile(profile) {
+  if (AI_PROVIDER === 'openai') {
+    return profile === 'bot' ? BOT_OPENAI_MODEL : SITE_OPENAI_MODEL;
+  }
   return profile === 'bot' ? BOT_OLLAMA_MODEL : SITE_OLLAMA_MODEL;
 }
 
@@ -188,6 +202,37 @@ async function ensureOllamaReachable() {
   return upstream.json();
 }
 
+async function ensureOpenAIReachable() {
+  if (!OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY ausente.');
+  }
+  const upstream = await fetch(`${OPENAI_BASE_URL}/responses`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: SITE_OPENAI_MODEL,
+      store: false,
+      max_output_tokens: 4,
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: 'Responda apenas OK.' }
+          ]
+        }
+      ]
+    })
+  });
+  const text = await upstream.text();
+  if (!upstream.ok) {
+    throw new Error(`OpenAI respondeu ${upstream.status}: ${text}`);
+  }
+  return JSON.parse(text);
+}
+
 async function callOllamaGenerateOnce({ model, prompt }) {
   const upstream = await fetch(`${OLLAMA_HOST}/api/generate`, {
     method: 'POST',
@@ -228,6 +273,65 @@ async function callOllamaGenerate({ model, prompt }) {
       fallbackUsed: true,
       requestedModel: model
     };
+  }
+}
+
+async function proxyOpenAI(req, res, forcedProfile = null) {
+  if (!isAuthorizedRequest(req)) {
+    return json(res, 401, { error: { message: 'Senha da API local invalida ou ausente.' } });
+  }
+  if (!OPENAI_API_KEY) {
+    return json(res, 503, { error: { message: 'OPENAI_API_KEY nao configurada no servidor local.' } });
+  }
+  const profile = forcedProfile || getProfileFromRequest(req);
+  const model = getModelForProfile(profile);
+  let rawBody = '';
+  try {
+    rawBody = await readBody(req);
+  } catch (error) {
+    return json(res, 413, { error: { message: error.message } });
+  }
+
+  let body = {};
+  try {
+    body = rawBody ? JSON.parse(rawBody) : {};
+  } catch {
+    return json(res, 400, { error: { message: 'Payload JSON invalido.' } });
+  }
+
+  const payload = {
+    ...body,
+    model,
+    store: false
+  };
+
+  try {
+    const upstream = await fetch(`${OPENAI_BASE_URL}/responses`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    const text = await upstream.text();
+    let parsed;
+    try {
+      parsed = text ? JSON.parse(text) : {};
+    } catch {
+      parsed = { error: { message: text || `OpenAI respondeu ${upstream.status}.` } };
+    }
+    if (!upstream.ok) {
+      return json(res, upstream.status, parsed);
+    }
+    res.writeHead(200, {
+      ...CORS_HEADERS,
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store'
+    });
+    res.end(JSON.stringify(parsed));
+  } catch (error) {
+    json(res, 502, { error: { message: `Falha ao conectar com a OpenAI: ${error.message}` } });
   }
 }
 
@@ -286,6 +390,13 @@ async function proxyOllama(req, res, forcedProfile = null) {
   }
 }
 
+async function proxyAI(req, res, forcedProfile = null) {
+  if (AI_PROVIDER === 'openai') {
+    return proxyOpenAI(req, res, forcedProfile);
+  }
+  return proxyOllama(req, res, forcedProfile);
+}
+
 const server = http.createServer(async (req, res) => {
   if (!req.url) return json(res, 400, { error: { message: 'Request invalido.' } });
   if (req.method === 'OPTIONS') {
@@ -293,6 +404,45 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
   if (req.method === 'GET' && req.url.startsWith('/api/health')) {
+    if (AI_PROVIDER === 'openai') {
+      try {
+        await ensureOpenAIReachable();
+        return json(res, 200, {
+          ok: true,
+          host: HOST,
+          port: PORT,
+          provider: 'openai',
+          openaiBaseUrl: OPENAI_BASE_URL,
+          siteKeyConfigured: Boolean(OPENAI_API_KEY),
+          botKeyConfigured: Boolean(OPENAI_API_KEY),
+          keyConfigured: Boolean(OPENAI_API_KEY),
+          apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD),
+          siteModel: SITE_OPENAI_MODEL,
+          botModel: BOT_OPENAI_MODEL,
+          fallbackModel: null,
+          siteModelAvailable: true,
+          botModelAvailable: SITE_OPENAI_MODEL === BOT_OPENAI_MODEL,
+          fallbackModelAvailable: false,
+          availableModels: [SITE_OPENAI_MODEL, BOT_OPENAI_MODEL].filter(Boolean)
+        });
+      } catch (error) {
+        return json(res, 200, {
+          ok: false,
+          host: HOST,
+          port: PORT,
+          provider: 'openai',
+          openaiBaseUrl: OPENAI_BASE_URL,
+          siteKeyConfigured: Boolean(OPENAI_API_KEY),
+          botKeyConfigured: Boolean(OPENAI_API_KEY),
+          keyConfigured: Boolean(OPENAI_API_KEY),
+          apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD),
+          siteModel: SITE_OPENAI_MODEL,
+          botModel: BOT_OPENAI_MODEL,
+          fallbackModel: null,
+          error: error.message
+        });
+      }
+    }
     try {
       const tags = await ensureOllamaReachable();
       const names = Array.isArray(tags?.models) ? tags.models.map((item) => item.name) : [];
@@ -333,10 +483,10 @@ const server = http.createServer(async (req, res) => {
     }
   }
   if (req.method === 'POST' && req.url === '/api/openai/responses') {
-    return proxyOllama(req, res, 'site');
+    return proxyAI(req, res, 'site');
   }
   if (req.method === 'POST' && req.url === '/api/bot/responses') {
-    return proxyOllama(req, res, 'bot');
+    return proxyAI(req, res, 'bot');
   }
   if (req.method === 'GET' || req.method === 'HEAD') {
     return serveStatic(req, res);
@@ -346,8 +496,14 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`Servidor local seguro ativo em http://${HOST}:${PORT}/`);
-  console.log(`Ollama: ${OLLAMA_HOST}`);
-  console.log(`Modelo do site: ${SITE_OLLAMA_MODEL} | Modelo do bot: ${BOT_OLLAMA_MODEL} | Fallback: ${OLLAMA_FALLBACK_MODEL}`);
+  console.log(`Provider ativo: ${AI_PROVIDER}`);
+  if (AI_PROVIDER === 'openai') {
+    console.log(`OpenAI: ${OPENAI_BASE_URL}`);
+    console.log(`Modelo do site: ${SITE_OPENAI_MODEL} | Modelo do bot: ${BOT_OPENAI_MODEL}`);
+  } else {
+    console.log(`Ollama: ${OLLAMA_HOST}`);
+    console.log(`Modelo do site: ${SITE_OLLAMA_MODEL} | Modelo do bot: ${BOT_OLLAMA_MODEL} | Fallback: ${OLLAMA_FALLBACK_MODEL}`);
+  }
   console.log(`Senha da API local configurada: ${Boolean(API_ACCESS_PASSWORD)}`);
-  console.log('A IA local usa Ollama no backend e nao depende de chave no navegador.');
+  console.log('A IA local usa o backend seguro e nao depende de chave no navegador.');
 });

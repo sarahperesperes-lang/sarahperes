@@ -1,23 +1,24 @@
 param(
-  [string]$OllamaHost = 'http://127.0.0.1:11434',
-  [string]$SiteModel = 'codellama:13b-code-q4_K_M',
-  [string]$BotModel = 'codellama:13b-code-q4_K_M',
-  [string]$FallbackModel = 'llama3:latest',
+  [Parameter(Mandatory = $true)]
+  [string]$ApiKey,
+  [string]$SiteModel = 'gpt-4.1-mini',
+  [string]$BotModel = 'gpt-4.1-mini',
   [string]$ApiPassword = '324125'
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-@"
-OLLAMA_HOST=$OllamaHost
-SITE_OLLAMA_MODEL=$SiteModel
-BOT_OLLAMA_MODEL=$BotModel
-OLLAMA_FALLBACK_MODEL=$FallbackModel
+$content = @"
+AI_PROVIDER=openai
+OPENAI_API_KEY=$ApiKey
+SITE_OPENAI_MODEL=$SiteModel
+BOT_OPENAI_MODEL=$BotModel
 API_ACCESS_PASSWORD=$ApiPassword
 PORT=8787
 HOST=127.0.0.1
-"@ | Set-Content -Path "$root\.env.local" -Encoding UTF8
+"@
 
+[System.IO.File]::WriteAllText("$root\.env.local", $content, (New-Object System.Text.UTF8Encoding($false)))
 attrib +h "$root\.env.local" | Out-Null
-Write-Host '.env.local atualizado para usar Ollama local.' -ForegroundColor Green
+Write-Host '.env.local atualizado para usar OpenAI no backend local.' -ForegroundColor Green

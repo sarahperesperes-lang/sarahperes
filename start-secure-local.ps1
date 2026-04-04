@@ -12,16 +12,5 @@ try {
   }
 } catch {}
 
-try {
-  $ollama = Invoke-WebRequest 'http://127.0.0.1:11434/api/tags' -UseBasicParsing -TimeoutSec 4
-  if ($ollama.StatusCode -ne 200) {
-    Write-Host 'Ollama nao respondeu corretamente em http://127.0.0.1:11434.' -ForegroundColor Yellow
-    exit 1
-  }
-} catch {
-  Write-Host 'Ollama nao esta ativo. Inicie o Ollama antes de subir o gateway local.' -ForegroundColor Yellow
-  exit 1
-}
-
 Start-Process 'http://127.0.0.1:8787/'
 node "$root\local-secure-server.mjs"
