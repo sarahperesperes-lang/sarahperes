@@ -2024,27 +2024,69 @@ function extractTextFromResponsesPayload(data){
   });
   return chunks.join('\n').trim();
 }
+function repairLooseJson(raw){
+  const source = String(raw || '').trim();
+  if (!source) return '';
+  const openStack = [];
+  let inString = false;
+  let escaped = false;
+  let result = '';
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i];
+    result += char;
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === '{' || char === '[') {
+      openStack.push(char);
+    } else if (char === '}' || char === ']') {
+      const expected = char === '}' ? '{' : '[';
+      if (openStack[openStack.length - 1] === expected) openStack.pop();
+    }
+  }
+  if (inString) result += '"';
+  for (let i = openStack.length - 1; i >= 0; i -= 1) {
+    result += openStack[i] === '{' ? '}' : ']';
+  }
+  return result;
+}
 function parseLooseJson(raw){
   if (typeof raw !== 'string') throw new Error('Resposta da IA vazia.');
   const direct = raw.trim();
-  const attempts = [direct, direct.replace(/```json/gi,'```').replace(/```/g,'').trim()];
-  const s=direct.indexOf('{'), e=direct.lastIndexOf('}');
-  if (s>=0 && e>s) attempts.push(direct.slice(s,e+1));
+  const stripped = direct.replace(/```json/gi,'```').replace(/```/g,'').trim();
+  const attempts = [direct, stripped, repairLooseJson(direct), repairLooseJson(stripped)];
+  const s=stripped.indexOf('{'), e=stripped.lastIndexOf('}');
+  if (s>=0 && e>s) attempts.push(stripped.slice(s,e+1));
+  if (s>=0) attempts.push(repairLooseJson(stripped.slice(s)));
   for (const c of attempts) { if (!c) continue; try { return JSON.parse(c); } catch(_) {} }
   throw new Error('Nao foi possivel interpretar o JSON retornado pela IA.');
 }
 function normalizeTreeNode(n){
   if (!n || typeof n!=='object') return null;
-  const text = String(n.text||'').trim();
+  const text = String(n.text || n.title || n.name || n.label || '').trim();
   if (!text) return null;
   const children = Array.isArray(n.children) ? n.children : [];
   return { text, children: children.map(normalizeTreeNode).filter(Boolean) };
 }
 function normalizeMindMapJSON(input){
   if (!input || typeof input!=='object') throw new Error('Formato do mapa invalido.');
-  const root = String(input.root||'').trim();
+  const root = String(typeof input.root === 'object' && input.root ? (input.root.text || input.root.title || input.root.name || input.root.label || '') : (input.root || input.title || input.name || '')).trim();
   if (!root) throw new Error('Campo root vazio.');
-  const children = (Array.isArray(input.children)?input.children:[]).map(normalizeTreeNode).filter(Boolean);
+  const childrenSource = Array.isArray(input.children) ? input.children : (Array.isArray(input.root?.children) ? input.root.children : []);
+  const children = childrenSource.map(normalizeTreeNode).filter(Boolean);
   return { root, children };
 }
 async function requestMindMapJSON(promptText, depthLabel){
