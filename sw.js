@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sarahperes-pages-v4';
+const CACHE_NAME = 'sarahperes-pages-v5';
 const APP_SHELL = [
   './',
   './index.html',

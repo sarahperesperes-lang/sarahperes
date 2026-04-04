@@ -30,6 +30,8 @@ Use `C:\Users\a8912\WebstormProjects\sarahperes` como fonte de verdade do backen
 5. Abra `http://127.0.0.1:8787/`.
 6. Se quiser abrir gateway + Codex numa vez so, use `start-codex-llama3.cmd`.
 
+O bootstrap local agora espera o `health` responder antes de abrir o portal. Se o servidor falhar ao subir, os logs ficam em `.local-logs/`.
+
 Links locais principais:
 
 - portal: `http://127.0.0.1:8787/`
