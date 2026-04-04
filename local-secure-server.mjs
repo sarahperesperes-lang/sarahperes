@@ -12,8 +12,9 @@ const HOST = process.env.HOST || env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || env.PORT || 8787);
 const API_ACCESS_PASSWORD = process.env.API_ACCESS_PASSWORD || env.API_ACCESS_PASSWORD || '324125';
 const OLLAMA_HOST = process.env.OLLAMA_HOST || env.OLLAMA_HOST || 'http://127.0.0.1:11434';
-const SITE_OLLAMA_MODEL = process.env.SITE_OLLAMA_MODEL || env.SITE_OLLAMA_MODEL || 'llama3:latest';
+const SITE_OLLAMA_MODEL = process.env.SITE_OLLAMA_MODEL || env.SITE_OLLAMA_MODEL || 'codellama:13b-code-q4_K_M';
 const BOT_OLLAMA_MODEL = process.env.BOT_OLLAMA_MODEL || env.BOT_OLLAMA_MODEL || SITE_OLLAMA_MODEL;
+const OLLAMA_FALLBACK_MODEL = process.env.OLLAMA_FALLBACK_MODEL || env.OLLAMA_FALLBACK_MODEL || 'llama3:latest';
 const OLLAMA_NUM_CTX = Number(process.env.OLLAMA_NUM_CTX || env.OLLAMA_NUM_CTX || 12288);
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -187,7 +188,7 @@ async function ensureOllamaReachable() {
   return upstream.json();
 }
 
-async function callOllamaGenerate({ model, prompt }) {
+async function callOllamaGenerateOnce({ model, prompt }) {
   const upstream = await fetch(`${OLLAMA_HOST}/api/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -206,7 +207,28 @@ async function callOllamaGenerate({ model, prompt }) {
     throw new Error(`Ollama respondeu ${upstream.status}: ${text}`);
   }
   const payload = JSON.parse(text);
-  return String(payload.response || '').trim();
+  return {
+    outputText: String(payload.response || '').trim(),
+    modelUsed: model,
+    fallbackUsed: false,
+    requestedModel: model
+  };
+}
+
+async function callOllamaGenerate({ model, prompt }) {
+  try {
+    return await callOllamaGenerateOnce({ model, prompt });
+  } catch (error) {
+    if (model === OLLAMA_FALLBACK_MODEL) {
+      throw error;
+    }
+    const fallback = await callOllamaGenerateOnce({ model: OLLAMA_FALLBACK_MODEL, prompt });
+    return {
+      ...fallback,
+      fallbackUsed: true,
+      requestedModel: model
+    };
+  }
 }
 
 async function proxyOllama(req, res, forcedProfile = null) {
@@ -228,7 +250,8 @@ async function proxyOllama(req, res, forcedProfile = null) {
     if (!prompt) {
       return json(res, 400, { error: { message: 'Payload de IA vazio ou invalido.' } });
     }
-    const outputText = await callOllamaGenerate({ model, prompt });
+    const generation = await callOllamaGenerate({ model, prompt });
+    const outputText = generation.outputText;
     res.writeHead(200, {
       ...CORS_HEADERS,
       'Content-Type': 'application/json; charset=utf-8',
@@ -238,7 +261,10 @@ async function proxyOllama(req, res, forcedProfile = null) {
       id: `ollama_${Date.now()}`,
       object: 'response',
       provider: 'ollama',
-      model,
+      model: generation.modelUsed,
+      requested_model: generation.requestedModel,
+      fallback_used: Boolean(generation.fallbackUsed),
+      fallback_model: generation.fallbackUsed ? generation.modelUsed : null,
       status: 'completed',
       output_text: outputText,
       output: [
@@ -276,12 +302,16 @@ const server = http.createServer(async (req, res) => {
         port: PORT,
         provider: 'ollama',
         ollamaHost: OLLAMA_HOST,
-        siteKeyConfigured: names.includes(SITE_OLLAMA_MODEL),
-        botKeyConfigured: names.includes(BOT_OLLAMA_MODEL),
-        keyConfigured: names.includes(SITE_OLLAMA_MODEL),
+        siteKeyConfigured: names.includes(SITE_OLLAMA_MODEL) || names.includes(OLLAMA_FALLBACK_MODEL),
+        botKeyConfigured: names.includes(BOT_OLLAMA_MODEL) || names.includes(OLLAMA_FALLBACK_MODEL),
+        keyConfigured: names.includes(SITE_OLLAMA_MODEL) || names.includes(OLLAMA_FALLBACK_MODEL),
         apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD),
         siteModel: SITE_OLLAMA_MODEL,
         botModel: BOT_OLLAMA_MODEL,
+        fallbackModel: OLLAMA_FALLBACK_MODEL,
+        siteModelAvailable: names.includes(SITE_OLLAMA_MODEL),
+        botModelAvailable: names.includes(BOT_OLLAMA_MODEL),
+        fallbackModelAvailable: names.includes(OLLAMA_FALLBACK_MODEL),
         availableModels: names
       });
     } catch (error) {
@@ -297,6 +327,7 @@ const server = http.createServer(async (req, res) => {
         apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD),
         siteModel: SITE_OLLAMA_MODEL,
         botModel: BOT_OLLAMA_MODEL,
+        fallbackModel: OLLAMA_FALLBACK_MODEL,
         error: error.message
       });
     }
@@ -316,7 +347,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOST, () => {
   console.log(`Servidor local seguro ativo em http://${HOST}:${PORT}/`);
   console.log(`Ollama: ${OLLAMA_HOST}`);
-  console.log(`Modelo do site: ${SITE_OLLAMA_MODEL} | Modelo do bot: ${BOT_OLLAMA_MODEL}`);
+  console.log(`Modelo do site: ${SITE_OLLAMA_MODEL} | Modelo do bot: ${BOT_OLLAMA_MODEL} | Fallback: ${OLLAMA_FALLBACK_MODEL}`);
   console.log(`Senha da API local configurada: ${Boolean(API_ACCESS_PASSWORD)}`);
   console.log('A IA local usa Ollama no backend e nao depende de chave no navegador.');
 });

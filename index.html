@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#8ec8f6">
-  <meta name="description" content="Portal único para os sites de mapas mentais, estudo, editor e verificacao AmyMind.">
+  <meta name="description" content="Portal unico para os sites de mapas mentais, estudo, editor e verificacao AmyMind.">
   <link rel="manifest" href="./manifest.json">
-  <title>SarahPeres Pages</title>
+  <title>SarahPeres Study Hub</title>
   <style>
     :root{
       --bg:#f6f2ec;
@@ -319,10 +319,10 @@
     <header>
       <div class="topbar">
         <div class="brand">
-          <div class="mark">🧭</div>
+          <div class="mark">MS</div>
           <div>
-            <h1>SarahPeres Pages</h1>
-            <p>Um portal unico para os sites de estudo, edicao e verificacao.</p>
+            <h1>SarahPeres Study Hub</h1>
+            <p>Um unico lugar para abrir workspace, gerador, editor e AmyMind.</p>
           </div>
         </div>
         <div class="status">
@@ -337,11 +337,9 @@
       <section class="hero">
         <div class="hero-copy reveal">
           <p class="eyebrow">Entrada unica</p>
-          <h2>Tudo em um so lugar, sem caçar pagina por pagina.</h2>
+          <h2>Abra o portal e chegue no fluxo certo em segundos.</h2>
           <p class="lead">
-            Aqui voce escolhe o fluxo que precisa: mapa mental rapido, editor tecnico, workspace de estudo, ou os
-            materiais prontos por tema. O objetivo e deixar tudo navegavel no celular e no PC, com um ponto de entrada
-            simples.
+            O portal agora explica melhor para onde cada tela serve. Se voce quer estudar, entra no workspace. Se quer gerar a partir de PDF ou imagem, entra no gerador. Se quer mexer fino no layout, vai para o editor. Tudo continua abrindo no celular, no PC e fora da LAN.
           </p>
           <div class="actions">
             <a class="button primary" href="./hipofise-workspace.html">Abrir workspace</a>
@@ -354,36 +352,35 @@
           <div class="panel-inner">
             <div>
               <div class="panel-title">
-                <strong>Atalhos principais</strong>
-                <span>Fluxo rapido</span>
+                <strong>Rotas principais</strong>
+                <span>Use sem adivinhar</span>
               </div>
               <div class="stack">
                 <a class="launch" href="./hipofise-workspace.html">
                   <div>
                     <h3>Workspace de estudo</h3>
-                    <p>Mapa, quiz e revisao no mesmo lugar, com Ollama local quando o gateway estiver ligado.</p>
+                    <p>Melhor ponto de entrada para estudar: mapa, quiz, revisao e tutor no mesmo ambiente.</p>
                   </div>
                   <span class="tag">Principal</span>
                 </a>
                 <a class="launch" href="./gerador-estudo.html?advanced=1">
                   <div>
                     <h3>Gerador de mapas</h3>
-                    <p>Carrega PDF, imagem ou texto e transforma em estrutura de estudo com modelos visuais.</p>
+                    <p>Carrega PDF, imagem, JSON ou texto e monta um mapa editavel com layout escolhido.</p>
                   </div>
                   <span class="tag">PDF / imagem</span>
                 </a>
-                <a class="launch" href="./sitepra.html">
+                <a class="launch" href="./mapa-estudo-editor.html">
                   <div>
-                    <h3>Verificacao AmyMind</h3>
-                    <p>Pagina isolada para o banner de verificacao e testes de abertura publica.</p>
+                    <h3>Editor completo</h3>
+                    <p>Canvas avancado para ajustar ramo, mover no, exportar e revisar o resultado final.</p>
                   </div>
-                  <span class="tag">Publico</span>
+                  <span class="tag">Refino</span>
                 </a>
               </div>
             </div>
             <div class="note">
-              <strong>Observacao:</strong> as funcoes de IA continuam dependendo do gateway local com Ollama.
-              O restante do portal abre normalmente fora da LAN e no celular.
+              <strong>Modelo local recomendado:</strong> codellama:13b-code-q4_K_M no gateway Ollama, com fallback automatico para llama3:latest se o runner falhar. As funcoes de IA dependem do servidor local; o restante do portal abre normalmente fora da LAN.
             </div>
           </div>
         </div>
@@ -391,26 +388,26 @@
 
       <section class="grid">
         <article class="section reveal delay-1">
-          <h3>Estudo e revisao</h3>
+          <h3>Estudar</h3>
           <div class="stack">
             <a class="launch" href="./hipofise-workspace.html">
               <div>
                 <h3>Hipofise Study Workspace</h3>
-                <p>Workspace focado em estudo com mapa, perguntas e revisao para entrar direto no conteudo.</p>
+                <p>Pacote pronto para entrar direto no conteudo, com mapa forte, questoes e revisao.</p>
               </div>
               <span class="tag">Mapa + quiz</span>
             </a>
             <a class="launch" href="./psiquiatria-estudo.html">
               <div>
-                <h3>Psiquiatria — estudo</h3>
-                <p>Mapa mental da hipofise e disfuncoes organizado para estudo e leitura rapida.</p>
+                <h3>Psiquiatria - estudo</h3>
+                <p>Mapa pronto para leitura e revisao, sem entrar no editor tecnico.</p>
               </div>
               <span class="tag">Tema pronto</span>
             </a>
             <a class="launch" href="./psiquiatria-print.html">
               <div>
-                <h3>Psiquiatria — impressao</h3>
-                <p>Versao limpa e mais direta para imprimir ou exportar sem ruído visual.</p>
+                <h3>Psiquiatria - impressao</h3>
+                <p>Versao limpa para imprimir ou exportar sem ruido visual.</p>
               </div>
               <span class="tag">Print</span>
             </a>
@@ -418,43 +415,41 @@
         </article>
 
         <article class="section reveal delay-2">
-          <h3>Ferramentas de edicao</h3>
+          <h3>Criar e refinar</h3>
           <div class="stack">
             <a class="launch" href="./gerador-estudo.html?advanced=1">
               <div>
-                <h3>Gerador legado</h3>
-                <p>Modo tecnico para gerar mapa a partir de PDF, texto ou imagem com controles avancados.</p>
+                <h3>Gerador avancado</h3>
+                <p>Use quando o material ainda esta bruto e voce quer controlar layout, densidade e organizacao.</p>
               </div>
               <span class="tag">Avancado</span>
             </a>
             <a class="launch" href="./mapa-estudo-editor.html">
               <div>
                 <h3>Editor de mapa</h3>
-                <p>Editor para criar, ajustar, mover e exportar mapas com a mesma base de render do projeto.</p>
+                <p>Editor para criar, ajustar, mover e exportar mapas mantendo o render real do projeto.</p>
               </div>
               <span class="tag">Editor</span>
             </a>
-            <a class="launch" href="./psiquiatria-editor.html">
+            <a class="launch" href="./sitepra.html">
               <div>
-                <h3>Editor da psiquiatria</h3>
-                <p>Entrada pronta para abrir o tema da psiquiatria no editor e continuar a edicao ali.</p>
+                <h3>AmyMind</h3>
+                <p>Pagina publica protegida por senha, com o banner de verificacao e o editor completo.</p>
               </div>
-              <span class="tag">Preset</span>
+              <span class="tag">Publico</span>
             </a>
           </div>
         </article>
       </section>
 
       <div class="note reveal delay-2">
-        <strong>Fluxo recomendado:</strong> se quiser praticidade, entre no workspace. Se quiser gerar algo novo,
-        use o gerador. Se quiser mexer fino na estrutura, abra o editor. Se quiser apenas conferir a verificacao,
-        abra o site AmyMind.
+        <strong>Fluxo recomendado:</strong> 1) comece no workspace se quiser rapidez. 2) entre no gerador se vier de PDF, imagem ou texto bruto. 3) abra o editor quando precisar mexer fino em layout, conexoes e exportacao.
       </div>
     </main>
 
     <footer>
       <span>Portal consolidado dos sites criados para mapa mental e estudo.</span>
-      <span><a href="./sitepra.html">AmyMind</a> · <a href="./hipofise-workspace.html">Workspace</a> · <a href="./gerador-estudo.html?advanced=1">Gerador</a></span>
+      <span><a href="./sitepra.html">AmyMind</a> Â· <a href="./hipofise-workspace.html">Workspace</a> Â· <a href="./gerador-estudo.html?advanced=1">Gerador</a></span>
     </footer>
   </div>
 
@@ -467,3 +462,5 @@
   </script>
 </body>
 </html>
+
+

@@ -1,7 +1,8 @@
 param(
   [string]$OllamaHost = 'http://127.0.0.1:11434',
-  [string]$SiteModel = 'llama3:latest',
-  [string]$BotModel = 'llama3:latest',
+  [string]$SiteModel = 'codellama:13b-code-q4_K_M',
+  [string]$BotModel = 'codellama:13b-code-q4_K_M',
+  [string]$FallbackModel = 'llama3:latest',
   [string]$ApiPassword = '324125'
 )
 
@@ -12,6 +13,7 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 OLLAMA_HOST=$OllamaHost
 SITE_OLLAMA_MODEL=$SiteModel
 BOT_OLLAMA_MODEL=$BotModel
+OLLAMA_FALLBACK_MODEL=$FallbackModel
 API_ACCESS_PASSWORD=$ApiPassword
 PORT=8787
 HOST=127.0.0.1

@@ -265,21 +265,23 @@ body{
     </div>
   </div>
   <nav class="marketing-nav">
+    <a href="index.html">Portal</a>
     <a href="#workspaceApp">Workspace</a>
     <a href="#whyBlock">Por que usar</a>
     <a href="#editorFlow">Editor</a>
   </nav>
   <div class="marketing-actions">
-    <a class="mm-btn mm-btn-secondary" href="gerador-estudo.html?advanced=1">Modo técnico</a>
+    <a class="mm-btn mm-btn-secondary" href="gerador-estudo.html?advanced=1">Gerador avancado</a>
+    <a class="mm-btn mm-btn-secondary" href="sitepra.html">AmyMind</a>
     <a class="mm-btn mm-btn-primary" href="#workspaceApp">Começar agora</a>
   </div>
 </header>
 
 <section class="marketing-hero">
   <div class="hero-copy-stack">
-    <span class="hero-kicker">Visual. Simples. Colaborativo.</span>
-    <h1 class="hero-title">Crie, estude e refine mapas mentais em uma experiência mais próxima dos produtos que já funcionam bem.</h1>
-    <p class="hero-subtitle">A superfície principal agora fala linguagem de produto: entrada clara, geração a partir de texto ou PDF, canvas central forte e estudo guiado no mesmo ambiente.</p>
+    <span class="hero-kicker">Visual. Claro. Editavel.</span>
+    <h1 class="hero-title">Crie, estude e refine mapas mentais sem trocar de tela e sem se perder no produto.</h1>
+    <p class="hero-subtitle">O workspace virou a entrada mais simples do ecossistema: texto ou PDF na esquerda, mapa no centro, contexto e tutor na direita.</p>
     <div class="hero-actions">
       <a class="mm-btn mm-btn-primary" href="#workspaceApp">Abrir workspace</a>
       <a class="mm-btn mm-btn-secondary" href="mapa-estudo-editor.html?data=hipofise-estudo.json&poster=1&theme=hipofise&model=tree">Ver editor completo</a>
@@ -287,7 +289,7 @@ body{
     <div class="hero-proof">
       <div class="proof-chip"><strong>PDF → mapa</strong><span>Geração a partir do seu material</span></div>
       <div class="proof-chip"><strong>Mapa + quiz</strong><span>Estudo integrado sem trocar de tela</span></div>
-<div class="proof-chip"><strong>Ollama local</strong><span>IA rodando no seu PC, sem chave no navegador</span></div>
+      <div class="proof-chip"><strong>codellama 13B</strong><span>modelo preferido, com fallback automatico</span></div>
     </div>
   </div>
   <div class="hero-visual" id="editorFlow">
@@ -312,15 +314,15 @@ body{
       <div class="preview-side">
         <div class="preview-panel">
           <strong>Geração orientada</strong>
-          <p>Escolha profundidade e layout sem cair em um painel técnico cheio de ruído.</p>
+          <p>Escolha profundidade e layout sem cair em um painel tecnico cheio de ruido.</p>
         </div>
         <div class="preview-panel">
           <strong>Estudo guiado</strong>
-          <p>Mapa, questões e revisão usam a mesma matéria-base e mantêm continuidade visual.</p>
+          <p>Mapa, questoes e revisao usam a mesma materia-base e mantem continuidade visual.</p>
         </div>
         <div class="preview-panel">
           <strong>Editor avançado</strong>
-          <p>Quando precisar de controle fino, o canvas completo continua disponível sem quebrar o fluxo principal.</p>
+          <p>Quando precisar de controle fino, o canvas completo continua disponivel sem quebrar o fluxo principal.</p>
         </div>
       </div>
     </div>
@@ -337,12 +339,12 @@ body{
     <article class="value-card">
       <span class="eyebrow">Estudar</span>
       <h3>Menos troca de contexto</h3>
-      <p>Você gera o mapa, entra no canvas e revisa na mesma superfície. O pacote pronto da hipófise continua disponível como referência base.</p>
+      <p>Voce gera o mapa, entra no canvas e revisa na mesma superficie. O pacote pronto da hipofise continua disponivel como referencia base.</p>
     </article>
     <article class="value-card">
       <span class="eyebrow">Refinar</span>
       <h3>Editor preservado</h3>
-      <p>O editor completo continua vivo para reorganizar, exportar e ajustar o mapa manualmente, agora com uma linguagem visual mais premium.</p>
+      <p>O editor completo continua vivo para reorganizar, exportar e ajustar o mapa manualmente, agora com uma linguagem visual mais clara.</p>
     </article>
   </div>
 </section>
@@ -397,14 +399,14 @@ body{
       <div class="status-box" id="generationStatus">Pacote da hipofise carregado. Voce pode estudar direto ou trocar o material e gerar outro mapa.</div>
     </div>
 
-<div class="mini-note">A ideia aqui e esconder a complexidade. O modo simples usa poucas escolhas visuais e joga o restante da potencia para o gateway local com Ollama e para o editor avancado.</div>
+      <div class="mini-note">A ideia aqui e esconder a complexidade. O modo simples usa poucas escolhas visuais, manda a geracao para o gateway local com Ollama e deixa o refino pesado para o editor avancado.</div>
 
     <div class="section">
       <span class="label">Atalhos do fluxo</span>
       <div class="quick-list">
-        <div class="quick-item"><strong>1. Carregue</strong><span class="subtle">Cole texto ou suba um PDF.</span></div>
-        <div class="quick-item"><strong>2. Gere</strong><span class="subtle">Escolha profundidade e layout.</span></div>
-        <div class="quick-item"><strong>3. Estude</strong><span class="subtle">Mapa, quiz e revisao ficam no mesmo lugar.</span></div>
+        <div class="quick-item"><strong>1. Carregue</strong><span class="subtle">Cole texto, suba um PDF, uma imagem ou volte ao pacote pronto.</span></div>
+        <div class="quick-item"><strong>2. Gere</strong><span class="subtle">Escolha profundidade e layout. O gateway tenta codellama 13B primeiro e cai para llama3 se precisar.</span></div>
+        <div class="quick-item"><strong>3. Estude</strong><span class="subtle">Mapa, quiz e revisao ficam no mesmo lugar. O editor completo continua a um clique.</span></div>
       </div>
     </div>
   </aside>
@@ -543,7 +545,7 @@ body{
       <span class="label">Estado do workspace</span>
       <div class="quick-list">
         <div class="quick-item"><strong id="packName">Pacote ativo: hipofise</strong><span class="subtle" id="packSummary">Mapa, quiz e revisao no mesmo fluxo.</span></div>
-        <div class="quick-item"><strong>Fluxo atual</strong><span class="subtle">Use a coluna esquerda para trocar o material. O centro vira o palco principal do mapa.</span></div>
+        <div class="quick-item"><strong>Fluxo atual</strong><span class="subtle">Use a coluna esquerda para trocar o material. O centro vira o palco principal do mapa e a direita concentra contexto e tutor.</span></div>
       </div>
     </div>
     <div class="context-box">
@@ -568,6 +570,7 @@ const LOCAL_GATEWAY_ORIGIN='http://127.0.0.1:8787';
 const LOCAL_API_PASSWORD_KEY='local_api_password';
 const SAVED_PROMPT_ID='pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
 const SAVED_PROMPT_VERSION='1';
+const DEFAULT_LOCAL_MODEL='codellama:13b-code-q4_K_M';
 const MINDMAP_JSON_SCHEMA={type:'object',additionalProperties:false,required:['root','children'],properties:{root:{type:'string',minLength:1},children:{type:'array',items:{$ref:'#/$defs/node'}}},$defs:{node:{type:'object',additionalProperties:false,required:['text','children'],properties:{text:{type:'string',minLength:1},children:{type:'array',items:{$ref:'#/$defs/node'}}}}}};
 const MODEL_META={tree:{label:'Tree',prompt:'Organize em arvore editorial clara, com grupos principais e subgrupos bem encadeados.'},flow:{label:'Flow',prompt:'Organize como fluxo de etapas ou raciocinio sequencial.'},bubble:{label:'Bubble',prompt:'Organize em bolhas ao redor do conceito central, com boa memorizacao visual.'},brace:{label:'Brace',prompt:'Organize como quebra analitica em grupos compactos e proximos.'}};
 const urlParams=new URLSearchParams(location.search);
@@ -578,7 +581,7 @@ const $=s=>document.querySelector(s); const $$=s=>[...document.querySelectorAll(
 function loadJson(key,fallback){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):fallback}catch(_){return fallback}}
 function saveJson(key,value){localStorage.setItem(key,JSON.stringify(value))}
 function cleanText(value){return String(value||'').replace(/\s+/g,' ').trim()}
-function splitNodeContent(text){const value=cleanText(text);const parts=value.split(/\s*[|:-]\s+/);return parts.length>1?{title:parts[0],description:parts.slice(1).join(' - ')}:{title:value,description:''}}
+function splitNodeContent(text){const value=cleanText(text);const pipe=value.split(/\s+\|\s+/);if(pipe.length>1)return{title:pipe[0],description:pipe.slice(1).join(' | ')};const dash=value.split(/\s+[—–-]\s+/);if(dash.length>1)return{title:dash[0],description:dash.slice(1).join(' - ')};const sentenceBreak=value.match(/^(.{1,58}?[.!?])\s+(.+)$/);if(sentenceBreak)return{title:sentenceBreak[1].trim(),description:sentenceBreak[2].trim()};return{title:value,description:''}}
 function normalizeNode(node){if(!node||typeof node!=='object')return null;const text=cleanText(node.text);if(!text)return null;return{text,children:(Array.isArray(node.children)?node.children:[]).map(normalizeNode).filter(Boolean)}}
 function normalizeTree(data){if(!data||typeof data!=='object')throw new Error('Formato de mapa invalido.');const root=cleanText(data.root);if(!root)throw new Error('Campo root vazio.');return{root,children:(Array.isArray(data.children)?data.children:[]).map(normalizeNode).filter(Boolean)}}
 function normalizePayload(data){if(data&&typeof data==='object'&&data.tree)return{tree:normalizeTree(data.tree),options:data.options||{}};return{tree:normalizeTree(data),options:{}}}
@@ -589,8 +592,8 @@ function getLocalGatewayBase(){return isLocalSecureMode()?'':LOCAL_GATEWAY_ORIGI
 function getLocalApiPassword(forcePrompt=false){let password=forcePrompt?'':(sessionStorage.getItem(LOCAL_API_PASSWORD_KEY)||localStorage.getItem(LOCAL_API_PASSWORD_KEY)||'');if(!password){password=prompt('Digite a senha da API local:','')||''}password=String(password||'').trim();if(password){sessionStorage.setItem(LOCAL_API_PASSWORD_KEY,password);localStorage.setItem(LOCAL_API_PASSWORD_KEY,password)}return password}
 async function requestResponses(body){if(!navigator.onLine)throw new Error('Sem internet no momento. O estudo offline continua, mas a IA fica indisponivel.');let password=getLocalApiPassword(false);if(!password)throw new Error('Senha da API local ausente.');const endpoint=`${getLocalGatewayBase()}${LOCAL_PROXY_PATH}`;let res;try{res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-api-password':password},body:JSON.stringify(body)})}catch(_){throw new Error('Gateway local do Ollama indisponivel. Rode start-secure-local.cmd e deixe o Ollama ativo.')}if(res.status===401){localStorage.removeItem(LOCAL_API_PASSWORD_KEY);sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);password=getLocalApiPassword(true);if(!password)throw new Error('Senha da API local ausente.');res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-api-password':password},body:JSON.stringify(body)})}if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||err?.message||`HTTP ${res.status}`)}return res.json()}
 function extractLooseJson(raw){const direct=String(raw||'').trim();const attempts=[direct,direct.replace(/```json/gi,'```').replace(/```/g,'').trim()];const start=direct.indexOf('{');const end=direct.lastIndexOf('}');if(start>=0&&end>start)attempts.push(direct.slice(start,end+1));for(const candidate of attempts){if(!candidate)continue;try{return JSON.parse(candidate)}catch(_){}}throw new Error('Nao foi possivel interpretar o JSON retornado pela IA.')}
-function buildSavedPromptInput(topic,source,options){return[`Tema: ${topic}.`,`Modelo visual: ${options.model}.`,`Profundidade: ${options.depth}.`,`Foco didatico: progressivo.`,`Estilo do texto: headline.`,`Ramos principais: auto.`,`Leitura do material: auto.`,'Base obrigatoria:',source.slice(0,18000)].join('\n\n')}
-function buildInlineBody(topic,source,options){const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe em progressao de aprendizagem e evite ramos soltos.',options.depth==='LOW'?'Modo LOW: poucas palavras-chave e poucos ramos principais.':options.depth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla e explicacoes curtas.',MODEL_META[options.model].prompt].join(' ');return{model:'llama3:latest',input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,18000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2400}}
+function buildSavedPromptInput(topic,source,options){return[`Tema: ${topic}.`,`Modelo visual: ${options.model}.`,`Profundidade: ${options.depth}.`,`Foco didatico: progressivo.`,`Estilo do texto: headline.`,`Ramos principais: 4 a 7 no primeiro nivel.`,`Formato dos nos: "Titulo | explicacao curta".`,`Leitura do material: auto.`,`Regras: crie um tronco central forte, ramos equilibrados, subtopicos compactos e sem repetir a mesma ideia.`,'Base obrigatoria:',source.slice(0,18000)].join('\n\n')}
+function buildInlineBody(topic,source,options){const system=['Voce cria mapas mentais de estudo em portugues.','Responda somente JSON valido no schema informado.','Use apenas informacoes sustentadas pelo conteudo base.','Agrupe em progressao de aprendizagem e evite ramos soltos.','O mapa precisa parecer academico: tronco central forte, 4 a 7 ramos principais quando o material permitir, subniveis compactos e hierarquia clara.','Use o formato "Titulo | explicacao curta" nos nos que precisarem de contexto.','Evite titulos genericos como Outros, Diversos, Observacoes ou Mais info.',options.depth==='LOW'?'Modo LOW: poucas palavras-chave e poucos ramos principais.':options.depth==='MEDIUM'?'Modo MEDIUM: titulos com explicacoes curtas e hierarquia simples.':'Modo HIGH: estrutura completa para estudo com cobertura ampla, 4 niveis quando houver conteudo e explicacoes curtas.',MODEL_META[options.model].prompt].join(' ');return{model:DEFAULT_LOCAL_MODEL,input:[{role:'system',content:[{type:'input_text',text:system}]},{role:'user',content:[{type:'input_text',text:`Tema: "${topic}". Base obrigatoria:\n\n${source.slice(0,18000)}`}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},temperature:0.2,max_output_tokens:2600}}
 async function requestStudyMap(topic,source,options){const body={prompt:{id:SAVED_PROMPT_ID,version:SAVED_PROMPT_VERSION},input:[{role:'user',content:[{type:'input_text',text:buildSavedPromptInput(topic,source,options)}]}],text:{format:{type:'json_schema',name:'mind_map_schema',strict:true,schema:MINDMAP_JSON_SCHEMA}},max_output_tokens:2400};try{return await requestResponses(body)}catch(error){console.warn('Falha no prompt salvo, usando fallback inline.',error);return requestResponses(buildInlineBody(topic,source,options))}}
 async function loadPdfJs(){if(!state.pdfJsPromise){state.pdfJsPromise=import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs').then(module=>{const lib=module.default||module;lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';return lib})}return state.pdfJsPromise}
 async function extractPdfText(file){const lib=await loadPdfJs();const pdf=await lib.getDocument({data:await file.arrayBuffer()}).promise;const pages=[];for(let i=1;i<=pdf.numPages;i+=1){const page=await pdf.getPage(i);const textContent=await page.getTextContent();const text=textContent.items.map(item=>item.str||'').join(' ').replace(/\s+/g,' ').trim();if(text)pages.push(text)}return{text:pages.join('\n\n'),pages:pdf.numPages}}
@@ -620,9 +623,9 @@ function renderQuiz(){if(!state.quiz||state.packMode!=='default')return;const qu
 function buildReviewOrder(){const wrongIds=new Set(Object.entries(state.answered).filter(([,value])=>value&&!value.correct).map(([key])=>Number(key)));const wrong=[];const rest=[];state.quiz.questoes.forEach(question=>{if(wrongIds.has(question.id))wrong.push(question);else rest.push(question)});state.reviewOrder=wrong.concat(rest);if(!state.reviewOrder.length)state.reviewOrder=[...state.quiz.questoes]}
 function renderReview(){if(!state.quiz||state.packMode!=='default')return;buildReviewOrder();const card=state.reviewOrder[state.reviewIndex%state.reviewOrder.length];const answer=card.opcoes[card.correta];$('#reviewCounter').textContent=`Card ${state.reviewIndex%state.reviewOrder.length+1} de ${state.reviewOrder.length}`;$('#reviewPrompt').textContent=card.pergunta;$('#reviewAnswer').classList.toggle('visible',state.reviewRevealed);$('#reviewAnswer').innerHTML=`<strong>Resposta:</strong> ${answer}<br><br>${card.explicacao}`;$('#reviewProgressFill').style.width=`${((state.reviewIndex%state.reviewOrder.length)+1)/state.reviewOrder.length*100}%`;$('#reviewSeen').textContent=String(state.reviewStats.seen||0);$('#reviewKnown').textContent=String(state.reviewStats.known||0);$('#reviewAgain').textContent=String(state.reviewStats.again||0)}
 function stepReview(mark){if(state.packMode!=='default'||!state.reviewOrder.length)return;state.reviewStats.seen=(state.reviewStats.seen||0)+1;if(mark==='known')state.reviewStats.known=(state.reviewStats.known||0)+1;if(mark==='again'){state.reviewStats.again=(state.reviewStats.again||0)+1;const current=state.reviewOrder[state.reviewIndex%state.reviewOrder.length];state.reviewOrder.push(current)}saveJson(REVIEW_PROGRESS_KEY,state.reviewStats);state.reviewIndex=(state.reviewIndex+1)%state.reviewOrder.length;state.reviewRevealed=false;$('#toggleAnswerBtn').textContent='Mostrar resposta';renderReview()}
-async function checkBackend(){const endpoint=`${getLocalGatewayBase()}/api/health`;try{const res=await fetch(endpoint,{cache:'no-store'});const data=await res.json();state.backend={checked:true,ok:Boolean(data.ok&&data.keyConfigured),message:data.ok&&data.keyConfigured?`Ollama local pronto (${data.siteModel||'modelo padrao'}).`:data.error||'Gateway local respondeu, mas o modelo configurado nao esta disponivel.'}}catch(_){state.backend={checked:true,ok:false,message:'Gateway local do Ollama indisponivel. Rode start-secure-local.cmd.'}}renderBackend()}
+async function checkBackend(){const endpoint=`${getLocalGatewayBase()}/api/health`;try{const res=await fetch(endpoint,{cache:'no-store'});const data=await res.json();const backendLabel=data.fallbackModel?`${data.siteModel||'modelo padrao'} -> ${data.fallbackModel}`:(data.siteModel||'modelo padrao');state.backend={checked:true,ok:Boolean(data.ok&&data.keyConfigured),message:data.ok&&data.keyConfigured?`Ollama local pronto (${backendLabel}).`:data.error||'Gateway local respondeu, mas nem o modelo principal nem o fallback estao disponiveis.'}}catch(_){state.backend={checked:true,ok:false,message:'Gateway local do Ollama indisponivel. Rode start-secure-local.cmd.'}}renderBackend()}
 function renderBackend(){const pill=$('#backendPill');pill.textContent=state.backend.message;pill.className=`pill ${state.backend.ok?'ok':'warn'}`}
-async function requestTutor(promptText,targetId='assistantOutput'){const target=document.getElementById(targetId);target.textContent='Consultando tutor local...';try{const data=await requestResponses({model:'llama3:latest',input:[{role:'system',content:[{type:'input_text',text:'Voce e um tutor de medicina. Responda em portugues, de forma didatica, objetiva, com bullets curtos, uma dica de prova e um erro comum para evitar.'}]},{role:'user',content:[{type:'input_text',text:promptText}]}],max_output_tokens:700});const raw=cleanText(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'');target.textContent=raw||'O modelo local respondeu sem texto legivel.'}catch(error){target.textContent=error.message}}
+async function requestTutor(promptText,targetId='assistantOutput'){const target=document.getElementById(targetId);target.textContent='Consultando tutor local...';try{const data=await requestResponses({model:DEFAULT_LOCAL_MODEL,input:[{role:'system',content:[{type:'input_text',text:'Voce e um tutor de medicina. Responda em portugues, de forma didatica, objetiva, com bullets curtos, uma dica de prova e um erro comum para evitar.'}]},{role:'user',content:[{type:'input_text',text:promptText}]}],max_output_tokens:700});const raw=cleanText(data.output_text||data.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'');target.textContent=raw||'O modelo local respondeu sem texto legivel.'}catch(error){target.textContent=error.message}}
 async function handleFile(file){if(!file)return;const lower=file.name.toLowerCase();try{if(lower.endsWith('.json')){const parsed=normalizePayload(JSON.parse(await file.text()));state.sourceMeta={type:'json',name:file.name,pages:0};applyCustomTree(parsed.tree,parsed.options||{});setUploadStatus(`JSON importado: ${file.name}.`,'success')}else if(lower.endsWith('.pdf')||file.type==='application/pdf'){setUploadStatus('Lendo PDF local...');const result=await extractPdfText(file);$('#sourceInput').value=result.text;state.sourceMeta={type:'pdf',name:file.name,pages:result.pages};setUploadStatus(`PDF lido: ${file.name} com ${result.pages} pagina(s).`,'success');setGenerationStatus('PDF pronto. Agora clique em Gerar mapa com Ollama local.')}else if(/\.(png|jpe?g|webp|gif)$/i.test(lower)||String(file.type||'').startsWith('image/')){setUploadStatus('Lendo imagem e rodando OCR local...');const result=await extractImageText(file);$('#sourceInput').value=result.text;state.sourceMeta={type:'image',name:file.name,pages:0};setUploadStatus(`Imagem lida por OCR local: ${file.name}.`,'success');setGenerationStatus('Imagem pronta. Agora clique em Gerar mapa com Ollama local.')}else{const text=await file.text();$('#sourceInput').value=text;state.sourceMeta={type:'text',name:file.name,pages:0};setUploadStatus(`Arquivo textual carregado: ${file.name}.`,'success')}}catch(error){console.error(error);setUploadStatus(`Erro ao ler arquivo: ${error.message}`,'error')}}
 async function generateFromSource(){const source=cleanText($('#sourceInput').value);const topic=cleanText($('#topicInput').value)||'Mapa de estudo';if(!source){setGenerationStatus('Cole um conteudo base ou carregue um PDF antes de gerar.','error');setSmokeStatus('error','missing-source');return false}const options=currentOptions();const btn=$('#generateBtn');btn.disabled=true;setGenerationStatus('Gerando mapa com Ollama local no workspace principal...');setSmokeStatus('running',`topic=${topic} model=${options.model} depth=${options.depth}`);try{const response=await requestStudyMap(topic,source,options);const raw=cleanText(response.output_text||response.output?.flatMap(item=>item.content||[]).map(content=>content.text||content.output_text||'').join('\n')||'');const tree=normalizeTree(extractLooseJson(raw));applyCustomTree(tree,options);return true}catch(error){console.error(error);setGenerationStatus(`Erro: ${error.message}`,'error');setSmokeStatus('error',error.message);return false}finally{btn.disabled=false}}
 async function runWorkspaceSmoke(){if(!SMOKE_MODE||state.smokeRan)return;state.smokeRan=true;$('#topicInput').value='Teste rapido de hipofise';$('#sourceInput').value='Hipofise regula prolactina, GH, ACTH, TSH, LH e FSH. Adenomas podem causar hiperprolactinemia, acromegalia e doenca de Cushing. Hipopituitarismo cursa com fadiga, infertilidade e falha de lactacao.';state.sourceMeta={type:'text',name:'smoke',pages:0};setUploadStatus('Smoke mode: material de teste carregado.');const ok=await generateFromSource();if(!ok&&document.body.dataset.smokeStatus!=='error')setSmokeStatus('error','generation-failed')}
@@ -652,3 +655,5 @@ initialize();
 </script>
 </body>
 </html>
+
+

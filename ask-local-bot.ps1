@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $body = @{
-  model = 'llama3:latest'
+  model = 'codellama:13b-code-q4_K_M'
   input = $Prompt
 } | ConvertTo-Json -Depth 6
 

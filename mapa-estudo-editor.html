@@ -87,21 +87,21 @@ body.study-mode .canvas-area::after {
 body.embed-mode .node,
 body.study-mode .node {
   cursor:default;
-  min-width:128px;
-  max-width:208px;
-  padding:8px 14px;
-  border-width:1.35px;
-  border-radius:12px;
-  box-shadow:0 10px 18px rgba(179, 135, 122, .07), 0 1px 0 rgba(255,255,255,.76) inset;
-  font-size:11.5px;
-  line-height:1.34;
+  min-width:124px;
+  max-width:204px;
+  padding:8px 13px;
+  border-width:1.3px;
+  border-radius:13px;
+  box-shadow:0 14px 24px rgba(96, 128, 149, .08), 0 1px 0 rgba(255,255,255,.82) inset;
+  font-size:11.4px;
+  line-height:1.36;
 }
 body.embed-mode .node.root,
 body.study-mode .node.root {
-  min-width:176px;
+  min-width:184px;
   padding:12px 18px;
-  border-radius:18px;
-  box-shadow:0 16px 28px rgba(111, 128, 155, .12), 0 1px 0 rgba(255,255,255,.84) inset;
+  border-radius:20px;
+  box-shadow:0 18px 30px rgba(91, 133, 168, .14), 0 1px 0 rgba(255,255,255,.9) inset;
 }
 body.embed-mode .node.selected,
 body.study-mode .node.selected {
@@ -157,6 +157,7 @@ header {
   padding:7px 13px; border-radius:8px; border:none;
   cursor:pointer; font-size:12px; font-weight:500;
   transition:all .18s; white-space:nowrap;
+  text-decoration:none;
 }
 .btn:hover { opacity:.82; transform:translateY(-1px); }
 .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text-primary); }
@@ -271,29 +272,30 @@ input[type="color"] {
 /* NODES */
 .node {
   position:absolute;
-  padding:9px 16px; border-radius:14px; border:1.5px solid;
+  padding:9px 15px; border-radius:13px; border:1.4px solid;
   cursor:grab; user-select:none;
-  min-width:140px; max-width:220px;
-  text-align:left; font-size:12px; font-weight:600;
+  min-width:134px; max-width:214px;
+  text-align:left; font-size:11.8px; font-weight:700;
   word-break:break-word; line-height:1.4;
   transition:box-shadow .12s, transform .12s, opacity .12s;
   color:var(--node-text);
-  font-family:"Trebuchet MS","Segoe UI",sans-serif;
-  letter-spacing:.01em;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  letter-spacing:0;
 }
 .node:active { cursor:grabbing; }
-.node.root { font-size:14px; font-weight:700; padding:15px 18px; min-width:170px; text-align:center; }
-.node.selected { box-shadow:0 0 0 3px rgba(180,102,151,.22); transform:translateY(-1px); }
+.node.root { font-size:14px; font-weight:800; padding:14px 18px; min-width:176px; text-align:center; letter-spacing:-.01em; }
+.node.selected { box-shadow:0 0 0 3px rgba(90,150,214,.18), 0 12px 24px rgba(102,124,148,.14); transform:translateY(-1px); }
 .node .node-label {
   display:block;
+  color:#2d2420;
 }
 .node .node-desc {
   display:block;
-  margin-top:6px;
-  font-size:11px;
+  margin-top:5px;
+  font-size:10.6px;
   font-weight:500;
   line-height:1.45;
-  color:var(--text-secondary);
+  color:#6e6661;
 }
 .node-actions { position:absolute; top:-11px; right:-11px; display:none; gap:4px; }
 .node.selected .node-actions { display:flex; }
@@ -601,6 +603,8 @@ body.study-mode .editor-hero{
 <header>
   <div class="logo"><span class="logo-mark">MS</span><div class="logo-copy"><strong>Mind Study Editor</strong><small>canvas avançado para refinar seus mapas</small></div></div>
   <div class="header-btns">
+    <a class="btn btn-outline" href="index.html">Portal</a>
+    <a class="btn btn-outline" href="hipofise-workspace.html">Workspace</a>
     <button class="btn btn-outline editor-only" onclick="toggleMinimalUI()">Vista limpa</button>
     <button class="btn btn-outline" onclick="togglePosterMode()">Modo poster</button>
     <button class="btn btn-outline" onclick="printPoster()">Imprimir</button>
@@ -618,8 +622,9 @@ body.study-mode .editor-hero{
     <p>Você continua com criação manual, geração via IA, exportação, zoom, pan e layouts múltiplos, mas agora com uma moldura visual mais parecida com um produto pronto.</p>
   </div>
   <div class="editor-hero-actions">
-    <a class="editor-link" href="hipofise-workspace.html">Voltar ao workspace</a>
-    <div class="editor-pill">Tree • Flow • Bubble • Brace</div>
+    <a class="editor-link" href="gerador-estudo.html?advanced=1">Abrir gerador</a>
+    <a class="editor-link" href="sitepra.html">AmyMind</a>
+    <div class="editor-pill">codellama:13b-code-q4_K_M • Tree • Flow • Bubble • Brace</div>
   </div>
 </section>
 
@@ -683,53 +688,11 @@ body.study-mode .editor-hero{
         <div class="tmpl-card" onclick="loadTemplate('brainstorm')"><span class="tmpl-icon">A</span><span class="tmpl-name">Brainstorm</span></div>
         <div class="tmpl-card" onclick="loadTemplate('projeto')"><span class="tmpl-icon">P</span><span class="tmpl-name">Projeto</span></div>
         <div class="tmpl-card" onclick="loadTemplate('estudo')"><span class="tmpl-icon">E</span><span class="tmpl-name">Estudo</span></div>
-        <div class="tmpl-card" onclick="loadTemplate('apresentacao')"><span class="tmpl-icon">S</span><span class="tmpl-name">Apresentacao</span></div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- CANVAS -->
-  <main class="canvas-area" id="canvasArea">
-    <div class="canvas-bar">
-      <span><span class="status-dot"></span>Online</span>
-      <div class="bar-div"></div>
-      <button class="canvas-btn" onclick="zoomIn()">Zoom +</button>
-      <button class="canvas-btn" onclick="zoomOut()">Zoom -</button>
-      <div class="bar-div"></div>
-      <span class="poster-chip" id="modelBadge">Tree map</span>
-      <span class="poster-chip" id="layoutBadge">Poster bilateral</span>
-      <span class="zoom-badge" id="zoomBadge">100%</span>
-    </div>
-    <div class="map-wrap" id="mapWrap">
-      <svg id="svgConns" xmlns="http://www.w3.org/2000/svg"></svg>
-      <div class="map-vp" id="mapVp"></div>
-    </div>
-    <div class="canvas-note">estilo visual inspirado em mapa mental editorial, com leitura vertical para estudo e impressao</div>
-  </main>
-
-  <!-- RIGHT -->
-  <aside class="sidebar sidebar-right">
-    <div class="ai-section">
-      <div class="r-title">Gerar com IA</div>
-      <textarea class="prompt-area" id="aiPrompt"
-        placeholder="Descreva o tema e os topicos que quer distribuir no mapa."></textarea>
-      <div class="depth-row">
-        <button class="depth-btn" data-depth="1" onclick="setDepth(1)">LOW</button>
-        <button class="depth-btn active" data-depth="2" onclick="setDepth(2)">MEDIUM</button>
-        <button class="depth-btn" data-depth="3" onclick="setDepth(3)">HIGH</button>
-      </div>
-      <button class="gen-btn" id="genBtn" onclick="generateWithAI()">Gerar mapa</button>
-      <div class="ai-status" id="aiStatus">Digite um tema e gere o mapa.</div>
-      <div class="test-log hidden" id="testLog"></div>
-    </div>
-    <div class="sugg-section">
-      <div class="r-title">Sugestoes rapidas</div>
-      <div class="sugg-grid">
-        <button class="sugg-btn" onclick="quickSuggest('Como funciona Machine Learning')">ðŸ¤– Machine Learning</button>
-        <button class="sugg-btn" onclick="quickSuggest('Arquitetura de um app React moderno')">âš›ï¸ React</button>
+        <div class="tmpl-card" onclick="loadTemplate('apresentacao')"><span class="tmpl-icon">S</span><span class="tmpl-name">Apresentacaonclick="quickSuggest('Como funciona Machine Learning')">Machine Learning</button>
+        <button class="sugg-btn" onclick="quickSuggest('Arquitetura de um app React moderno')">React moderno</button>
         <button class="sugg-btn" onclick="quickSuggest('Como montar um Plano de Negocios')">Plano de Negocios</button>
         <button class="sugg-btn" onclick="quickSuggest('Gestao de Projetos com metodologias ageis')">Gestao Agil</button>
-        <button class="sugg-btn" onclick="quickSuggest('Fundamentos de Python para iniciantes')">ðŸ Python</button>
+        <button class="sugg-btn" onclick="quickSuggest('Fundamentos de Python para iniciantes')">Python</button>
         <button class="sugg-btn" onclick="quickSuggest('Estrategias de marketing digital')">Marketing</button>
       </div>
     </div>
@@ -771,6 +734,7 @@ const LOCAL_GATEWAY_ORIGIN = 'http://127.0.0.1:8787';
 const LOCAL_API_PASSWORD_KEY = 'local_api_password';
 const SAVED_PROMPT_ID = 'pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
 const SAVED_PROMPT_VERSION = '1';
+const DEFAULT_LOCAL_MODEL = 'codellama:13b-code-q4_K_M';
 const URL_PARAMS = new URLSearchParams(location.search);
 const EMBED_MODE = URL_PARAMS.get('embed') === '1';
 const STUDY_MODE = URL_PARAMS.get('study') === '1';
@@ -782,11 +746,11 @@ const FORCED_MODEL = URL_PARAMS.get('model') || '';
 const hostSyncState = { ready:'', selection:'' };
 
 const THEMES = {
-  tecnologia: { r:'#bc8070', l1:'#d6a188', l2:'#8ebddf', l3:'#86c6a1', l4:'#d8afd0' },
-  negocios:   { r:'#b57263', l1:'#d4a164', l2:'#9bbbd9', l3:'#89c1a2', l4:'#d0a0ad' },
-  educacao:   { r:'#8f87bf', l1:'#78c0d8', l2:'#9dcf8b', l3:'#e6b175', l4:'#d2a8c8' },
-  criativo:   { r:'#cf937d', l1:'#79c7b0', l2:'#85b7e8', l3:'#e2ae86', l4:'#cc9ac8' },
-  hipofise:   { r:'#7fbef4', l1:'#7ebcf2', l2:'#f3ba98', l3:'#8fd6a5', l4:'#eaa5c8' },
+  tecnologia: { r:'#3489cf', l1:'#4caef0', l2:'#5ac59b', l3:'#f4ab6b', l4:'#d792d7' },
+  negocios:   { r:'#7e68d0', l1:'#628ee0', l2:'#48b692', l3:'#f0b36f', l4:'#db8fa8' },
+  educacao:   { r:'#2f87bf', l1:'#61a8f0', l2:'#74c3a3', l3:'#efab6e', l4:'#c19bdd' },
+  criativo:   { r:'#cb6f93', l1:'#ff9a7a', l2:'#57bcd9', l3:'#63c89f', l4:'#e7a85f' },
+  hipofise:   { r:'#3e9fe6', l1:'#58b0f2', l2:'#f0b08a', l3:'#63c79a', l4:'#e28eb7' },
 };
 let theme = THEMES.tecnologia;
 const MAP_MODELS = {
@@ -823,10 +787,10 @@ const MINDMAP_JSON_SCHEMA = {
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    DIMENSÃ•ES DOS NÃ“S
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const NODE_W  = { root: 220, l1: 196, default: 186 };
-const NODE_H  = 60;
-const GAP_H   = 34;
-const GAP_X   = { l1: 320, l2: 280, l3: 250 };
+const NODE_W  = { root: 214, l1: 188, default: 176 };
+const NODE_H  = 58;
+const GAP_H   = 30;
+const GAP_X   = { l1: 286, l2: 248, l3: 214 };
 
 function normalizeMapModel(value) {
   return MAP_MODELS[value] ? value : 'tree';
@@ -898,10 +862,10 @@ function cleanText(value) {
 }
 function splitNodeContent(text) {
   const value = cleanText(text);
-  const parts = value.split(/\s*[|:-]\s+/);
-  if (parts.length > 1) {
-    return { title: parts[0], description: parts.slice(1).join(' - ') };
-  }
+  const pipeParts = value.split(/\s+\|\s+/);
+  if (pipeParts.length > 1) return { title: pipeParts[0], description: pipeParts.slice(1).join(' | ') };
+  const dashParts = value.split(/\s+[—–-]\s+/);
+  if (dashParts.length > 1) return { title: dashParts[0], description: dashParts.slice(1).join(' - ') };
   const sentenceBreak = value.match(/^(.{1,54}?[.!?])\s+(.+)$/);
   if (sentenceBreak) {
     return { title: sentenceBreak[1].trim(), description: sentenceBreak[2].trim() };
@@ -971,6 +935,8 @@ function buildSavedPromptInputFromEditor(promptText, depthLabel) {
     `Estilo do texto: ${generationOptions.nodeStyle || 'headline'}.`,
     `Ramos principais: ${generationOptions.mainBranches || 'auto'}.`,
     `Leitura do material: ${generationOptions.pdfLens || 'auto'}.`,
+    'Formato dos nos: "Titulo | explicacao curta".',
+    'Regras: use tronco central forte, ramos equilibrados, subtopicos compactos e sem repetir a mesma ideia.',
     'Monte um mapa mental de estudo em JSON valido no schema esperado.'
   ].join('\n\n');
 }
@@ -1156,7 +1122,7 @@ function subtreeHeight(nd, nodeMap) {
 
 function branchGap(level) {
   const base = GAP_X[`l${Math.min(level, 3)}`] || 250;
-  return posterMode ? Math.max(180, base - 40) : base;
+  return posterMode ? Math.max(150, base - 52) : base;
 }
 
 function layoutBranch(nd, anchorX, cy, nodeMap, side) {
@@ -1546,7 +1512,7 @@ function render(skipLayout = false) {
           onclick="event.stopPropagation();addChildOf(${nd.id})">+</button>
         ${!nd.isRoot
           ? `<button class="na-btn" style="background:#dc2626;color:#fff"
-               onclick="event.stopPropagation();deleteNode(${nd.id})">Ã—</button>`
+               onclick="event.stopPropagation();deleteNode(${nd.id})">x</button>`
           : ''}
       </div>`;
     if (!(EMBED_MODE || STUDY_MODE)) {
@@ -1628,20 +1594,21 @@ function getConnectionPath(parent, child, offsetX = 0, offsetY = 0) {
   const x2 = childSide === 'left' ? child.x - offsetX + nodeWidth(child) : child.x - offsetX;
   const y2 = child.y - offsetY + nodeHeight(child) / 2;
   const span = Math.abs(x2 - x1);
-  const curve = child.level <= 1 ? 0.42 : 0.34;
+  const curve = child.level <= 1 ? 0.48 : 0.38;
   const direction = childSide === 'left' ? -1 : 1;
   const c1x = x1 + direction * span * curve;
   const c2x = x2 - direction * span * curve;
-  return `M${x1},${y1} C${c1x},${y1} ${c2x},${y2} ${x2},${y2}`;
+  const sway = Math.min(22, Math.max(8, Math.abs(y2 - y1) * 0.12));
+  return `M${x1},${y1} C${c1x},${y1 + sway} ${c2x},${y2 - sway} ${x2},${y2}`;
 }
 
 function drawConnections(svg) {
   svg = svg || document.getElementById('svgConns');
   let paths = '';
   const showGlow = EMBED_MODE || STUDY_MODE;
-  const mainWidth = showGlow ? (posterMode ? 2.8 : 2.25) : (posterMode ? 2.4 : 2);
-  const glowWidth = showGlow ? (posterMode ? 7.6 : 6.2) : 0;
-  const mainOpacity = showGlow ? 0.96 : (posterMode ? 0.9 : 0.7);
+  const mainWidth = showGlow ? (posterMode ? 2.95 : 2.35) : (posterMode ? 2.55 : 2.1);
+  const glowWidth = showGlow ? (posterMode ? 8.2 : 6.8) : 0;
+  const mainOpacity = showGlow ? 0.97 : (posterMode ? 0.92 : 0.74);
 
   nodes.forEach(nd => {
     if (nd.parentId === null) return;
@@ -1651,7 +1618,7 @@ function drawConnections(svg) {
     if (showGlow) {
       paths += `<path
       d="${path}"
-      stroke="${hexToRgba(parent.color, 0.15)}" stroke-width="${glowWidth}"
+      stroke="${hexToRgba(parent.color, 0.16)}" stroke-width="${glowWidth}"
       fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
     }
     paths += `<path
@@ -2035,7 +2002,7 @@ function logHistory(action) {
   const item=document.createElement('div');
   item.className='hist-item';
   item.innerHTML=`<div class="hist-action">${escapeHtml(action)}</div>
-    <div class="hist-meta">${now} Â· ${nodes.length} nÃ³${nodes.length!==1?'s':''}</div>`;
+    <div class="hist-meta">${now} | ${nodes.length} no${nodes.length!==1?'s':''}</div>`;
   list.prepend(item);
   while(list.children.length>20) list.removeChild(list.lastChild);
 }
@@ -2095,6 +2062,8 @@ async function requestMindMapJSON(promptText, depthLabel){
     'Responda somente JSON valido no schema informado.',
     'Organize o conteudo em progressao de aprendizagem: fundamentos, blocos principais, detalhes, revisao.',
     'Evite ramos soltos, repeticoes, jargoes desnecessarios e topicos desconexos.',
+    'Use o formato "Titulo | explicacao curta" nos nos que precisarem de contexto.',
+    'Prefira um tronco central forte, 4 a 7 ramos principais quando fizer sentido e subramos compactos.',
     modelInstruction,
     depthLabel === 'LOW'
       ? 'Modo LOW: use apenas palavras-chave e poucos ramos principais.'
@@ -2104,7 +2073,7 @@ async function requestMindMapJSON(promptText, depthLabel){
   ].join(' ');
   const userPrompt=`Tema de estudo: "${promptText}". Monte um mapa organizado e estudavel.`;
   const body={
-    model:'llama3:latest',
+    model:DEFAULT_LOCAL_MODEL,
     input:[
       {role:'system',content:[{type:'input_text',text:systemPrompt}]},
       {role:'user',content:[{type:'input_text',text:userPrompt}]}
@@ -2241,26 +2210,26 @@ function regenerateLastPrompt() {
 const TEMPLATES = {
   brainstorm:{root:'Brainstorm',children:[
     {text:'Ideias Principais',children:[{text:'Ideia A',children:[]},{text:'Ideia B',children:[]},{text:'Ideia C',children:[]}]},
-    {text:'Problemas',children:[{text:'ObstÃ¡culo 1',children:[]},{text:'ObstÃ¡culo 2',children:[]}]},
-    {text:'SoluÃ§Ãµes',children:[{text:'SoluÃ§Ã£o 1',children:[]},{text:'SoluÃ§Ã£o 2',children:[]}]},
-    {text:'PrÃ³ximos Passos',children:[{text:'Passo 1',children:[]},{text:'Passo 2',children:[]}]},
+    {text:'Problemas',children:[{text:'Obstaculo 1',children:[]},{text:'Obstaculo 2',children:[]}]},
+    {text:'Solucoes',children:[{text:'Solucao 1',children:[]},{text:'Solucao 2',children:[]}]},
+    {text:'Proximos Passos',children:[{text:'Passo 1',children:[]},{text:'Passo 2',children:[]}]},
   ]},
   projeto:{root:'Projeto',children:[
     {text:'Objetivos',children:[{text:'Meta 1',children:[]},{text:'Meta 2',children:[]}]},
     {text:'Equipe',children:[{text:'Dev',children:[]},{text:'Design',children:[]},{text:'QA',children:[]}]},
     {text:'Cronograma',children:[{text:'Fase 1',children:[]},{text:'Fase 2',children:[]},{text:'Fase 3',children:[]}]},
-    {text:'Riscos',children:[{text:'Risco TÃ©cnico',children:[]},{text:'Risco de Prazo',children:[]}]},
+    {text:'Riscos',children:[{text:'Risco Tecnico',children:[]},{text:'Risco de Prazo',children:[]}]},
   ]},
   estudo:{root:'Estudo',children:[
     {text:'Conceitos-Chave',children:[{text:'Conceito 1',children:[]},{text:'Conceito 2',children:[]}]},
-    {text:'Exemplos PrÃ¡ticos',children:[{text:'Exemplo 1',children:[]},{text:'Exemplo 2',children:[]}]},
-    {text:'RevisÃ£o',children:[{text:'TÃ³pico A',children:[]},{text:'TÃ³pico B',children:[]}]},
-    {text:'ExercÃ­cios',children:[{text:'Lista 1',children:[]},{text:'Lista 2',children:[]}]},
+    {text:'Exemplos Praticos',children:[{text:'Exemplo 1',children:[]},{text:'Exemplo 2',children:[]}]},
+    {text:'Revisao',children:[{text:'Topico A',children:[]},{text:'Topico B',children:[]}]},
+    {text:'Exercicios',children:[{text:'Lista 1',children:[]},{text:'Lista 2',children:[]}]},
   ]},
-  apresentacao:{root:'ApresentaÃ§Ã£o',children:[
-    {text:'IntroduÃ§Ã£o',children:[{text:'Contexto',children:[]},{text:'Objetivos',children:[]}]},
+  apresentacao:{root:'Apresentacao',children:[
+    {text:'Introducao',children:[{text:'Contexto',children:[]},{text:'Objetivos',children:[]}]},
     {text:'Desenvolvimento',children:[{text:'Ponto 1',children:[]},{text:'Ponto 2',children:[]},{text:'Ponto 3',children:[]}]},
-    {text:'ConclusÃ£o',children:[{text:'Resumo',children:[]},{text:'PrÃ³ximos Passos',children:[]}]},
+    {text:'Conclusao',children:[{text:'Resumo',children:[]},{text:'Proximos Passos',children:[]}]},
   ]},
 };
 
