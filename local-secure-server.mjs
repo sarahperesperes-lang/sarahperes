@@ -11,22 +11,15 @@ const env = loadEnvFile(path.join(ROOT, '.env.local'));
 const HOST = process.env.HOST || env.HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT || env.PORT || 8787);
 const API_ACCESS_PASSWORD = process.env.API_ACCESS_PASSWORD || env.API_ACCESS_PASSWORD || '324125';
-const SITE_OPENAI_API_KEY =
-  process.env.SITE_OPENAI_API_KEY ||
-  env.SITE_OPENAI_API_KEY ||
-  process.env.OPENAI_API_KEY ||
-  env.OPENAI_API_KEY ||
-  process.env.ADMKEY ||
-  env.ADMKEY ||
-  '';
-const BOT_OPENAI_API_KEY =
-  process.env.BOT_OPENAI_API_KEY ||
-  env.BOT_OPENAI_API_KEY ||
-  process.env.OPENAI_BOT_API_KEY ||
-  env.OPENAI_BOT_API_KEY ||
-  process.env.LUCASJOGA ||
-  env.LUCASJOGA ||
-  '';
+const OLLAMA_HOST = process.env.OLLAMA_HOST || env.OLLAMA_HOST || 'http://127.0.0.1:11434';
+const SITE_OLLAMA_MODEL = process.env.SITE_OLLAMA_MODEL || env.SITE_OLLAMA_MODEL || 'llama3:latest';
+const BOT_OLLAMA_MODEL = process.env.BOT_OLLAMA_MODEL || env.BOT_OLLAMA_MODEL || SITE_OLLAMA_MODEL;
+const OLLAMA_NUM_CTX = Number(process.env.OLLAMA_NUM_CTX || env.OLLAMA_NUM_CTX || 12288);
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, x-api-password, x-openai-profile'
+};
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -64,6 +57,7 @@ function loadEnvFile(filePath) {
 
 function json(res, status, payload) {
   res.writeHead(status, {
+    ...CORS_HEADERS,
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store'
   });
@@ -123,8 +117,8 @@ function getProfileFromRequest(req) {
   return 'site';
 }
 
-function getKeyForProfile(profile) {
-  return profile === 'bot' ? BOT_OPENAI_API_KEY : SITE_OPENAI_API_KEY;
+function getModelForProfile(profile) {
+  return profile === 'bot' ? BOT_OLLAMA_MODEL : SITE_OLLAMA_MODEL;
 }
 
 function getApiPasswordFromRequest(req) {
@@ -136,23 +130,91 @@ function isAuthorizedRequest(req) {
   return Boolean(API_ACCESS_PASSWORD) && getApiPasswordFromRequest(req) === API_ACCESS_PASSWORD;
 }
 
-async function proxyOpenAI(req, res, forcedProfile = null) {
+function flattenContentText(content) {
+  if (!content) return '';
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) {
+    return content.map(flattenContentText).filter(Boolean).join('\n');
+  }
+  if (typeof content === 'object') {
+    if (typeof content.text === 'string') return content.text;
+    if (typeof content.output_text === 'string') return content.output_text;
+    if (typeof content.input_text === 'string') return content.input_text;
+    if (content.type === 'input_image') return '[imagem enviada ao cliente local]';
+    if (Array.isArray(content.content)) return flattenContentText(content.content);
+  }
+  return '';
+}
+
+function buildPromptFromRequestBody(body) {
+  const messages = [];
+  if (typeof body?.input === 'string') {
+    messages.push({ role: 'user', text: body.input });
+  } else if (Array.isArray(body?.input)) {
+    for (const item of body.input) {
+      if (!item) continue;
+      const role = String(item.role || 'user').toLowerCase();
+      const text = flattenContentText(item.content || item.text || item);
+      if (text) messages.push({ role, text });
+    }
+  } else if (Array.isArray(body?.messages)) {
+    for (const item of body.messages) {
+      if (!item) continue;
+      const role = String(item.role || 'user').toLowerCase();
+      const text = flattenContentText(item.content || item.text || item);
+      if (text) messages.push({ role, text });
+    }
+  }
+
+  const systemText = messages.filter((item) => item.role === 'system').map((item) => item.text).join('\n\n');
+  const userText = messages.filter((item) => item.role !== 'system').map((item) => item.text).join('\n\n');
+  const schema = body?.text?.format?.schema;
+  const schemaInstruction = schema
+    ? [
+        'Voce deve responder apenas JSON valido, sem markdown, sem comentarios e sem texto antes ou depois.',
+        'Use exatamente esta estrutura JSON como contrato:',
+        JSON.stringify(schema, null, 2)
+      ].join('\n\n')
+    : '';
+  return [systemText, schemaInstruction, userText].filter(Boolean).join('\n\n');
+}
+
+async function ensureOllamaReachable() {
+  const upstream = await fetch(`${OLLAMA_HOST}/api/tags`, { method: 'GET' });
+  if (!upstream.ok) {
+    throw new Error(`Ollama respondeu ${upstream.status}.`);
+  }
+  return upstream.json();
+}
+
+async function callOllamaGenerate({ model, prompt }) {
+  const upstream = await fetch(`${OLLAMA_HOST}/api/generate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      prompt,
+      stream: false,
+      options: {
+        temperature: 0.15,
+        num_ctx: OLLAMA_NUM_CTX
+      }
+    })
+  });
+  const text = await upstream.text();
+  if (!upstream.ok) {
+    throw new Error(`Ollama respondeu ${upstream.status}: ${text}`);
+  }
+  const payload = JSON.parse(text);
+  return String(payload.response || '').trim();
+}
+
+async function proxyOllama(req, res, forcedProfile = null) {
   if (!isAuthorizedRequest(req)) {
     return json(res, 401, { error: { message: 'Senha da API local invalida ou ausente.' } });
   }
   const profile = forcedProfile || getProfileFromRequest(req);
-  const primaryKey = getKeyForProfile(profile);
-  const fallbackKey = profile === 'site' && BOT_OPENAI_API_KEY ? BOT_OPENAI_API_KEY : '';
-  if (!primaryKey && !fallbackKey) {
-    return json(res, 503, {
-      error: {
-        message:
-          profile === 'bot'
-            ? 'BOT_OPENAI_API_KEY nao configurada no servidor local.'
-            : 'SITE_OPENAI_API_KEY/OPENAI_API_KEY nao configurada no servidor local.'
-      }
-    });
-  }
+  const model = getModelForProfile(profile);
   let rawBody = '';
   try {
     rawBody = await readBody(req);
@@ -161,57 +223,89 @@ async function proxyOpenAI(req, res, forcedProfile = null) {
   }
 
   try {
-    const attemptRequest = async (apiKey) =>
-      fetch('https://api.openai.com/v1/responses', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: rawBody
-      });
-
-    let upstream = primaryKey ? await attemptRequest(primaryKey) : null;
-    if (upstream && (upstream.status === 401 || upstream.status === 403) && fallbackKey && fallbackKey !== primaryKey) {
-      upstream = await attemptRequest(fallbackKey);
-    } else if (!upstream && fallbackKey) {
-      upstream = await attemptRequest(fallbackKey);
+    const body = rawBody ? JSON.parse(rawBody) : {};
+    const prompt = buildPromptFromRequestBody(body);
+    if (!prompt) {
+      return json(res, 400, { error: { message: 'Payload de IA vazio ou invalido.' } });
     }
-
-    const text = await upstream.text();
-    res.writeHead(upstream.status, {
-      'Content-Type': upstream.headers.get('content-type') || 'application/json; charset=utf-8',
+    const outputText = await callOllamaGenerate({ model, prompt });
+    res.writeHead(200, {
+      ...CORS_HEADERS,
+      'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store'
     });
-    res.end(text);
+    res.end(JSON.stringify({
+      id: `ollama_${Date.now()}`,
+      object: 'response',
+      provider: 'ollama',
+      model,
+      status: 'completed',
+      output_text: outputText,
+      output: [
+        {
+          id: `msg_${Date.now()}`,
+          type: 'message',
+          role: 'assistant',
+          content: [
+            {
+              type: 'output_text',
+              text: outputText
+            }
+          ]
+        }
+      ]
+    }));
   } catch (error) {
-    json(res, 502, { error: { message: `Falha ao conectar com a OpenAI: ${error.message}` } });
+    json(res, 502, { error: { message: `Falha ao conectar com o Ollama: ${error.message}` } });
   }
 }
 
 const server = http.createServer(async (req, res) => {
   if (!req.url) return json(res, 400, { error: { message: 'Request invalido.' } });
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, { 'Cache-Control': 'no-store' });
+    res.writeHead(204, { ...CORS_HEADERS, 'Cache-Control': 'no-store' });
     return res.end();
   }
   if (req.method === 'GET' && req.url.startsWith('/api/health')) {
-    const siteProfileReady = Boolean(SITE_OPENAI_API_KEY || BOT_OPENAI_API_KEY);
-    return json(res, 200, {
-      ok: true,
-      host: HOST,
-      port: PORT,
-      keyConfigured: siteProfileReady,
-      siteKeyConfigured: siteProfileReady,
-      botKeyConfigured: Boolean(BOT_OPENAI_API_KEY),
-      apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD)
-    });
+    try {
+      const tags = await ensureOllamaReachable();
+      const names = Array.isArray(tags?.models) ? tags.models.map((item) => item.name) : [];
+      return json(res, 200, {
+        ok: true,
+        host: HOST,
+        port: PORT,
+        provider: 'ollama',
+        ollamaHost: OLLAMA_HOST,
+        siteKeyConfigured: names.includes(SITE_OLLAMA_MODEL),
+        botKeyConfigured: names.includes(BOT_OLLAMA_MODEL),
+        keyConfigured: names.includes(SITE_OLLAMA_MODEL),
+        apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD),
+        siteModel: SITE_OLLAMA_MODEL,
+        botModel: BOT_OLLAMA_MODEL,
+        availableModels: names
+      });
+    } catch (error) {
+      return json(res, 200, {
+        ok: false,
+        host: HOST,
+        port: PORT,
+        provider: 'ollama',
+        ollamaHost: OLLAMA_HOST,
+        siteKeyConfigured: false,
+        botKeyConfigured: false,
+        keyConfigured: false,
+        apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD),
+        siteModel: SITE_OLLAMA_MODEL,
+        botModel: BOT_OLLAMA_MODEL,
+        error: error.message
+      });
+    }
   }
   if (req.method === 'POST' && req.url === '/api/openai/responses') {
-    return proxyOpenAI(req, res, 'site');
+    return proxyOllama(req, res, 'site');
   }
   if (req.method === 'POST' && req.url === '/api/bot/responses') {
-    return proxyOpenAI(req, res, 'bot');
+    return proxyOllama(req, res, 'bot');
   }
   if (req.method === 'GET' || req.method === 'HEAD') {
     return serveStatic(req, res);
@@ -221,7 +315,8 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(`Servidor local seguro ativo em http://${HOST}:${PORT}/`);
-  console.log(`Perfil site configurado: ${Boolean(SITE_OPENAI_API_KEY)} | Perfil bot configurado: ${Boolean(BOT_OPENAI_API_KEY)}`);
+  console.log(`Ollama: ${OLLAMA_HOST}`);
+  console.log(`Modelo do site: ${SITE_OLLAMA_MODEL} | Modelo do bot: ${BOT_OLLAMA_MODEL}`);
   console.log(`Senha da API local configurada: ${Boolean(API_ACCESS_PASSWORD)}`);
-  console.log('As chaves da OpenAI ficam no backend local e nao sao enviadas para o navegador.');
+  console.log('A IA local usa Ollama no backend e nao depende de chave no navegador.');
 });

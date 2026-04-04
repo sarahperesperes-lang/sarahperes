@@ -1,26 +1,21 @@
 param(
-  [string]$SiteApiKey,
-  [string]$BotApiKey
+  [string]$OllamaHost = 'http://127.0.0.1:11434',
+  [string]$SiteModel = 'llama3:latest',
+  [string]$BotModel = 'llama3:latest',
+  [string]$ApiPassword = '324125'
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-if (-not $SiteApiKey) {
-  $SiteApiKey = Read-Host 'Cole sua chave do site (OPENAI_API_KEY)'
-}
-if (-not $SiteApiKey) {
-  Write-Host 'Nenhuma chave do site informada.' -ForegroundColor Yellow
-  exit 1
-}
-if (-not $BotApiKey) {
-  $BotApiKey = Read-Host 'Cole sua chave do bot (BOT_OPENAI_API_KEY) ou deixe vazio'
-}
 
 @"
-OPENAI_API_KEY=$SiteApiKey
-BOT_OPENAI_API_KEY=$BotApiKey
+OLLAMA_HOST=$OllamaHost
+SITE_OLLAMA_MODEL=$SiteModel
+BOT_OLLAMA_MODEL=$BotModel
+API_ACCESS_PASSWORD=$ApiPassword
 PORT=8787
 HOST=127.0.0.1
 "@ | Set-Content -Path "$root\.env.local" -Encoding UTF8
+
 attrib +h "$root\.env.local" | Out-Null
-Write-Host '.env.local atualizado com perfil de site e bot e ocultado.' -ForegroundColor Green
+Write-Host '.env.local atualizado para usar Ollama local.' -ForegroundColor Green

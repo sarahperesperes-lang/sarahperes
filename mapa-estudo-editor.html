@@ -767,6 +767,7 @@ const STORAGE_KEY = 'mapaMentalIA';
 const STORAGE_VERSION = 4;
 const DRAFT_TREE_KEY = 'mapaEstudoDraftTree';
 const LOCAL_PROXY_PATH = '/api/openai/responses';
+const LOCAL_GATEWAY_ORIGIN = 'http://127.0.0.1:8787';
 const LOCAL_API_PASSWORD_KEY = 'local_api_password';
 const SAVED_PROMPT_ID = 'pmpt_69d013ddf48c8196b02f58ffb4cf649301f5f656b204d127';
 const SAVED_PROMPT_VERSION = '1';
@@ -779,9 +780,6 @@ const EXTERNAL_DATA_PATH = URL_PARAMS.get('data') || '';
 const FORCED_THEME = URL_PARAMS.get('theme') || '';
 const FORCED_MODEL = URL_PARAMS.get('model') || '';
 const hostSyncState = { ready:'', selection:'' };
-
-// Public page: keep the shipped HTML free of secrets.
-const OPENAI_API_KEY = '';
 
 const THEMES = {
   tecnologia: { r:'#bc8070', l1:'#d6a188', l2:'#8ebddf', l3:'#86c6a1', l4:'#d8afd0' },
@@ -915,19 +913,11 @@ function getStudyModeMeta(depth) {
   if (depth === 2) return { label:'MEDIUM', instruction:'Use titulos curtos com explicacoes breves e hierarquia simples.', maxDepth:2 };
   return { label:'HIGH', instruction:'Use estrutura completa para estudo, fluxo logico e explicacoes concisas.', maxDepth:4 };
 }
-function getOpenAIApiKey() {
-  if (OPENAI_API_KEY && OPENAI_API_KEY.startsWith('sk-')) return OPENAI_API_KEY;
-  const saved = localStorage.getItem('openai_api_key') || '';
-  if (saved.startsWith('sk-')) return saved;
-  const provided = window.prompt('Informe sua OpenAI API key para usar a geracao com IA:', '') || '';
-  if (provided.startsWith('sk-')) {
-    localStorage.setItem('openai_api_key', provided);
-    return provided;
-  }
-  return '';
-}
 function isLocalSecureMode() {
   return location.protocol.startsWith('http') && /^(127\.0\.0\.1|localhost)$/i.test(location.hostname);
+}
+function getLocalGatewayBase() {
+  return isLocalSecureMode() ? '' : LOCAL_GATEWAY_ORIGIN;
 }
 function getLocalApiPassword(forcePrompt = false) {
   let password = forcePrompt ? '' : (sessionStorage.getItem(LOCAL_API_PASSWORD_KEY) || localStorage.getItem(LOCAL_API_PASSWORD_KEY) || '');
@@ -942,41 +932,33 @@ function getLocalApiPassword(forcePrompt = false) {
   return password;
 }
 async function requestResponsesPayload(body) {
-  if (isLocalSecureMode()) {
-    let password = getLocalApiPassword(false);
-    if (!password) throw new Error('Senha da API local ausente.');
-    let res = await fetch(LOCAL_PROXY_PATH, {
+  let password = getLocalApiPassword(false);
+  if (!password) throw new Error('Senha da API local ausente.');
+  const endpoint = `${getLocalGatewayBase()}${LOCAL_PROXY_PATH}`;
+  let res;
+  try {
+    res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-password': password },
       body: JSON.stringify(body)
     });
-    if (res.status === 401) {
-      localStorage.removeItem(LOCAL_API_PASSWORD_KEY);
-      sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);
-      password = getLocalApiPassword(true);
-      if (!password) throw new Error('Senha da API local ausente.');
-      res = await fetch(LOCAL_PROXY_PATH, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-password': password },
-        body: JSON.stringify(body)
-      });
-    }
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
-    }
-    return res.json();
+  } catch (_) {
+    throw new Error('Gateway local do Ollama indisponivel. Rode start-secure-local.cmd e deixe o Ollama ativo.');
   }
-  const apiKey = getOpenAIApiKey();
-  if (!apiKey) throw new Error('API key ausente.');
-  const res = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify(body)
-  });
+  if (res.status === 401) {
+    localStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+    sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+    password = getLocalApiPassword(true);
+    if (!password) throw new Error('Senha da API local ausente.');
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-password': password },
+      body: JSON.stringify(body)
+    });
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -1914,7 +1896,7 @@ async function init() {
   if (EXTERNAL_DATA_PATH) {
     setStatus('Mapa de estudo carregado para revisao.','success');
   } else if (isLocalSecureMode()) {
-    setStatus(imported ? 'Mapa do gerador carregado no modo seguro local.' : 'Modo seguro local ativo. Gere sem expor a chave no navegador.','success');
+  setStatus(imported ? 'Mapa do gerador carregado pelo gateway local do Ollama.' : 'Gateway local ativo. Gere sem chave no navegador.','success');
   } else {
     setStatus(imported ? 'Mapa do gerador carregado.' : 'Digite um tema e gere o mapa.','');
   }
@@ -2059,7 +2041,7 @@ function logHistory(action) {
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   IA â€” OpenAI GPT-4o
+   IA â€” Ollama local
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function extractTextFromResponsesPayload(data){
   if (!data || typeof data !== 'object') return '';
@@ -2122,7 +2104,7 @@ async function requestMindMapJSON(promptText, depthLabel){
   ].join(' ');
   const userPrompt=`Tema de estudo: "${promptText}". Monte um mapa organizado e estudavel.`;
   const body={
-    model:'gpt-4o',
+    model:'llama3:latest',
     input:[
       {role:'system',content:[{type:'input_text',text:systemPrompt}]},
       {role:'user',content:[{type:'input_text',text:userPrompt}]}
@@ -2156,7 +2138,7 @@ async function generateWithAI() {
 
   const btn=document.getElementById('genBtn');
   btn.disabled=true; btn.innerHTML='<span class="spin">⚙️</span> Gerando...';
-  setStatus(isLocalSecureMode() ? 'Gerando mapa pelo modo seguro local...' : 'Gerando mapa de estudo...','loading');
+  setStatus('Gerando mapa com Ollama local...','loading');
 
   const mode = getStudyModeMeta(currentDepth);
   try {
@@ -2164,7 +2146,7 @@ async function generateWithAI() {
     const json=applyStudyDepth(await requestMindMapJSON(prompt, mode.label), 0, mode.maxDepth);
     pushHistorySnapshot('ai-generate');
     buildMapFromJSON(json);
-    setStatus(isLocalSecureMode() ? `Mapa ${mode.label} gerado no modo seguro local: "${json.root}"` : `Mapa ${mode.label} gerado: "${json.root}"`,'success');
+    setStatus(`Mapa ${mode.label} gerado com Ollama local: "${json.root}"`,'success');
     logAIHistory(json.root,prompt);
     logHistory(`IA gerou: "${json.root}"`);
     setTimeout(centerMap, 60);

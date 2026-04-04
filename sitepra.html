@@ -578,9 +578,9 @@ const MAX_HISTORY = 50;
 const STORAGE_KEY = 'mapaMentalIA';
 const STORAGE_VERSION = 3;
 
-// Public page: keep the shipped HTML free of secrets.
-const OPENAI_API_KEY = '';
+const LOCAL_GATEWAY_ORIGIN = 'http://127.0.0.1:8787';
 const LOCAL_API_PASSWORD_KEY = 'local_api_password';
+let tesseractPromise = null;
 
 const THEMES = {
   tecnologia: { r:'#bc8070', l1:'#d6a188', l2:'#8ebddf', l3:'#86c6a1', l4:'#d8afd0' },
@@ -660,19 +660,11 @@ function getStudyModeMeta(depth) {
   if (depth === 2) return { label:'MEDIUM', instruction:'Use titulos curtos com explicacoes breves e hierarquia simples.', maxDepth:2 };
   return { label:'HIGH', instruction:'Use estrutura completa para estudo, fluxo logico e explicacoes concisas.', maxDepth:4 };
 }
-function getOpenAIApiKey() {
-  if (OPENAI_API_KEY && OPENAI_API_KEY.startsWith('sk-')) return OPENAI_API_KEY;
-  const saved = localStorage.getItem('openai_api_key') || '';
-  if (saved.startsWith('sk-')) return saved;
-  const provided = window.prompt('Informe sua OpenAI API key para usar a geracao com IA:', '') || '';
-  if (provided.startsWith('sk-')) {
-    localStorage.setItem('openai_api_key', provided);
-    return provided;
-  }
-  return '';
-}
 function isLocalSecureMode() {
   return location.protocol.startsWith('http') && /^(127\.0\.0\.1|localhost)$/i.test(location.hostname);
+}
+function getLocalGatewayBase() {
+  return isLocalSecureMode() ? '' : LOCAL_GATEWAY_ORIGIN;
 }
 function getLocalApiPassword(forcePrompt = false) {
   let password = forcePrompt ? '' : (sessionStorage.getItem(LOCAL_API_PASSWORD_KEY) || localStorage.getItem(LOCAL_API_PASSWORD_KEY) || '');
@@ -687,41 +679,33 @@ function getLocalApiPassword(forcePrompt = false) {
   return password;
 }
 async function requestOpenAIResponses(body) {
-  if (isLocalSecureMode()) {
-    let password = getLocalApiPassword(false);
-    if (!password) throw new Error('Senha da API local ausente.');
-    let res = await fetch('/api/openai/responses', {
+  let password = getLocalApiPassword(false);
+  if (!password) throw new Error('Senha da API local ausente.');
+  const endpoint = `${getLocalGatewayBase()}/api/openai/responses`;
+  let res;
+  try {
+    res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-password': password },
       body: JSON.stringify(body)
     });
-    if (res.status === 401) {
-      localStorage.removeItem(LOCAL_API_PASSWORD_KEY);
-      sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);
-      password = getLocalApiPassword(true);
-      if (!password) throw new Error('Senha da API local ausente.');
-      res = await fetch('/api/openai/responses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-password': password },
-        body: JSON.stringify(body)
-      });
-    }
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
-    }
-    return res.json();
+  } catch (_) {
+    throw new Error('Gateway local do Ollama indisponivel. Rode start-secure-local.cmd e deixe o Ollama ativo.');
   }
-  const apiKey = getOpenAIApiKey();
-  if (!apiKey) throw new Error('API key ausente.');
-  const res = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    body: JSON.stringify(body)
-  });
+  if (res.status === 401) {
+    localStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+    sessionStorage.removeItem(LOCAL_API_PASSWORD_KEY);
+    password = getLocalApiPassword(true);
+    if (!password) throw new Error('Senha da API local ausente.');
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-password': password },
+      body: JSON.stringify(body)
+    });
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    throw new Error(err?.error?.message || err?.message || `HTTP ${res.status}`);
   }
   return res.json();
 }
@@ -747,6 +731,12 @@ async function extractPdfText(file) {
     if (text) pages.push(text);
   }
   return { text: pages.join('\n\n'), pages: pdf.numPages };
+}
+async function loadTesseract() {
+  if (!tesseractPromise) {
+    tesseractPromise = import('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js').then((module) => module.default || module);
+  }
+  return tesseractPromise;
 }
 async function fileToDataUrl(file) {
   return await new Promise((resolve, reject) => {
@@ -778,18 +768,9 @@ async function imageUrlToCompressedDataUrl(sourceUrl, { maxSide = 1400, quality 
 }
 async function extractImageText(file) {
   const imageUrl = await imageUrlToCompressedDataUrl(await fileToDataUrl(file));
-  const data = await requestOpenAIResponses({
-    model: 'gpt-4o-mini',
-    input: [
-      { role: 'system', content: [{ type: 'input_text', text: 'Voce extrai texto e estrutura de imagens para criar mapas mentais de estudo em portugues. Foque em titulos, subtitulos, listas e relacoes principais. Ignore decoracao, marcas d\'agua e elementos visuais sem conteudo.' }] },
-      { role: 'user', content: [
-        { type: 'input_text', text: `Extraia todo o texto util desta imagem e devolva em texto limpo, organizado por topicos curtos para virar base de mapa mental. Nome do arquivo: ${file.name}` },
-        { type: 'input_image', image_url: imageUrl, detail: 'high' }
-      ] }
-    ],
-    max_output_tokens: 1400
-  });
-  const text = cleanText(data.output_text || data.output?.flatMap(item => item.content || []).map(content => content.text || content.output_text || '').join('\n') || '');
+  const Tesseract = await loadTesseract();
+  const result = await Tesseract.recognize(imageUrl, 'por+eng');
+  const text = cleanText(result?.data?.text || '');
   if (!text) throw new Error('A imagem nao retornou texto legivel.');
   return text;
 }
@@ -803,10 +784,10 @@ async function handlePromptFile(file) {
       document.getElementById('aiPrompt').value = result.text;
       setStatus(`PDF lido: ${file.name} com ${result.pages} pagina(s).`,'success');
     } else if (/\.(png|jpe?g|webp|gif)$/i.test(lower) || String(file.type || '').startsWith('image/')) {
-      setStatus('Lendo imagem e extraindo texto...','loading');
+      setStatus('Lendo imagem e rodando OCR local...','loading');
       const text = await extractImageText(file);
       document.getElementById('aiPrompt').value = text;
-      setStatus(`Imagem lida: ${file.name}.`,'success');
+      setStatus(`Imagem lida por OCR local: ${file.name}.`,'success');
     } else if (lower.endsWith('.json') || lower.endsWith('.txt') || lower.endsWith('.md')) {
       document.getElementById('aiPrompt').value = await file.text();
       setStatus(`Arquivo carregado: ${file.name}.`,'success');
@@ -1432,7 +1413,7 @@ function logHistory(action) {
 }
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   IA â€” OpenAI GPT-4o
+IA â€” Ollama local
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function extractTextFromResponsesPayload(data){
   if (!data || typeof data !== 'object') return '';
@@ -1485,7 +1466,7 @@ async function requestMindMapJSON(promptText, depthLabel){
   ].join(' ');
   const userPrompt=`Tema de estudo: "${promptText}". Monte um mapa organizado e estudavel.`;
   const body={
-    model:'gpt-4o',
+    model:'llama3:latest',
     input:[
       {role:'system',content:[{type:'input_text',text:systemPrompt}]},
       {role:'user',content:[{type:'input_text',text:userPrompt}]}
@@ -1505,7 +1486,7 @@ async function generateWithAI() {
 
   const btn=document.getElementById('genBtn');
   btn.disabled=true; btn.innerHTML='<span class="spin">⚙️</span> Gerando...';
-  setStatus('Gerando mapa de estudo...','loading');
+  setStatus('Gerando mapa com Ollama local...','loading');
 
   const mode = getStudyModeMeta(currentDepth);
   try {
@@ -1513,7 +1494,7 @@ async function generateWithAI() {
     const json=applyStudyDepth(await requestMindMapJSON(prompt, mode.label), 0, mode.maxDepth);
     pushHistorySnapshot('ai-generate');
     buildMapFromJSON(json);
-    setStatus(`Mapa ${mode.label} gerado: "${json.root}"`,'success');
+    setStatus(`Mapa ${mode.label} gerado com Ollama local: "${json.root}"`,'success');
     logAIHistory(json.root,prompt);
     logHistory(`IA gerou: "${json.root}"`);
     setTimeout(centerMap, 60);

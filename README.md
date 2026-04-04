@@ -2,54 +2,56 @@
 
 Portal unico de estudo e mapas mentais com:
 
+- portal principal
 - gerador de mapas mentais
 - editor visual de mapas
-- backend local seguro para OpenAI
 - workspace da hipofise com mapa + questoes + revisao
+- OCR local para imagem
+- gateway local para Ollama
 - PWA lite para uso offline basico
-- home hub com entrada unica para todos os sites
 
-## Uso local seguro
+## Uso local
 
-1. Rode `start-secure-local.cmd`
-2. Abra `http://127.0.0.1:8787/`
-3. Para ir ao workspace: `http://127.0.0.1:8787/hipofise-workspace.html`
-4. Para ir ao gerador: `http://127.0.0.1:8787/gerador-estudo.html`
-5. Para abrir o editor: `http://127.0.0.1:8787/mapa-estudo-editor.html`
-6. Para abrir o site AmyMind: `http://127.0.0.1:8787/sitepra.html`
-7. Para testar o perfil do bot: `powershell -ExecutionPolicy Bypass -File .\ask-local-bot.ps1`
+1. Garanta que o Ollama esteja rodando em `http://127.0.0.1:11434`
+2. Confirme que o modelo principal existe:
+   - `ollama run llama3:latest`
+3. Rode `start-secure-local.cmd`
+4. Abra `http://127.0.0.1:8787/`
 
-A chave da OpenAI pode ficar em `.env.local` ou em variaveis de ambiente do Windows lidas pelo servidor local `local-secure-server.mjs`.
+Links locais:
 
-Variaveis aceitas:
+- portal: `http://127.0.0.1:8787/`
+- workspace: `http://127.0.0.1:8787/hipofise-workspace.html`
+- gerador: `http://127.0.0.1:8787/gerador-estudo.html`
+- editor: `http://127.0.0.1:8787/mapa-estudo-editor.html`
+- AmyMind: `http://127.0.0.1:8787/sitepra.html`
+- bot local: `powershell -ExecutionPolicy Bypass -File .\ask-local-bot.ps1`
 
-- `OPENAI_API_KEY` ou `SITE_OPENAI_API_KEY` para o site
-- `BOT_OPENAI_API_KEY` ou `OPENAI_BOT_API_KEY` para o bot local
-- `ADMKEY` como fallback legado do site
-- `LUCASJOGA` como fallback legado do bot
+## Config local
 
-## Perfis locais
+O gateway local le:
 
-- A API local agora exige uma senha de acesso via header `x-api-password`.
-- Se `API_ACCESS_PASSWORD` nao estiver definida no ambiente local, o servidor usa `324125`.
-- `POST /api/openai/responses` usa o perfil do site.
-- `POST /api/openai/responses` tenta o perfil do site primeiro e cai para o perfil do bot se a chave do site estiver invalida.
-- `POST /api/bot/responses` usa o perfil do bot.
-- `GET /api/health` informa se os dois perfis estao configurados.
+- `OLLAMA_HOST`
+- `SITE_OLLAMA_MODEL`
+- `BOT_OLLAMA_MODEL`
+- `OLLAMA_NUM_CTX`
+- `API_ACCESS_PASSWORD`
 
-## Arquivos principais
+Use `.env.local` ou variaveis de ambiente do Windows.
 
-- `index.html`
-- `sitepra.html`
-- `hipofise-workspace.html`
-- `hipofise-estudo.json`
-- `questoes-hipofise.json`
-- `mapa-estudo-editor.html`
-- `gerador-estudo.html`
-- `local-secure-server.mjs`
-- `manifest.json`
-- `sw.js`
+## Rotas locais
+
+- `POST /api/openai/responses`
+  - mantida por compatibilidade, mas agora responde via Ollama local
+- `POST /api/bot/responses`
+  - usa o modelo do bot local
+
+Se quiser insistir em `codellama`, ajuste `SITE_OLLAMA_MODEL` e `BOT_OLLAMA_MODEL` no `.env.local`.
+- `GET /api/health`
+  - informa host, modelos configurados e disponibilidade do Ollama
 
 ## Observacao
 
-O estudo offline cobre mapa, quiz e revisao. Funcoes de IA dependem do backend local seguro e de internet.
+- PDF continua sendo convertido com `pdf.js`
+- imagem agora usa OCR local no navegador
+- geracao e tutor usam Ollama local, sem chave no front-end

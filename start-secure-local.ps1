@@ -1,22 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
-$userSiteKey = [Environment]::GetEnvironmentVariable('OPENAI_API_KEY', 'User')
-$userSiteAlias = [Environment]::GetEnvironmentVariable('SITE_OPENAI_API_KEY', 'User')
-$userLegacySite = [Environment]::GetEnvironmentVariable('ADMKEY', 'User')
-
-if (
-  -not (Test-Path "$root\.env.local") -and
-  -not $env:OPENAI_API_KEY -and
-  -not $env:SITE_OPENAI_API_KEY -and
-  -not $env:ADMKEY -and
-  -not $userSiteKey -and
-  -not $userSiteAlias -and
-  -not $userLegacySite
-) {
-  Write-Host "Nenhuma chave local encontrada. Use set-openai-key.ps1 ou variaveis de ambiente do Windows." -ForegroundColor Yellow
-  exit 1
-}
 
 $healthUrl = 'http://127.0.0.1:8787/api/health'
 try {
@@ -27,6 +11,17 @@ try {
     exit 0
   }
 } catch {}
+
+try {
+  $ollama = Invoke-WebRequest 'http://127.0.0.1:11434/api/tags' -UseBasicParsing -TimeoutSec 4
+  if ($ollama.StatusCode -ne 200) {
+    Write-Host 'Ollama nao respondeu corretamente em http://127.0.0.1:11434.' -ForegroundColor Yellow
+    exit 1
+  }
+} catch {
+  Write-Host 'Ollama nao esta ativo. Inicie o Ollama antes de subir o gateway local.' -ForegroundColor Yellow
+  exit 1
+}
 
 Start-Process 'http://127.0.0.1:8787/'
 node "$root\local-secure-server.mjs"

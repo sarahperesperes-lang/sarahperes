@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $body = @{
-  model = 'gpt-4.1-mini'
+  model = 'llama3:latest'
   input = $Prompt
 } | ConvertTo-Json -Depth 6
 
