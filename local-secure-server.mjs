@@ -85,7 +85,7 @@ async function readBody(req) {
 
 function resolveFilePath(requestPath) {
   let pathname = decodeURIComponent(requestPath.split('?')[0]);
-  if (pathname === '/') pathname = '/hipofise-workspace.html';
+  if (pathname === '/') pathname = '/index.html';
   const normalized = path.normalize(pathname).replace(/^([.][.][/\\])+/, '');
   const absolute = path.join(ROOT, normalized);
   if (!absolute.startsWith(ROOT)) return null;
@@ -98,7 +98,7 @@ async function serveStatic(req, res) {
   try {
     const stat = await fs.stat(filePath);
     if (stat.isDirectory()) {
-      return serveStatic({ ...req, url: path.posix.join(req.url || '/', 'hipofise-workspace.html') }, res);
+      return serveStatic({ ...req, url: path.posix.join(req.url || '/', 'index.html') }, res);
     }
     const ext = path.extname(filePath).toLowerCase();
     const mime = MIME_TYPES[ext] || 'application/octet-stream';
@@ -196,12 +196,13 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
   if (req.method === 'GET' && req.url.startsWith('/api/health')) {
+    const siteProfileReady = Boolean(SITE_OPENAI_API_KEY || BOT_OPENAI_API_KEY);
     return json(res, 200, {
       ok: true,
       host: HOST,
       port: PORT,
-      keyConfigured: Boolean(SITE_OPENAI_API_KEY),
-      siteKeyConfigured: Boolean(SITE_OPENAI_API_KEY),
+      keyConfigured: siteProfileReady,
+      siteKeyConfigured: siteProfileReady,
       botKeyConfigured: Boolean(BOT_OPENAI_API_KEY),
       apiPasswordConfigured: Boolean(API_ACCESS_PASSWORD)
     });
