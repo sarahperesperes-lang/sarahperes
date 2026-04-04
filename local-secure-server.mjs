@@ -19,8 +19,13 @@ const OLLAMA_HOST = env.OLLAMA_HOST || process.env.OLLAMA_HOST || 'http://127.0.
 const SITE_OLLAMA_MODEL = env.SITE_OLLAMA_MODEL || process.env.SITE_OLLAMA_MODEL || 'codellama:13b-code-q4_K_M';
 const BOT_OLLAMA_MODEL = env.BOT_OLLAMA_MODEL || process.env.BOT_OLLAMA_MODEL || SITE_OLLAMA_MODEL;
 const OLLAMA_FALLBACK_MODEL = env.OLLAMA_FALLBACK_MODEL || process.env.OLLAMA_FALLBACK_MODEL || 'llama3:latest';
-const OLLAMA_NUM_CTX = Number(env.OLLAMA_NUM_CTX || process.env.OLLAMA_NUM_CTX || 12288);
+const OLLAMA_NUM_CTX = Number(env.OLLAMA_NUM_CTX || process.env.OLLAMA_NUM_CTX || 2048);
+const OLLAMA_FALLBACK_NUM_CTX = Number(env.OLLAMA_FALLBACK_NUM_CTX || process.env.OLLAMA_FALLBACK_NUM_CTX || 1024);
+const OLLAMA_PRIMARY_TIMEOUT_MS = Number(env.OLLAMA_PRIMARY_TIMEOUT_MS || process.env.OLLAMA_PRIMARY_TIMEOUT_MS || 18000);
+const OLLAMA_FALLBACK_TIMEOUT_MS = Number(env.OLLAMA_FALLBACK_TIMEOUT_MS || process.env.OLLAMA_FALLBACK_TIMEOUT_MS || 120000);
+const OLLAMA_PRIMARY_COOLDOWN_MS = Number(env.OLLAMA_PRIMARY_COOLDOWN_MS || process.env.OLLAMA_PRIMARY_COOLDOWN_MS || 600000);
 const AI_PROVIDER = resolveProvider();
+const modelFailureState = new Map();
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,HEAD,OPTIONS',
@@ -65,6 +70,10 @@ function resolveProvider() {
   const configured = String(env.AI_PROVIDER || process.env.AI_PROVIDER || '').trim().toLowerCase();
   if (configured === 'openai' || configured === 'ollama') return configured;
   return OPENAI_API_KEY ? 'openai' : 'ollama';
+}
+
+function getNumCtxForModel(model) {
+  return model === OLLAMA_FALLBACK_MODEL ? OLLAMA_FALLBACK_NUM_CTX : OLLAMA_NUM_CTX;
 }
 
 function json(res, status, payload) {
@@ -233,20 +242,41 @@ async function ensureOpenAIReachable() {
   return JSON.parse(text);
 }
 
-async function callOllamaGenerateOnce({ model, prompt }) {
-  const upstream = await fetch(`${OLLAMA_HOST}/api/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      prompt,
-      stream: false,
-      options: {
-        temperature: 0.15,
-        num_ctx: OLLAMA_NUM_CTX
-      }
-    })
-  });
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callOllamaGenerateOnce({ model, prompt, timeoutMs }) {
+  let upstream;
+  try {
+    upstream = await fetchWithTimeout(`${OLLAMA_HOST}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        prompt,
+        stream: false,
+        options: {
+          temperature: 0.15,
+          num_ctx: getNumCtxForModel(model)
+        }
+      })
+    }, timeoutMs);
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`Tempo limite ao carregar ${model} em ${timeoutMs}ms.`);
+    }
+    throw error;
+  }
   const text = await upstream.text();
   if (!upstream.ok) {
     throw new Error(`Ollama respondeu ${upstream.status}: ${text}`);
@@ -261,17 +291,48 @@ async function callOllamaGenerateOnce({ model, prompt }) {
 }
 
 async function callOllamaGenerate({ model, prompt }) {
+  const lastFailure = modelFailureState.get(model);
+  if (model !== OLLAMA_FALLBACK_MODEL && lastFailure && (Date.now() - lastFailure.at) < OLLAMA_PRIMARY_COOLDOWN_MS) {
+    const fallback = await callOllamaGenerateOnce({
+      model: OLLAMA_FALLBACK_MODEL,
+      prompt,
+      timeoutMs: OLLAMA_FALLBACK_TIMEOUT_MS
+    });
+    return {
+      ...fallback,
+      fallbackUsed: true,
+      requestedModel: model,
+      primaryError: `Modelo ${model} em cooldown apos falha recente: ${lastFailure.message}`
+    };
+  }
   try {
-    return await callOllamaGenerateOnce({ model, prompt });
+    const result = await callOllamaGenerateOnce({
+      model,
+      prompt,
+      timeoutMs: model === OLLAMA_FALLBACK_MODEL ? OLLAMA_FALLBACK_TIMEOUT_MS : OLLAMA_PRIMARY_TIMEOUT_MS
+    });
+    if (model !== OLLAMA_FALLBACK_MODEL) {
+      modelFailureState.delete(model);
+    }
+    return result;
   } catch (error) {
     if (model === OLLAMA_FALLBACK_MODEL) {
       throw error;
     }
-    const fallback = await callOllamaGenerateOnce({ model: OLLAMA_FALLBACK_MODEL, prompt });
+    modelFailureState.set(model, {
+      at: Date.now(),
+      message: error.message
+    });
+    const fallback = await callOllamaGenerateOnce({
+      model: OLLAMA_FALLBACK_MODEL,
+      prompt,
+      timeoutMs: OLLAMA_FALLBACK_TIMEOUT_MS
+    });
     return {
       ...fallback,
       fallbackUsed: true,
-      requestedModel: model
+      requestedModel: model,
+      primaryError: error.message
     };
   }
 }
@@ -361,16 +422,17 @@ async function proxyOllama(req, res, forcedProfile = null) {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store'
     });
-    res.end(JSON.stringify({
+      res.end(JSON.stringify({
       id: `ollama_${Date.now()}`,
       object: 'response',
       provider: 'ollama',
-      model: generation.modelUsed,
-      requested_model: generation.requestedModel,
-      fallback_used: Boolean(generation.fallbackUsed),
-      fallback_model: generation.fallbackUsed ? generation.modelUsed : null,
-      status: 'completed',
-      output_text: outputText,
+        model: generation.modelUsed,
+        requested_model: generation.requestedModel,
+        fallback_used: Boolean(generation.fallbackUsed),
+        fallback_model: generation.fallbackUsed ? generation.modelUsed : null,
+        primary_error: generation.primaryError || null,
+        status: 'completed',
+        output_text: outputText,
       output: [
         {
           id: `msg_${Date.now()}`,
@@ -407,12 +469,13 @@ const server = http.createServer(async (req, res) => {
     if (AI_PROVIDER === 'openai') {
       try {
         await ensureOpenAIReachable();
-        return json(res, 200, {
-          ok: true,
-          host: HOST,
-          port: PORT,
-          provider: 'openai',
-          openaiBaseUrl: OPENAI_BASE_URL,
+      return json(res, 200, {
+        ok: true,
+        host: HOST,
+        port: PORT,
+        projectRoot: ROOT,
+        provider: 'openai',
+        openaiBaseUrl: OPENAI_BASE_URL,
           siteKeyConfigured: Boolean(OPENAI_API_KEY),
           botKeyConfigured: Boolean(OPENAI_API_KEY),
           keyConfigured: Boolean(OPENAI_API_KEY),
@@ -430,6 +493,7 @@ const server = http.createServer(async (req, res) => {
           ok: false,
           host: HOST,
           port: PORT,
+          projectRoot: ROOT,
           provider: 'openai',
           openaiBaseUrl: OPENAI_BASE_URL,
           siteKeyConfigured: Boolean(OPENAI_API_KEY),
@@ -446,10 +510,15 @@ const server = http.createServer(async (req, res) => {
     try {
       const tags = await ensureOllamaReachable();
       const names = Array.isArray(tags?.models) ? tags.models.map((item) => item.name) : [];
+      const probe = await callOllamaGenerate({
+        model: SITE_OLLAMA_MODEL,
+        prompt: 'Responda apenas OK.'
+      });
       return json(res, 200, {
         ok: true,
         host: HOST,
         port: PORT,
+        projectRoot: ROOT,
         provider: 'ollama',
         ollamaHost: OLLAMA_HOST,
         siteKeyConfigured: names.includes(SITE_OLLAMA_MODEL) || names.includes(OLLAMA_FALLBACK_MODEL),
@@ -462,13 +531,17 @@ const server = http.createServer(async (req, res) => {
         siteModelAvailable: names.includes(SITE_OLLAMA_MODEL),
         botModelAvailable: names.includes(BOT_OLLAMA_MODEL),
         fallbackModelAvailable: names.includes(OLLAMA_FALLBACK_MODEL),
-        availableModels: names
+        availableModels: names,
+        resolvedModel: probe.modelUsed,
+        fallbackUsed: Boolean(probe.fallbackUsed),
+        primaryError: probe.primaryError || null
       });
     } catch (error) {
       return json(res, 200, {
         ok: false,
         host: HOST,
         port: PORT,
+        projectRoot: ROOT,
         provider: 'ollama',
         ollamaHost: OLLAMA_HOST,
         siteKeyConfigured: false,

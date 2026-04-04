@@ -8,19 +8,27 @@ Portal unico para estudo, geracao e edicao de mapas mentais com:
 - editor visual de mapas
 - pagina AmyMind
 - OCR local para imagem
-- gateway local seguro
+- gateway local com Ollama
 - PWA lite para uso offline basico
+
+## Copia ativa
+
+Use `C:\Users\a8912\WebstormProjects\sarahperes` como fonte de verdade do backend local.
+
+- O servidor em `http://127.0.0.1:8787` deve ser iniciado desta pasta.
+- A copia em `D:\sarahperes-pages` pode existir como espelho de publicacao, mas nao deve ser usada para subir o gateway local.
+- `GET /api/health` agora retorna `projectRoot` para mostrar qual copia esta servindo a porta `8787`.
 
 ## Uso local
 
-1. Configure `.env.local` com:
-   - `AI_PROVIDER=openai`
-   - `OPENAI_API_KEY=...`
-   - `SITE_OPENAI_MODEL=gpt-4.1-mini`
-   - `BOT_OPENAI_MODEL=gpt-4.1-mini`
-   - `API_ACCESS_PASSWORD=324125`
-2. Rode `start-secure-local.cmd`
-3. Abra `http://127.0.0.1:8787/`
+1. Garanta que o Ollama esteja rodando em `http://127.0.0.1:11434`.
+2. Confirme que o modelo principal existe:
+   - `ollama run glm-4.7-flash:latest`
+3. Garanta que o fallback exista:
+   - `ollama run llama3:latest`
+4. Rode `start-secure-local.cmd` a partir de `C:\Users\a8912\WebstormProjects\sarahperes`.
+5. Abra `http://127.0.0.1:8787/`.
+6. Se quiser abrir gateway + Codex numa vez so, use `start-codex-llama3.cmd`.
 
 Links locais principais:
 
@@ -35,34 +43,41 @@ Links locais principais:
 
 O gateway local le:
 
-- `AI_PROVIDER`
-- `OPENAI_API_KEY`
-- `OPENAI_BASE_URL`
-- `SITE_OPENAI_MODEL`
-- `BOT_OPENAI_MODEL`
+- `OLLAMA_HOST`
+- `SITE_OLLAMA_MODEL`
+- `BOT_OLLAMA_MODEL`
+- `OLLAMA_FALLBACK_MODEL`
+- `OLLAMA_NUM_CTX`
+- `OLLAMA_FALLBACK_NUM_CTX`
+- `OLLAMA_PRIMARY_TIMEOUT_MS`
+- `OLLAMA_FALLBACK_TIMEOUT_MS`
+- `OLLAMA_PRIMARY_COOLDOWN_MS`
 - `API_ACCESS_PASSWORD`
 
 Use `.env.local` ou variaveis de ambiente do Windows.
 
-Padrao recomendado:
+Padrao recomendado nesta maquina:
 
-- `AI_PROVIDER=openai`
-- `SITE_OPENAI_MODEL=gpt-4.1-mini`
-- `BOT_OPENAI_MODEL=gpt-4.1-mini`
+- `SITE_OLLAMA_MODEL=glm-4.7-flash:latest`
+- `BOT_OLLAMA_MODEL=glm-4.7-flash:latest`
+- `OLLAMA_FALLBACK_MODEL=llama3:latest`
+- `OLLAMA_NUM_CTX=2048`
+- `OLLAMA_FALLBACK_NUM_CTX=1024`
 
 ## Rotas locais
 
 - `POST /api/openai/responses`
-  - mantida por compatibilidade, responde via backend seguro
+  - mantida por compatibilidade, mas responde via Ollama local
 - `POST /api/bot/responses`
-  - usa o modelo do perfil bot no backend seguro
+  - usa o modelo do bot local
 - `GET /api/health`
-  - informa host, provider, modelos configurados e disponibilidade do backend
+  - informa host, raiz ativa, modelos configurados, modelo resolvido e fallback
 
 ## Observacoes
 
-- PDF continua sendo convertido com `pdf.js`
-- imagem continua sendo convertida por OCR local no navegador
-- a geracao e o tutor usam o backend local seguro, sem chave no front-end
-- a chave fica so em `.env.local` ou na variavel de ambiente do Windows
-- se quiser trocar o modelo, ajuste apenas o `.env.local`
+- PDF continua sendo convertido com `pdf.js`.
+- Imagem continua sendo convertida por OCR local no navegador.
+- A geracao e o tutor usam Ollama local, sem chave no front-end.
+- `glm-4.7-flash:latest` continua como modelo preferido, mas nesta maquina ele nao entra de forma estavel sem mais memoria virtual.
+- Quando `glm-4.7-flash:latest` falha ou excede o timeout, o gateway cai automaticamente para `llama3:latest`.
+- Se quiser usar `glm-4.7-flash:latest` como modelo real do site, aumente o pagefile do Windows ou reduza a pressao de RAM e depois ajuste `OLLAMA_PRIMARY_TIMEOUT_MS`.
