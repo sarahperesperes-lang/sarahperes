@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sarahperes-pages-v3';
+const CACHE_NAME = 'sarahperes-pages-v4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './psiquiatria-print.html',
   './psiquiatria-editor.html',
   './hipofise-estudo.json',
+  './mapa-hipofise-referencia.json',
   './psiquiatria-estudo.json',
   './questoes-hipofise.json',
   './manifest.json',

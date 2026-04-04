@@ -1,0 +1,48 @@
+{
+  "root": "Disfuncoes hipofisarias | principais tumores funcionantes e falencias da hipofise cobradas em prova",
+  "children": [
+    {
+      "text": "Prolactinoma e hiperprolactinemia | adenoma hipofisario mais comum e causa classica de hipogonadismo",
+      "children": [
+        { "text": "Prevalencia | mais comum, cerca de 60% dos adenomas", "children": [] },
+        { "text": "Causa | hiperprolactinemia inibe LH e FSH", "children": [] },
+        { "text": "Clinica | microadenomas em mulheres com amenorreia e galactorreia; macroadenomas em homens com disfuncao sexual", "children": [] },
+        { "text": "Tratamento | agonistas dopaminergicos, cirurgia e monitoramento", "children": [] }
+      ]
+    },
+    {
+      "text": "Acromegalia e gigantismo | excesso de GH com elevacao de IGF-1 e fenotipo progressivo",
+      "children": [
+        { "text": "Causas | mutacao Gs alfa", "children": [] },
+        { "text": "Diferenciacao | gigantismo em criancas; acromegalia em adultos", "children": [] },
+        { "text": "Diagnostico | GH maior que 10 mUI/L e IGF-1 elevada", "children": [] },
+        { "text": "Tratamento | cirurgia, analogos de somatostatina, antagonistas de GH e radioterapia", "children": [] }
+      ]
+    },
+    {
+      "text": "Doenca de Cushing | adenoma produtor de ACTH e hipercortisolismo endogeno",
+      "children": [
+        { "text": "Causa | adenoma secretor de ACTH", "children": [] },
+        { "text": "Epidemiologia | afeta mais mulheres", "children": [] },
+        { "text": "Clinica | obesidade, facies em lua cheia, estrias, hipertensao e diabetes", "children": [] },
+        { "text": "Diagnostico | cortisol livre urinario, teste de dexametasona e ACTH", "children": [] }
+      ]
+    },
+    {
+      "text": "Hipopituitarismo | perda de funcao hormonal por lesao selar, necrose ou compressao",
+      "children": [
+        { "text": "Manifestacoes | disfuncoes por eixo hormonal", "children": [] },
+        { "text": "Mulheres | infertilidade, amenorreia e galactorreia", "children": [] },
+        { "text": "Outros sintomas | fadiga, hipotensao e intolerancia ao frio", "children": [] }
+      ]
+    },
+    {
+      "text": "Sindrome de Sheehan | necrose hipofisaria pos-hemorragia obstetrica",
+      "children": [
+        { "text": "Etiologia | necrose da hipofise apos hemorragia obstetrica", "children": [] },
+        { "text": "Principal sinal | falha na lactacao", "children": [] },
+        { "text": "Tratamento | reposicao hormonal vitalicia", "children": [] }
+      ]
+    }
+  ]
+}
