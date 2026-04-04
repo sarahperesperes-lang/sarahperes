@@ -449,8 +449,6 @@ input[type="color"] {
 </header>
 
 <div class="app-body">
-
-  <!-- LEFT -->
   <aside class="sidebar sidebar-left">
     <div class="s-section">
       <div class="s-title">Ferramentas</div>
@@ -466,7 +464,7 @@ input[type="color"] {
     <div class="s-section">
       <div class="s-title">Configuracoes</div>
       <div class="cfg-group">
-        <label class="cfg-label">Tema do Mapa</label>
+        <label class="cfg-label">Tema do mapa</label>
         <select id="mapTheme" onchange="changeTheme()">
           <option value="tecnologia">Tecnologia</option>
           <option value="negocios">Negocios</option>
@@ -494,7 +492,13 @@ input[type="color"] {
         <div class="tmpl-card" onclick="loadTemplate('brainstorm')"><span class="tmpl-icon">A</span><span class="tmpl-name">Brainstorm</span></div>
         <div class="tmpl-card" onclick="loadTemplate('projeto')"><span class="tmpl-icon">P</span><span class="tmpl-name">Projeto</span></div>
         <div class="tmpl-card" onclick="loadTemplate('estudo')"><span class="tmpl-icon">E</span><span class="tmpl-name">Estudo</span></div>
-        <div class="tmpl-card" onclick="loadTemplate('apresentacao')"><span class="tmpl-icon">S</span><span class="tmpl-name">Apresentacaonclick="quickSuggest('Como funciona Machine Learning')">Machine Learning</button>
+        <div class="tmpl-card" onclick="loadTemplate('apresentacao')"><span class="tmpl-icon">S</span><span class="tmpl-name">Apresentacao</span></div>
+      </div>
+    </div>
+    <div class="sugg-section">
+      <div class="r-title">Sugestoes rapidas</div>
+      <div class="sugg-grid">
+        <button class="sugg-btn" onclick="quickSuggest('Como funciona Machine Learning')">Machine Learning</button>
         <button class="sugg-btn" onclick="quickSuggest('Arquitetura de um app React moderno')">React moderno</button>
         <button class="sugg-btn" onclick="quickSuggest('Como montar um Plano de Negocios')">Plano de Negocios</button>
         <button class="sugg-btn" onclick="quickSuggest('Gestao de Projetos com metodologias ageis')">Gestao Agil</button>
@@ -512,6 +516,48 @@ input[type="color"] {
     </div>
   </aside>
 
+  <main class="canvas-area" id="canvasArea">
+    <div class="canvas-bar">
+      <span><span class="status-dot"></span>Editor publico</span>
+      <div class="bar-div"></div>
+      <button class="canvas-btn" onclick="zoomIn()">+</button>
+      <div class="zoom-badge" id="zoomBadge">100%</div>
+      <button class="canvas-btn" onclick="zoomOut()">-</button>
+      <div class="bar-div"></div>
+      <button class="canvas-btn" onclick="centerMap()">Centralizar</button>
+      <span class="poster-chip" id="layoutBadge">Poster bilateral</span>
+    </div>
+    <div class="map-wrap" id="mapWrap">
+      <svg id="svgConns"></svg>
+      <div class="map-vp" id="mapVp"></div>
+    </div>
+    <div class="canvas-note">Arraste para mover, use a roda do mouse para zoom e clique em um no para editar.</div>
+  </main>
+
+  <aside class="sidebar sidebar-right">
+    <div class="ai-section">
+      <div class="r-title">Chat e geracao</div>
+      <textarea id="aiPrompt" class="prompt-area" placeholder="Descreva o tema, cole texto, PDF convertido ou peça um mapa mental novo."></textarea>
+      <div class="depth-row">
+        <button class="depth-btn" onclick="setDepth(1)">LOW</button>
+        <button class="depth-btn active" onclick="setDepth(2)">MEDIUM</button>
+        <button class="depth-btn" onclick="setDepth(3)">HIGH</button>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="generateWithAI()">Gerar mapa</button>
+      <button class="canvas-btn" style="width:100%;justify-content:center;margin-top:8px" onclick="document.getElementById('fileInput').click()">Carregar PDF ou imagem</button>
+      <input id="fileInput" type="file" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp,.gif,application/pdf,text/plain,image/png,image/jpeg,image/webp,image/gif" hidden>
+      <div class="ai-status" id="aiStatus">Descreva um tema e gere um mapa com o gateway local.</div>
+      <div class="test-log hidden" id="testLog"></div>
+    </div>
+    <div class="sugg-section">
+      <div class="r-title">Como usar</div>
+      <div class="gh-empty">1. Escreva o tema ou envie um PDF/imagem. 2. Gere o mapa. 3. Refine manualmente no canvas. 4. Exporte quando ficar pronto.</div>
+    </div>
+    <div class="sugg-section">
+      <div class="r-title">Atalhos</div>
+      <div class="gh-empty">Ctrl/Cmd + Enter gera o mapa. Ctrl + Shift + S exporta PNG. Duplo clique em um no abre edicao.</div>
+    </div>
+  </aside>
 </div>
 
 <script>
